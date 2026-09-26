@@ -26,6 +26,12 @@ dev = ["pytest"]
 [tool.setuptools.packages.find]
 include = ["quantstack*"]
 
+# Data the code reads at run time (ORE's XML input set, the dashboard page):
+# not Python packages, so they must be listed to land in a (non-editable) install.
+[tool.setuptools.package-data]
+"quantstack.risk" = ["input/*"]
+"quantstack.dashboard" = ["static/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"

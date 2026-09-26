@@ -1315,7 +1315,10 @@ def _write_summary(
             }
     else:
         wire = {
-            "port_used": selftest["port"],
+            # The self-test binds an OS-assigned loopback port (port=0), a new one
+            # on every run; recording the number would make every canonical rerun
+            # rewrite this committed file.  The CLI still prints it.
+            "port_used": "ephemeral",
             "measured_this_run": True,
             "hosted_tables": selftest["hosted_tables"],
             "positions_rows_read_back_over_websocket": selftest["positions_rows_read_back"],

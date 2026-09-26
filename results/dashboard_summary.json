@@ -52,7 +52,7 @@
     "note": "read from the page's jsdelivr URLs; renamed from @finos/perspective* upstream -- see the module docstring in quantstack/dashboard/server.py"
   },
   "wire_selftest": {
-    "port_used": 45593,
+    "port_used": "ephemeral",
     "measured_this_run": true,
     "hosted_tables": [
       "equity",

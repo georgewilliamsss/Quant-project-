@@ -9,3 +9,7 @@ results/ore_output/
 *.csv.gz
 log.txt
 .ipynb_checkpoints/
+# `scripts/run_all.py --quick` output when --results is the default results/
+results/quick/
+build/
+dist/

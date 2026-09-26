@@ -787,8 +787,14 @@ def _display_path(path: Path) -> str:
     return str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
 
 
-def main(argv: Sequence[str] | None = None) -> dict:
-    """The CLI.  Bad inputs (universe, window shorter than ``--lookback``) exit with status 2."""
+def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None) -> dict:
+    """The CLI.  Bad inputs (universe, window shorter than ``--lookback``) exit with status 2.
+
+    ``sink`` is not a command-line option.  It lets an in-process driver
+    (``scripts/run_all.py``) stream the strategy run live into a dashboard
+    (``run_backtest(..., sink=sink)``) while this function still writes exactly
+    the files the CLI writes.  The benchmark and sequencing runs never see it.
+    """
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--allocator", default="hrp", choices=["hrp", "equal"])
     ap.add_argument("--start", default=DEFAULT_START)
@@ -818,7 +824,7 @@ def main(argv: Sequence[str] | None = None) -> dict:
     res = run_backtest(symbols, args.start, args.end, allocator=args.allocator,
                        starting_cash=args.cash, lookback_bars=args.lookback,
                        rebalance_every=args.rebalance_every, investment_cap=args.investment_cap,
-                       prices=prices)
+                       prices=prices, sink=sink)
     if res["first_fill"] is None:  # not expected once check_window passed; never write empty files
         ap.exit(2, f"{ap.prog}: error: the backtest produced no fills "
                    f"(orders {res['stats']['n_orders']}, denied {res['stats']['n_denied']}, "

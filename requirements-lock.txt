@@ -1,0 +1,55 @@
+# Full lock of the tested environment: every distribution installed in .venv
+# (Linux x86_64, CPython 3.13) except quantstack itself.
+#
+# requirements.txt keeps the 13 direct pins.  This file adds everything they pull
+# in (for example cvxpy-base and clarabel, the Max Sharpe solver path, and the
+# matplotlib stack behind the byte-identical figures), so a fresh install
+# reproduces results/ at full precision.  CI and `make install` install this file.
+#
+# Regenerate after changing a pin in requirements.txt (then re-add this header):
+#   uv pip freeze --python .venv/bin/python --exclude-editable > requirements-lock.txt
+cffi==2.1.1
+clarabel==0.11.1
+click==8.5.0
+cloudpickle==3.1.2
+contourpy==1.4.0
+cvxpy-base==1.9.3
+cycler==0.12.1
+fonttools==4.66.0
+fsspec==2026.2.0
+iniconfig==2.3.0
+joblib==1.6.0
+kiwisolver==1.5.1
+matplotlib==3.11.2
+msgspec==0.21.1
+narwhals==2.26.0
+nautilus-trader==1.231.0
+numpy==2.5.3
+open-source-risk-engine==1.8.17.0
+packaging==26.3
+pandas==3.0.6
+perspective-python==5.5.1
+pillow==12.3.0
+plotly==7.1.0
+pluggy==1.6.0
+portion==2.6.2
+pyarrow==25.0.1
+pycparser==3.0
+pygments==2.21.0
+pyparsing==3.3.3
+pytest==9.1.1
+python-dateutil==2.9.0.post0
+pytz==2026.4
+qdldl==0.1.9.post1
+quantlib==1.43
+scikit-learn==1.9.1
+scipy==1.18.1
+six==1.17.0
+skfolio==1.4.0
+sortedcontainers==2.4.0
+sparsediffpy==0.6.1
+threadpoolctl==3.7.0
+tornado==6.5.10
+tqdm==4.70.1
+tzdata==2026.4
+uvloop==0.22.1

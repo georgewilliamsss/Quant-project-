@@ -1,6 +1,6 @@
 {
   "ore_version": "1.8.17.0",
-  "wall_time_s": 6.783,
+  "wall_time_s": 6.674,
   "market_configuration": "libor",
   "trade_id": "Swap_20y",
   "netting_set": "CPTY_A",
@@ -46,7 +46,7 @@
       "cva": 107446.98184820297,
       "epe_peak": 1707219.625,
       "pfe95_peak": 6114784.0,
-      "wall_time_s": 6.783,
+      "wall_time_s": 6.674,
       "samples": 1000,
       "dates": 81
     },
@@ -55,7 +55,7 @@
       "cva": 0.0018482029699953273,
       "epe_peak": -2780.375,
       "pfe95_peak": 4784.0,
-      "wall_time_s": 0.48300000000000054,
+      "wall_time_s": 0.37400000000000055,
       "samples": 0.0,
       "dates": 0.0
     },

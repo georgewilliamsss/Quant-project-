@@ -1,0 +1,305 @@
+{
+  "script": "scripts/run_all.py",
+  "argv": [],
+  "quick": false,
+  "serve": false,
+  "results_dir": "results",
+  "canonical_results_dir": true,
+  "status": "ok",
+  "failed_stage": null,
+  "error": null,
+  "versions": {
+    "python": "3.13.12",
+    "perspective": "5.5.1",
+    "QuantLib": "1.43",
+    "ORE": "1.8.17.0",
+    "skfolio": "1.4.0",
+    "nautilus_trader": "1.231.0",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3",
+    "pyarrow": "25.0.1",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2",
+    "tornado": "6.5.10"
+  },
+  "stage_seconds": {
+    "imports": 1.57,
+    "pricing": 2.356,
+    "allocation": 1.005,
+    "risk": 6.97,
+    "bridge": 0.681,
+    "execution": 12.226,
+    "positions": 0.006,
+    "dashboard": 0.113
+  },
+  "stages": {
+    "imports": {
+      "status": "ok",
+      "seconds": 1.57,
+      "numbers": {
+        "five_libraries": {
+          "perspective": "5.5.1",
+          "QuantLib": "1.43",
+          "ORE": "1.8.17.0",
+          "skfolio": "1.4.0",
+          "nautilus_trader": "1.231.0"
+        },
+        "ore_loaded_before_quantlib": true
+      }
+    },
+    "pricing": {
+      "status": "ok",
+      "seconds": 2.356,
+      "numbers": {
+        "analytic_price": 8.916037278572539,
+        "year_fraction": 1.0,
+        "engines": {
+          "binomial_crr": {
+            "finest_level": 3200,
+            "finest_price": 8.915415738290344,
+            "abs_error_vs_analytic": 0.0006215402821947436,
+            "check_passed": true
+          },
+          "fd_black_scholes": {
+            "finest_level": 800,
+            "finest_price": 8.91611610244603,
+            "abs_error_vs_analytic": 7.88238734905633e-05,
+            "check_passed": true
+          },
+          "mc_pseudo_random": {
+            "finest_level": 1000000,
+            "finest_price": 8.915456649585996,
+            "abs_error_vs_analytic": 0.0005806289865422087,
+            "check_passed": true
+          },
+          "mc_sobol": {
+            "finest_level": 1000000,
+            "finest_price": 8.915912450751524,
+            "abs_error_vs_analytic": 0.00012482782101486123,
+            "check_passed": true
+          }
+        },
+        "one_instrument_for_all_rows": true,
+        "article_repro_366_day_life": {
+          "evaluation_date": "2024-01-15",
+          "prices": {
+            "analytic": 8.9294285580563,
+            "binomial_crr": 8.928806168168038,
+            "fd_black_scholes": 8.929507536250908,
+            "mc_pseudo_random": 8.928845137056628,
+            "mc_sobol": 8.929303483189534
+          },
+          "matches_article_4dp": {
+            "analytic": true,
+            "binomial_crr": true,
+            "fd_black_scholes": true,
+            "mc_pseudo_random": false
+          }
+        }
+      }
+    },
+    "allocation": {
+      "status": "ok",
+      "seconds": 1.005,
+      "numbers": {
+        "skfolio_version": "1.4.0",
+        "max_sharpe": {
+          "n_near_zero": 12,
+          "n_assets": 20,
+          "max_weight": 0.2659909696132426,
+          "effective_n": 5.255500107197458,
+          "oos_sharpe": 0.806541225534426
+        },
+        "hrp": {
+          "n_near_zero": 0,
+          "n_assets": 20,
+          "max_weight": 0.10884811879659688,
+          "effective_n": 15.452609004250228,
+          "oos_sharpe": 0.7977763621614
+        },
+        "all_match_article_at_printed_precision": true,
+        "qualitative_story_holds": true
+      }
+    },
+    "risk": {
+      "status": "ok",
+      "seconds": 6.97,
+      "numbers": {
+        "canonical": true,
+        "file_prefix": "risk_",
+        "ore_version": "1.8.17.0",
+        "market_configuration": "libor",
+        "npv_base": 1609885.8355739734,
+        "cva": 107446.98184820297,
+        "cva_pct_notional": 1.0744698184820296,
+        "dva": 74749.57153459691,
+        "max_epe": 1707219.625,
+        "max_epe_time_years": 1.003001721685755,
+        "max_pfe": 6114784.0,
+        "max_pfe_time_years": 9.496152406617263,
+        "cube": {
+          "ids": 1,
+          "dates": 81,
+          "samples": 1000,
+          "depth": 1
+        },
+        "ore_wall_time_s": 6.674,
+        "ore_output_dir": "results/ore_output",
+        "files": {
+          "exposure_nettingset_CPTY_A": "results/risk_exposure_nettingset.csv",
+          "exposure_trade_Swap_20y": "results/risk_exposure_trade_Swap_20y.csv",
+          "npv": "results/risk_npv.csv",
+          "xva": "results/risk_xva.csv",
+          "curves": "results/risk_curves.csv",
+          "cashflow": "results/risk_cashflows.csv",
+          "curve_pillars": "results/risk_curve_pillars.csv",
+          "figure": "results/figures/risk_exposure_profile.png",
+          "summary": "results/risk_summary.json"
+        }
+      }
+    },
+    "bridge": {
+      "status": "ok",
+      "seconds": 0.681,
+      "numbers": {
+        "curves_input": "results/risk_curves.csv",
+        "ore_npv": 1609885.8355739734,
+        "ql_npv": 1608800.9415484034,
+        "diff_eur": 1084.8940255700145,
+        "diff_bp": 1.0848940255700144,
+        "schedules_match_ore_cashflow_report": true,
+        "extrapolation_beyond_grid_end_eur": 1079.7518574465066,
+        "interpolation_within_grid_eur": 5.167399822734296,
+        "extrapolation_share_pct": 99.52602115945784,
+        "this_run_ore_matches_bridge_input": {
+          "live_ore_npv": 1609885.8355739734,
+          "committed_ore_npv": 1609885.8355739734,
+          "npv_abs_diff_eur": 0.0,
+          "curves_max_abs_discount_factor_diff": 2.220446049250313e-16
+        }
+      }
+    },
+    "execution": {
+      "status": "ok",
+      "seconds": 12.226,
+      "numbers": {
+        "universe": [
+          "AAPL",
+          "MSFT",
+          "JPM",
+          "JNJ",
+          "XOM",
+          "PG",
+          "HD",
+          "UNH"
+        ],
+        "window": {
+          "start": "2016-01-01",
+          "end": "2022-12-28",
+          "first_bar": "2016-01-04",
+          "last_bar": "2022-12-28",
+          "trading_days": 1760
+        },
+        "fills": 573,
+        "rejections": 0,
+        "denied": 0,
+        "first_fill_date": "2016-12-30",
+        "hrp": {
+          "final_equity": 2479775.7600000002,
+          "cagr": 0.16361812245922724,
+          "max_drawdown": 0.30863209333697605,
+          "sharpe": 0.9306794944296877
+        },
+        "equal_engine_final_equity": 2838765.94,
+        "equal_pandas_final_equity": 2804157.815833487,
+        "qualitative_story_holds": true,
+        "dashboard": {
+          "streamed_live": true,
+          "port": "ephemeral",
+          "table_sizes_over_websocket": {
+            "positions": 8,
+            "equity": 1760,
+            "fills": 573
+          },
+          "hosted_tables": [
+            "equity",
+            "fills",
+            "meta",
+            "positions"
+          ],
+          "equity_readback": {
+            "points": 1760,
+            "first": [
+              "2016-01-04",
+              1000000.0
+            ],
+            "last": [
+              "2022-12-28",
+              2479775.7600000002
+            ],
+            "bit_exact_vs_streamed_curve": true,
+            "max_abs_diff_vs_execution_equity_csv_usd": 4.656612873077393e-10,
+            "last_equals_engine_final_equity": true
+          }
+        },
+        "files": {
+          "equity_csv": "results/execution_equity.csv",
+          "fills_csv": "results/execution_fills.csv",
+          "positions_csv": "results/execution_positions.csv",
+          "weights_csv": "results/execution_weights_hrp.csv",
+          "figure": "results/figures/execution_equity.png"
+        }
+      }
+    },
+    "positions": {
+      "status": "ok",
+      "seconds": 0.006,
+      "numbers": {
+        "positions_csv": "results/execution_positions.csv",
+        "ore_portfolio_xml": "results/ore_output/portfolio_equity.xml",
+        "as_of": "2022-12-28",
+        "n_positions": 8,
+        "n_trades_parsed_by_ore": 8,
+        "trade_types": [
+          "EquityPosition"
+        ],
+        "trade_ids": [
+          "EQ_AAPL",
+          "EQ_HD",
+          "EQ_JNJ",
+          "EQ_JPM",
+          "EQ_MSFT",
+          "EQ_PG",
+          "EQ_UNH",
+          "EQ_XOM"
+        ],
+        "cash_not_a_trade": 51934.97
+      }
+    },
+    "dashboard": {
+      "status": "ok",
+      "seconds": 0.113,
+      "numbers": {
+        "summary_file": "results/dashboard_summary.json",
+        "summary_kind": "canonical",
+        "replayed_table_sizes": {
+          "positions": 8,
+          "equity": 1760,
+          "fills": 573
+        },
+        "equity_source_column": "equity_hrp",
+        "selftest_origin_policy_enforced": true,
+        "selftest_float_round_trip_bit_exact": true,
+        "selftest_indexed_update_overwrote_in_place": true,
+        "npm_pins_match_perspective_python": true
+      }
+    }
+  },
+  "dashboard_tables_over_websocket": {
+    "positions": 8,
+    "equity": 1760,
+    "fills": 573
+  },
+  "total_seconds": 24.927
+}

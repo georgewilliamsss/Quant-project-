@@ -15,13 +15,33 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-      - name: Install the five engines (pinned)
+          cache-dependency-path: requirements-lock.txt
+      - name: Install the full lock (every transitive pin) and this package (editable)
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: All five import in one process
-        run: python -c "import perspective, QuantLib, ORE, skfolio, nautilus_trader; print('ok')"
+          pip install -r requirements-lock.txt
+          pip install --no-deps -e .
+      - name: All five import in one process (make check)
+        run: python -c "import ORE, QuantLib, perspective, skfolio, nautilus_trader; print('perspective', perspective.__version__, '| QuantLib', QuantLib.__version__, '| ORE', ORE.__version__, '| skfolio', skfolio.__version__, '| nautilus', nautilus_trader.__version__)"
       - name: Fast tests
         run: python -m pytest -q -m "not slow"
-      - name: Slow end-to-end tests (ORE simulation, full backtest)
-        run: python -m pytest -q -m slow
+      - name: Whole drivetrain in one process, quick (make quick; writes results/quick/)
+        run: python scripts/run_all.py --quick
+      - name: Slow end-to-end tests (ORE simulation, full backtest, run_all --quick)
+        run: python -m pytest -q -m slow -k "not browser"
+      # The Chromium test is not required: the runner's Chrome has never been
+      # verified here.  It is fed the pinned @perspective-dev packages from
+      # registry.npmjs.org (the local-npm path, the one verified in development)
+      # through the screenshot script's download cache, which the test picks up.
+      - name: Browser test, best effort (headless Chrome, pinned JS from the npm registry)
+        continue-on-error: true
+        run: |
+          python -c "import runpy; s = runpy.run_path('scripts/dashboard_screenshot.py'); print(s['ensure_npm_packages'](s['default_npm_cache']()))"
+          python -m pytest -q -m slow -k browser
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results/
+          if-no-files-found: error

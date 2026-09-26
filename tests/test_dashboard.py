@@ -765,6 +765,8 @@ def test_cli_once_replays_selftests_summarises_and_does_not_serve(tmp_path, cli)
     assert cli.served == {}  # serve() never called
     assert summary["summary_kind"] == "canonical"
     assert summary["wire_selftest"]["measured_this_run"] is True
+    # OS-assigned per run, so not recorded: a canonical rerun must not change the file
+    assert summary["wire_selftest"]["port_used"] == "ephemeral"
     assert summary["replay"]["is_demo"] is False
     assert summary["replay"]["n_fills"] == 1
     assert summary["replay"]["equity_columns_available"] == ["equity_hrp"]

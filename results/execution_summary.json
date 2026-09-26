@@ -76,9 +76,9 @@
       "n_rebalances": 72,
       "first_rebalance": "2016-12-30",
       "first_fill_date": "2016-12-30",
-      "hrp_fit_seconds_total": 1.223789,
-      "hrp_fit_seconds_mean": 0.016997,
-      "engine_run_seconds": 2.263047,
+      "hrp_fit_seconds_total": 0.930395,
+      "hrp_fit_seconds_mean": 0.012922,
+      "engine_run_seconds": 5.727705,
       "days_published": 1760,
       "halted_early": false,
       "last_published_day": "2022-12-28",
@@ -124,9 +124,9 @@
       "n_rebalances": 72,
       "first_rebalance": "2016-12-30",
       "first_fill_date": "2016-12-30",
-      "hrp_fit_seconds_total": 0.004932,
-      "hrp_fit_seconds_mean": 6.8e-05,
-      "engine_run_seconds": 0.911327,
+      "hrp_fit_seconds_total": 0.004276,
+      "hrp_fit_seconds_mean": 5.9e-05,
+      "engine_run_seconds": 0.899237,
       "days_published": 1760,
       "halted_early": false,
       "last_published_day": "2022-12-28",
@@ -268,9 +268,9 @@
     "story": "HRP under-earns equal weight in a decade the loud names won; drawdowns similar"
   },
   "runtime_seconds": {
-    "backtest_with_benchmarks": 3.519117,
-    "hrp_engine_run": 2.263047,
-    "cli_total": 10.147264
+    "backtest_with_benchmarks": 6.943572,
+    "hrp_engine_run": 5.727705,
+    "cli_total": 12.121233
   },
   "outputs": {
     "equity_csv": "results/execution_equity.csv",

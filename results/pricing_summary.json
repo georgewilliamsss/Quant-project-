@@ -18,7 +18,7 @@
       "finest_level": 3200,
       "finest_price": 8.915415738290344,
       "abs_error_vs_analytic": 0.0006215402821947436,
-      "seconds": 0.008535673000096722,
+      "seconds": 0.008745522998651722,
       "check": "abs_error < 0.001",
       "check_passed": true
     },
@@ -26,7 +26,7 @@
       "finest_level": 800,
       "finest_price": 8.91611610244603,
       "abs_error_vs_analytic": 7.88238734905633e-05,
-      "seconds": 0.021611332999782462,
+      "seconds": 0.021612368000205606,
       "check": "abs_error < 0.001",
       "check_passed": true
     },
@@ -34,7 +34,7 @@
       "finest_level": 1000000,
       "finest_price": 8.915456649585996,
       "abs_error_vs_analytic": 0.0005806289865422087,
-      "seconds": 0.2648041689999445,
+      "seconds": 0.2634071140000742,
       "check": "abs_error < 3 * std_error (= 0.041352)",
       "check_passed": true,
       "std_error": 0.013784021945729091,
@@ -46,7 +46,7 @@
       "finest_level": 1000000,
       "finest_price": 8.915912450751524,
       "abs_error_vs_analytic": 0.00012482782101486123,
-      "seconds": 0.2832992559997365,
+      "seconds": 0.28666180900108884,
       "check": "abs_error < 0.001",
       "check_passed": true,
       "note": "Same MCEuropeanEngine with a Sobol ('ld') sequence: a labelled quasi-MC variant of engine 4, deterministic and seed-independent here."
