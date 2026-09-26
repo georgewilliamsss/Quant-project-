@@ -76,9 +76,9 @@
       "n_rebalances": 72,
       "first_rebalance": "2016-12-30",
       "first_fill_date": "2016-12-30",
-      "hrp_fit_seconds_total": 1.132692,
-      "hrp_fit_seconds_mean": 0.015732,
-      "engine_run_seconds": 2.162979,
+      "hrp_fit_seconds_total": 1.223789,
+      "hrp_fit_seconds_mean": 0.016997,
+      "engine_run_seconds": 2.263047,
       "days_published": 1760,
       "halted_early": false,
       "last_published_day": "2022-12-28",
@@ -88,7 +88,8 @@
       "order_fills_report_rows": 573,
       "positions_report_rows": 8,
       "account_report_rows": 574,
-      "max_equity_check_diff_vs_portfolio": 0.0
+      "max_equity_check_diff_vs_portfolio": 0.0,
+      "n_equity_checks": 1760
     }
   },
   "equal_engine": {
@@ -123,9 +124,9 @@
       "n_rebalances": 72,
       "first_rebalance": "2016-12-30",
       "first_fill_date": "2016-12-30",
-      "hrp_fit_seconds_total": 0.004229,
-      "hrp_fit_seconds_mean": 5.9e-05,
-      "engine_run_seconds": 0.978844,
+      "hrp_fit_seconds_total": 0.004932,
+      "hrp_fit_seconds_mean": 6.8e-05,
+      "engine_run_seconds": 0.911327,
       "days_published": 1760,
       "halted_early": false,
       "last_published_day": "2022-12-28",
@@ -135,7 +136,8 @@
       "order_fills_report_rows": 572,
       "positions_report_rows": 8,
       "account_report_rows": 573,
-      "max_equity_check_diff_vs_portfolio": 0.0
+      "max_equity_check_diff_vs_portfolio": 0.0,
+      "n_equity_checks": 1760
     }
   },
   "equal_pandas": {
@@ -266,9 +268,9 @@
     "story": "HRP under-earns equal weight in a decade the loud names won; drawdowns similar"
   },
   "runtime_seconds": {
-    "backtest_with_benchmarks": 5.152319,
-    "hrp_engine_run": 2.162979,
-    "cli_total": 10.87194
+    "backtest_with_benchmarks": 3.519117,
+    "hrp_engine_run": 2.263047,
+    "cli_total": 10.147264
   },
   "outputs": {
     "equity_csv": "results/execution_equity.csv",
@@ -276,5 +278,11 @@
     "positions_csv": "results/execution_positions.csv",
     "weights_csv": "results/execution_weights_hrp.csv",
     "figure": "results/figures/execution_equity.png"
+  },
+  "notes": {
+    "fill_assumption": "optimistic market-on-close: each rebalance is sized on the day's closes and fills at that same close (close-only bars, default fill model, no fees, no slippage), the article's simplification; live, sizing would use a pre-close estimate or trade the next day",
+    "equity_csv": "columns: date, equity_hrp, equity_equal_engine, equity_equal_pandas; the strategy's own curve first; dollars rounded to cents; written by contracts.write_equity_csv",
+    "fills_csv": "FILLS_SCHEMA columns, rows sorted by (ts, symbol, side, qty)",
+    "positions_csv": "final PositionSnapshot incl. the account's cash, via contracts.write_positions_csv"
   }
 }

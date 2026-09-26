@@ -67,8 +67,14 @@ The Nautilus ``RiskEngine`` only prices MARKET orders from quote or trade
 ticks, never from bars; with bars alone it logs ``Cannot check MARKET order
 risk: no prices for ...`` and *skips* the cash-account free-balance check.
 :func:`make_close_trades` therefore emits one synthetic trade tick per bar at
-the same close (same timestamp, emitted just before its bar), which switches
-the pre-trade balance check back on.  See ``strategy.py`` for why that matters.
+the same close and timestamp, which switches the pre-trade balance check back
+on.  See ``strategy.py`` for why that matters.  ``backtest.py`` hands the
+trades and the bars to the engine in separate ``add_data`` calls (one per
+instrument and data type, because Nautilus validates only the first element of
+each call) and lets the engine's stable sort merge them: within a timestamp
+every close trade precedes every bar, so each symbol's last-trade price is in
+the cache before any bar reaches the strategy, and the bars keep the column
+order of ``prices`` (the last symbol's bar still arrives last).
 
 Prices are rounded to the instrument's $0.01 tick when the bars are built
 (the dataset carries three decimals); the pandas benchmark in ``backtest.py``
@@ -91,6 +97,27 @@ DEFAULT_START = "2016-01-01"
 DEFAULT_END = "2022-12-28"
 DEFAULT_VENUE = "XNAS"
 BAR_CLOSE_UTC = pd.Timedelta(hours=21)
+MIN_SYMBOLS = 2
+
+
+def validate_symbols(symbols: Iterable[str], min_symbols: int = MIN_SYMBOLS) -> list[str]:
+    """Normalise a universe (strip, upper-case) and check it, or raise ``ValueError``.
+
+    At least ``min_symbols`` names (a rebalance needs a portfolio: HRP cannot
+    cluster one asset) and no duplicates (a repeated column would feed the
+    strategy two bars per day for one instrument).  A bare string is refused
+    rather than silently iterated character by character.  Membership in the
+    dataset is checked by :func:`load_prices`.
+    """
+    if isinstance(symbols, str):
+        raise ValueError(f"pass a sequence of symbols, not the string {symbols!r}")
+    syms = [str(s).strip().upper() for s in symbols]
+    if len(syms) < min_symbols:
+        raise ValueError(f"need at least {min_symbols} symbols, got {len(syms)}: {syms}")
+    dups = sorted({s for s in syms if syms.count(s) > 1})
+    if dups:
+        raise ValueError(f"duplicate symbols: {dups}")
+    return syms
 
 
 def load_prices(
@@ -105,14 +132,18 @@ def load_prices(
     missing close for any requested symbol are dropped so that every trading
     day has a bar for every symbol -- the strategy's "act after the last
     symbol's bar of the day" trick relies on a rectangular panel.
+
+    Raises ``ValueError`` for duplicate symbols, symbols that are not in the
+    dataset, or a window with no prices.  (A single symbol is allowed here;
+    the backtest's own check, :func:`validate_symbols`, asks for two.)
     """
     from skfolio.datasets import load_sp500_dataset
 
-    symbols = [str(s).upper() for s in symbols]
+    symbols = validate_symbols(symbols, min_symbols=1)
     df = load_sp500_dataset()
     missing = [s for s in symbols if s not in df.columns]
     if missing:
-        raise KeyError(
+        raise ValueError(
             f"symbols not in skfolio's sp500 dataset: {missing}; available: {list(df.columns)}"
         )
     df = df.loc[pd.Timestamp(start) : pd.Timestamp(end), symbols].astype(float)
@@ -239,7 +270,14 @@ def make_close_trades(bars: Iterable, size: int = DEFAULT_BAR_VOLUME) -> list:
 def interleave_trades_and_bars(bars: Sequence, trades: Sequence) -> list:
     """``[trade_0, bar_0, trade_1, bar_1, ...]`` so that, after the engine's
     *stable* sort by ``ts_init``, each symbol's close trade is in the cache
-    before its bar reaches the strategy (and before any order is sized)."""
+    before its bar reaches the strategy (and before any order is sized).
+
+    Kept for callers that need one merged stream.  ``backtest.py`` no longer
+    passes this list to ``BacktestEngine.add_data`` in one call: Nautilus
+    validates only ``data[0]`` of a call (instrument registered, bar source
+    EXTERNAL), so the backtest adds each instrument's trades and bars
+    separately (see the module docstring).
+    """
     if len(bars) != len(trades):
         raise ValueError("bars and trades must be parallel")
     out: list = []
@@ -254,6 +292,8 @@ __all__ = [
     "DEFAULT_START",
     "DEFAULT_END",
     "DEFAULT_VENUE",
+    "MIN_SYMBOLS",
+    "validate_symbols",
     "load_prices",
     "make_equity",
     "make_instruments",

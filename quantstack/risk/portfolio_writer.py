@@ -38,6 +38,16 @@ Notes from checking this against ORE 1.8.17.0 itself (see the tests):
   verbatim and exposes to reports; ORE never uses them for pricing.
 * ``<Weight>1</Weight>`` is written explicitly because it is what ORE writes
   back (``toXMLString``) for a single-underlying position.
+* The snapshot's account cash (``contracts.write_positions_csv`` persists it
+  since the ``cash`` column was added) is **not a trade**: an ORE portfolio holds
+  trades only.  It is recorded in an XML comment at the top of the portfolio
+  (which ORE's parser ignores) and nowhere else.
+
+Inputs are validated before anything is written: a symbol must be a non-empty,
+non-whitespace string; ``qty``, ``last``, their product (the market value) and
+the cash must be finite numbers.  Anything else raises ``ValueError`` naming the
+offending position - a NaN quantity would otherwise reach ORE as the text
+``nan`` and an empty symbol as the trade id ``EQ_``.
 
 What this is *not*: this equity book is **not priced** by the 2016-02-05 EUR demo
 market in ``quantstack/risk/input`` - that market has no equity spot/curve for
@@ -52,6 +62,8 @@ delivered here is the *file contract* and ORE's parser accepting it.
 from __future__ import annotations
 
 import argparse
+import csv
+import math
 import re
 import xml.etree.ElementTree as ET
 from datetime import date
@@ -76,6 +88,34 @@ def _fmt(x: float) -> str:
     return str(int(x)) if x.is_integer() and abs(x) < 1e15 else repr(x)
 
 
+def _finite(value, what: str) -> float:
+    try:
+        x = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{what} is not a number: {value!r}") from None
+    if not math.isfinite(x):
+        raise ValueError(f"{what} is not finite: {value!r}")
+    return x
+
+
+def validate_snapshot(snapshot: PositionSnapshot) -> None:
+    """Raise ``ValueError`` unless every position can become a well-formed ORE trade.
+
+    Checks: ``as_of`` is a date; each symbol is a non-empty, non-whitespace
+    string; ``qty``, ``last`` and ``qty * last`` are finite; ``cash`` is finite.
+    """
+    if not isinstance(snapshot.as_of, date):
+        raise ValueError(f"snapshot as_of must be a date, got {snapshot.as_of!r}")
+    for i, pos in enumerate(snapshot.positions):
+        sym = pos.symbol
+        if not isinstance(sym, str) or not sym.strip():
+            raise ValueError(f"position {i}: symbol must be a non-empty string, got {sym!r}")
+        qty = _finite(pos.qty, f"position {i} ({sym!r}): qty")
+        last = _finite(pos.last, f"position {i} ({sym!r}): last price")
+        _finite(qty * last, f"position {i} ({sym!r}): market value qty * last")
+    _finite(snapshot.cash, "snapshot cash")
+
+
 def positions_to_ore_portfolio_xml(
     snapshot: PositionSnapshot,
     counterparty: str = "CPTY_A",
@@ -89,9 +129,17 @@ def positions_to_ore_portfolio_xml(
     One ``EquityPosition`` trade per position (``drop_flat=True`` skips zero
     quantities).  Trade ids are ``EQ_<symbol>``; two positions mapping to the same
     id raise ``ValueError`` rather than letting ORE keep only one of them.
-    Quantities keep their sign (a short is a negative ``Quantity``).
+    Quantities keep their sign (a short is a negative ``Quantity``).  Invalid
+    input raises ``ValueError`` (see :func:`validate_snapshot`); the account cash
+    goes into a comment, not a trade.
     """
+    validate_snapshot(snapshot)
     root = ET.Element("Portfolio")
+    root.append(ET.Comment(
+        f" quantstack: positions snapshot as of {snapshot.as_of.isoformat()}, "
+        f"{len(snapshot.positions)} position(s). Account cash {_fmt(snapshot.cash)} is not a trade "
+        "and is not represented in this portfolio. "
+    ))
     seen: set[str] = set()
     for pos in snapshot.positions:
         if drop_flat and float(pos.qty) == 0.0:
@@ -132,8 +180,21 @@ def write_ore_portfolio(snapshot: PositionSnapshot, path: str | Path, **kwargs) 
     return path
 
 
+def _check_csv_symbols(csv_path: str | Path) -> None:
+    # read_positions_csv goes through pandas, which turns an empty symbol field
+    # into NaN and then into the string "nan"; look at the raw text first.
+    with Path(csv_path).open(newline="") as fh:
+        for line_no, row in enumerate(csv.DictReader(fh), start=2):
+            if not (row.get("symbol") or "").strip():
+                raise ValueError(f"{csv_path}, line {line_no}: empty symbol")
+
+
 def positions_csv_to_ore_portfolio(csv_path: str | Path, xml_path: str | Path, **kwargs) -> Path:
-    """The full cross-process hop: execution's positions CSV -> ORE portfolio XML."""
+    """The full cross-process hop: execution's positions CSV -> ORE portfolio XML.
+
+    Reads both the 6-column (with ``cash``) and the older 5-column CSV.
+    """
+    _check_csv_symbols(csv_path)
     return write_ore_portfolio(read_positions_csv(csv_path), xml_path, **kwargs)
 
 

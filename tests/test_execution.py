@@ -13,12 +13,26 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from quantstack.contracts import FILLS_SCHEMA, POSITIONS_SCHEMA, RecordingSink, read_positions_csv, write_positions_csv
+from quantstack.contracts import (
+    FILLS_SCHEMA,
+    POSITIONS_SCHEMA,
+    RecordingSink,
+    equity_csv_columns,
+    read_equity_csv,
+    read_positions_csv,
+    write_positions_csv,
+)
+from quantstack.execution import backtest as bt_mod
 from quantstack.execution.backtest import (
     TeeSink,
+    check_window,
     equal_weight_pandas,
+    equity_columns,
     perf_metrics,
+    plot_equity,
     run_backtest,
+    sort_fills,
+    write_results,
 )
 from quantstack.execution.data import (
     load_prices,
@@ -26,6 +40,7 @@ from quantstack.execution.data import (
     make_bars,
     make_close_trades,
     make_instruments,
+    validate_symbols,
 )
 
 SYMS = ["AAPL", "MSFT", "JPM"]
@@ -147,10 +162,12 @@ def test_sink_rows_follow_contract_schemas(short_run):
     assert list(res["fills"].columns) == list(FILLS_SCHEMA)
 
 
-def test_engine_reports_agree_with_strategy(short_run):
+def test_engine_reports_agree_with_strategy(short_run, prices):
     st = short_run[0]["stats"]
     assert st["fills_report_rows"] == st["n_fills"]
     assert st["final_cash"] == pytest.approx(st["final_cash_engine_account"], abs=1e-6)
+    # the Portfolio.equity cross-check really ran (once per completed day), not just "no diff"
+    assert st["n_equity_checks"] == len(prices) > 0
     assert st["max_equity_check_diff_vs_portfolio"] < 1e-4
     assert st["final_cash"] > 0
 
@@ -159,9 +176,13 @@ def test_positions_csv_roundtrip(short_run, prices, tmp_path):
     snap = short_run[0]["snapshot"]
     assert snap is not None and snap.positions
     assert snap.as_of == prices.index[-1].date()
+    # the final snapshot carries the account's final cash (persisted by the contract)
+    assert snap.cash == pytest.approx(short_run[0]["stats"]["final_cash_engine_account"], abs=1e-6)
+    assert snap.cash > 0
     path = write_positions_csv(snap, tmp_path / "execution_positions.csv")
     back = read_positions_csv(path)
     assert back.as_of == snap.as_of
+    assert back.cash == pytest.approx(snap.cash, abs=1e-9)
     assert [(p.symbol, p.qty, round(p.last, 2)) for p in back.positions] == [
         (p.symbol, p.qty, round(p.last, 2)) for p in snap.positions
     ]
@@ -194,12 +215,123 @@ def test_benchmarks_present_and_aligned(short_run, prices):
     res, _ = short_run
     curves = res["curves"]
     assert list(curves.columns) == ["equity_hrp", "equity_equal_engine", "equity_equal_pandas"]
+    assert list(curves.columns) == equity_columns("hrp")
     assert len(curves) == len(prices)
     w = pd.DataFrame(res["equal_engine"]["stats"]["weights_history"]).set_index("date")
     assert np.allclose(w.to_numpy(), 1 / 3)
     ff = res["first_fill"]
     assert curves["equity_equal_pandas"].loc[ff] == pytest.approx(1_000_000)
     assert (curves["equity_equal_pandas"].loc[:ff] == 1_000_000).all()
+
+
+def test_write_results_files_follow_the_contracts(short_run, tmp_path):
+    res, _ = short_run
+    paths = write_results(res, tmp_path)
+    assert set(paths) == {"equity_csv", "fills_csv", "positions_csv", "weights_csv"}
+    # equity: contracts.write_equity_csv layout, strategy first, read back by the contract reader
+    eq_path = paths["equity_csv"]
+    assert eq_path.read_text().splitlines()[0] == "date,equity_hrp,equity_equal_engine,equity_equal_pandas"
+    assert equity_csv_columns(eq_path) == equity_columns("hrp")
+    strategy = read_equity_csv(eq_path)  # default: the first equity* column
+    assert strategy.name == "equity_hrp"
+    np.testing.assert_allclose(strategy.to_numpy(), res["equity"].to_numpy(), rtol=0, atol=0.005)
+    assert (strategy.index == res["equity"].index).all()
+    bench = read_equity_csv(eq_path, "equity_equal_pandas")
+    np.testing.assert_allclose(bench.to_numpy(), res["curves"]["equity_equal_pandas"].to_numpy(),
+                               rtol=0, atol=0.005)
+    # fills: FILLS_SCHEMA columns, same rows as the run, sorted by (ts, symbol, side, qty)
+    f = pd.read_csv(paths["fills_csv"])
+    assert list(f.columns) == list(FILLS_SCHEMA)
+    keys = list(zip(f["ts"], f["symbol"], f["side"], f["qty"]))
+    assert keys == sorted(keys) and len(f) == res["stats"]["n_fills"]
+    pd.testing.assert_frame_equal(f, sort_fills(res["fills"]).round(4), check_dtype=False)
+    # positions: the account's cash travels with the book
+    back = read_positions_csv(paths["positions_csv"])
+    assert back.cash == pytest.approx(res["snapshot"].cash, abs=1e-9)
+    assert back.equity == pytest.approx(res["equity"].iloc[-1], rel=1e-9)
+
+
+def test_equal_allocator_layout_duplicates_engine_benchmark(prices, tmp_path):
+    res = run_backtest(SYMS, START, END, allocator="equal", prices=prices, **FAST)
+    curves = res["curves"]
+    assert list(curves.columns) == equity_columns("equal") == [
+        "equity_equal", "equity_equal_engine", "equity_equal_pandas"]
+    # the strategy *is* the equal-weight engine run: the benchmark column is a copy, not a rerun
+    pd.testing.assert_series_equal(curves["equity_equal_engine"], curves["equity_equal"], check_names=False)
+    assert res["equal_engine"]["stats"] is res["stats"]
+    path = write_results(res, tmp_path)["equity_csv"]
+    assert equity_csv_columns(path) == equity_columns("equal")
+    assert read_equity_csv(path).name == "equity_equal"
+    assert (tmp_path / "execution_weights_equal.csv").exists()
+
+
+def test_window_too_short_returns_same_keys_with_no_fills(prices, short_run):
+    short = prices.loc["2018-10-01":]
+    assert len(short) <= 252
+    with pytest.raises(ValueError, match="lookback_bars=252"):
+        check_window(short, 252)
+    check_window(prices, FAST["lookback_bars"])  # the fast window is long enough
+    res = run_backtest(SYMS, prices=short)  # default lookback 252: never warms up
+    assert set(res) == set(short_run[0])
+    assert res["stats"]["n_fills"] == 0 and res["fills"].empty
+    assert list(res["fills"].columns) == list(FILLS_SCHEMA)
+    assert res["first_fill"] is None and res["stats"]["first_fill_date"] is None
+    assert res["curves"].empty and list(res["curves"].columns) == equity_columns("hrp")
+    assert res["equal_engine"] is None and res["equal_pandas"] is None
+    assert set(res["metrics"]) == set(short_run[0]["metrics"])
+    assert res["metrics"]["traded_notional"] == 0.0
+    assert len(res["equity"]) == len(short) and (res["equity"] == 1_000_000).all()
+    assert res["snapshot"].positions == [] and res["snapshot"].cash == pytest.approx(1_000_000)
+
+
+@pytest.mark.parametrize(
+    "symbols, match",
+    [(["AAPL"], "at least 2"), (["AAPL", "aapl"], "duplicate"), (["AAPL", "NOPE"], "NOPE"),
+     ("AAPL", "not the string")],
+)
+def test_invalid_universe_raises_before_the_engine(monkeypatch, symbols, match):
+    def boom(*a, **k):  # pragma: no cover - reaching it is the failure
+        raise AssertionError("engine started before the inputs were validated")
+
+    monkeypatch.setattr(bt_mod, "_engine_run", boom)
+    with pytest.raises(ValueError, match=match):
+        run_backtest(symbols, START, END, **FAST)
+
+
+def test_invalid_allocator_and_prices_columns_raise_before_the_engine(monkeypatch, prices):
+    monkeypatch.setattr(bt_mod, "_engine_run", lambda *a, **k: pytest.fail("engine started"))
+    with pytest.raises(ValueError, match="allocator"):
+        run_backtest(SYMS, START, END, allocator="minvar", prices=prices, **FAST)
+    with pytest.raises(ValueError, match="at least 2"):
+        run_backtest(prices=prices[["AAPL"]], **FAST)
+    assert validate_symbols([" aapl", "msft "]) == ["AAPL", "MSFT"]
+
+
+@pytest.mark.parametrize(
+    "argv, message",
+    [(["--start", "2022-06-01"], "more than lookback_bars=252"),
+     (["--symbols", "AAPL"], "at least 2"),
+     (["--symbols", "AAPL,AAPL"], "duplicate"),
+     (["--symbols", "AAPL,NOPE"], "NOPE")],
+)
+def test_cli_rejects_bad_inputs_with_exit_code_2(tmp_path, capsys, argv, message):
+    out = tmp_path / "results"
+    with pytest.raises(SystemExit) as exc:
+        bt_mod.main([*argv, "--no-sequencing-experiment", "--results-dir", str(out)])
+    assert exc.value.code == 2
+    assert message in capsys.readouterr().err
+    assert not out.exists()  # nothing written
+
+
+def test_plot_equity_leaves_global_matplotlib_state_alone(short_run, tmp_path):
+    import matplotlib
+
+    before_rc, before_backend = dict(matplotlib.rcParams), matplotlib.get_backend()
+    res, _ = short_run
+    path = plot_equity(res["curves"], res["first_fill"], tmp_path / "fig.png")
+    assert path.stat().st_size > 10_000
+    assert dict(matplotlib.rcParams) == before_rc
+    assert matplotlib.get_backend() == before_backend
 
 
 def test_buys_first_is_denied_or_halts(prices):
@@ -248,3 +380,10 @@ def test_full_backtest_default_universe():
     assert hrp["final_equity"] < ew["final_equity"]
     assert abs(hrp["max_drawdown"] - ew["max_drawdown"]) < 0.10
     assert res["runtime_seconds"] < 120
+    # the canonical numbers in results/execution_summary.json (pinned versions, deterministic)
+    assert st["n_fills"] == 573 and st["first_fill_date"] == "2016-12-30"
+    assert hrp["final_equity"] == pytest.approx(2_479_775.76, abs=0.005)
+    assert ew["final_equity"] == pytest.approx(2_838_765.94, abs=0.005)
+    assert res["equal_pandas"]["metrics"]["final_equity"] == pytest.approx(2_804_157.82, abs=0.005)
+    assert res["snapshot"].cash == pytest.approx(51_934.97, abs=0.005)
+    assert st["n_equity_checks"] == len(res["prices"])

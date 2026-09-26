@@ -4,11 +4,19 @@
 
 What it does
 ------------
+0. Validates the inputs before any engine is built: at least two symbols, no
+   duplicates, every symbol in the dataset, a known allocator (``ValueError``
+   from :func:`run_backtest`); the CLI also checks that the window holds more
+   than ``lookback_bars`` bars per symbol (the strategy trades only once it
+   has ``lookback_bars`` closes) and exits with status 2 and a message
+   otherwise.
 1. Loads daily adjusted closes for the universe (skfolio's bundled dataset,
    see ``data.py``), builds ``Equity`` instruments (lot size 1) and one
    ``Bar`` per (symbol, day) directly (the ``BarDataWrangler`` is broken under
    pandas 3), plus one synthetic close trade per bar so the ``RiskEngine`` can
-   price market orders.
+   price market orders.  Trades and bars go to the engine in one ``add_data``
+   call per (instrument, data type): Nautilus validates only the first
+   element of each call.
 2. Builds a ``BacktestEngine`` (fixed trader id, logging at WARNING) with one
    simulated venue: ``OmsType.NETTING``, ``AccountType.CASH``, USD base,
    $1M starting balance, *default* fill model, no fee model, no latency model,
@@ -27,10 +35,37 @@ What it does
    of fills and final cash must agree with what the strategy saw.
 6. Benchmarks: the same engine with ``allocator="equal"`` (1/N, same monthly
    schedule, same cash buffer), and a pandas equal-weight buy-and-hold of the
-   same names started on the HRP run's first fill date -- "the blue line that
+   same names started on the strategy's first fill date -- "the blue line that
    cannot reject a trade" (fully invested, no cash buffer, never trades).
 7. Optionally reproduces the order-sequencing experiment on the full window
    (``sells_first`` and ``buys_first`` modes; see ``strategy.py``).
+
+Fill assumption: optimistic market-on-close
+-------------------------------------------
+Every rebalance is sized on a day's closes and fills at that same close (the
+strategy observes the close, then trades at it; no fees, no slippage).  This
+is the article's simplification and it flatters the result: live, the
+weights would be sized on an estimate before the close and sent as
+market-on-close orders, or traded the next day at a different price.  The
+summary JSON repeats this under ``notes.fill_assumption``.
+
+Equity CSV layout (``execution_equity.csv``), defined once in :func:`equity_columns`
+-------------------------------------------------------------------------------------
+Written with :func:`quantstack.contracts.write_equity_csv` (read it back with
+``contracts.read_equity_csv``), dollars rounded to cents::
+
+    date, equity_<allocator>, equity_equal_engine, equity_equal_pandas
+
+* ``equity_<allocator>`` -- the strategy's own curve, always the first
+  column (``read_equity_csv(path)`` returns it by default);
+* ``equity_equal_engine`` -- 1/N in the same engine, same schedule;
+* ``equity_equal_pandas`` -- the pandas equal-weight buy-and-hold.
+
+The default run writes ``date,equity_hrp,equity_equal_engine,equity_equal_pandas``.
+With ``--allocator equal`` the benchmark columns are still written, and
+``equity_equal_engine`` is then a copy of ``equity_equal`` (the strategy *is*
+the equal-weight engine run; it is not run twice).  Every curve sits at the
+starting cash until its first fill.
 
 Version-skew notes (nautilus_trader 1.231.0 + pandas 3.0.6): ``engine.run()``
 emits a ``Pandas4Warning`` (it calls the deprecated ``pd.Timestamp.utcnow``),
@@ -43,11 +78,15 @@ annualised volatility (daily returns x sqrt(252)), Sharpe with rf = 0, and
 turnover (one-way, annualised: 0.5 x traded notional / mean equity / years,
 reported with and without the initial buy-in).
 
-Outputs (CLI): ``results/execution_equity.csv``, ``results/execution_fills.csv``,
-``results/execution_positions.csv`` (final ``PositionSnapshot`` via
-``contracts.write_positions_csv``; the risk module turns this file into an ORE
-portfolio), ``results/execution_summary.json``,
-``results/figures/execution_equity.png``.
+Outputs (CLI, under ``--results-dir``, default ``results/``):
+``execution_equity.csv`` (layout above), ``execution_fills.csv`` (exactly the
+``FILLS_SCHEMA`` columns, rows sorted by ``(ts, symbol, side, qty)`` so the
+file is reproducible byte for byte), ``execution_positions.csv`` (final
+``PositionSnapshot`` via ``contracts.write_positions_csv``, including the
+account's cash; the risk module turns this file into an ORE portfolio),
+``execution_weights_<allocator>.csv``, ``execution_summary.json`` (its
+``outputs`` block lists the paths actually written) and
+``figures/execution_equity.png``.
 """
 
 from __future__ import annotations
@@ -70,6 +109,7 @@ from quantstack.contracts import (
     DashboardSink,
     PositionSnapshot,
     RecordingSink,
+    write_equity_csv,
     write_positions_csv,
 )
 from quantstack.execution.data import (
@@ -78,12 +118,12 @@ from quantstack.execution.data import (
     DEFAULT_START,
     DEFAULT_SYMBOLS,
     DEFAULT_VENUE,
-    interleave_trades_and_bars,
     load_prices,
     make_bar_types,
     make_bars,
     make_close_trades,
     make_instruments,
+    validate_symbols,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -102,6 +142,53 @@ ARTICLE = {
     "final_equity_equal_weight": 2_740_000,
     "note": "article's own 8 names and data source; not reproducible here",
 }
+
+FILL_ASSUMPTION = (
+    "optimistic market-on-close: each rebalance is sized on the day's closes and fills at "
+    "that same close (close-only bars, default fill model, no fees, no slippage), the "
+    "article's simplification; live, sizing would use a pre-close estimate or trade the next day"
+)
+
+# ---- equity CSV layout (see the module docstring): defined here, once.
+BENCHMARK_COLUMNS: tuple[str, ...] = ("equity_equal_engine", "equity_equal_pandas")
+FILLS_SORT_KEYS: tuple[str, ...] = ("ts", "symbol", "side", "qty")
+
+
+def equity_columns(allocator: str, benchmarks: bool = True) -> list[str]:
+    """Columns of ``curves`` / ``execution_equity.csv`` (besides ``date``), in file order.
+
+    The strategy's own curve ``equity_<allocator>`` comes first, then (with
+    ``benchmarks``) ``equity_equal_engine`` and ``equity_equal_pandas``.  For
+    ``allocator="equal"`` the engine benchmark duplicates the strategy column.
+    """
+    return [f"equity_{allocator}", *(BENCHMARK_COLUMNS if benchmarks else ())]
+
+
+def check_window(prices: pd.DataFrame, lookback_bars: int) -> None:
+    """Raise ``ValueError`` unless every symbol has more than ``lookback_bars`` bars.
+
+    The strategy rebalances for the first time on the day its trailing window
+    is full (``lookback_bars`` closes), so a window of at most that many bars
+    never trades (or trades on its very last day, leaving no curve to measure).
+    """
+    n = int(prices.notna().sum().min()) if prices.shape[1] else 0
+    if n <= lookback_bars:
+        span = (f"{prices.index[0].date()}..{prices.index[-1].date()}" if len(prices) else "empty window")
+        raise ValueError(
+            f"{span} has {n} bars per symbol, but the strategy needs more than "
+            f"lookback_bars={lookback_bars} (it first trades once it holds {lookback_bars} closes): "
+            "start earlier or lower --lookback"
+        )
+
+
+def sort_fills(fills: pd.DataFrame) -> pd.DataFrame:
+    """Fills in a reproducible order: stable sort by ``(ts, symbol, side, qty)``.
+
+    ``ts`` is an ISO-8601 string with a fixed UTC offset, so the string order is
+    the time order.  ``run_backtest`` keeps its ``fills`` in event order; files
+    are written sorted.
+    """
+    return fills.sort_values(list(FILLS_SORT_KEYS), kind="stable").reset_index(drop=True)
 
 
 class TeeSink:
@@ -180,8 +267,8 @@ def drawdown_in(equity: pd.Series, start: str, end: str) -> dict:
 def turnover_stats(fills: pd.DataFrame, equity: pd.Series, first_fill: pd.Timestamp | None) -> dict:
     """Traded notional and annualised one-way turnover (with / without the initial buy-in)."""
     if fills.empty or first_fill is None:
-        return {"traded_notional": 0.0, "turnover_annual_oneway": 0.0,
-                "turnover_annual_oneway_ex_initial": 0.0}
+        return {"traded_notional": 0.0, "initial_buy_in_notional": 0.0,
+                "turnover_annual_oneway": 0.0, "turnover_annual_oneway_ex_initial": 0.0}
     notional = (fills["qty"].abs() * fills["price"]).astype(float)
     day = pd.to_datetime(fills["ts"]).dt.tz_convert(None).dt.normalize()
     initial = float(notional[day == day.min()].sum())
@@ -256,7 +343,14 @@ def _engine_run(
     instruments = make_instruments(symbols, venue_name)
     bar_types = make_bar_types(instruments)
     bars = make_bars(prices, instruments, bar_types, volume=bar_volume)
-    data = interleave_trades_and_bars(bars, make_close_trades(bars, bar_volume)) if risk_checks else bars
+    trades = make_close_trades(bars, bar_volume) if risk_checks else []
+    # Grouped per instrument for add_data (see below); order within a symbol is by day.
+    bars_by_symbol: dict[str, list] = {s: [] for s in symbols}
+    trades_by_symbol: dict[str, list] = {s: [] for s in symbols}
+    for b in bars:
+        bars_by_symbol[b.bar_type.instrument_id.symbol.value].append(b)
+    for t in trades:
+        trades_by_symbol[t.instrument_id.symbol.value].append(t)
 
     recorder = RecordingSink()
     tee = TeeSink(sink, recorder) if sink is not None else recorder
@@ -283,7 +377,20 @@ def _engine_run(
         )
         for inst in instruments.values():
             engine.add_instrument(inst)
-        engine.add_data(data)  # sorted by ts_init (stable), trade before bar
+        # One add_data call per (instrument, data type): Nautilus validates only
+        # data[0] of each call (instrument in the cache, EXTERNAL bar source) and
+        # registers only that instrument as having data.  sort=False, then one
+        # sort_data(): Python's stable sort by ts_init keeps the call order within
+        # a timestamp -- every close trade, then the bars in column order -- so
+        # each symbol's last-trade price is cached before any bar reaches the
+        # strategy, and the last symbol's bar still completes the day.
+        for sym in symbols:
+            if trades_by_symbol[sym]:
+                engine.add_data(trades_by_symbol[sym], sort=False)
+        for sym in symbols:
+            if bars_by_symbol[sym]:
+                engine.add_data(bars_by_symbol[sym], sort=False)
+        engine.sort_data()
         cfg = SkfolioRebalanceConfig(
             instrument_ids=[instruments[s].id for s in symbols],
             bar_types=[bar_types[s] for s in symbols],
@@ -342,6 +449,7 @@ def _engine_run(
         "positions_report_rows": int(len(positions_report)),
         "account_report_rows": int(len(account_report)),
         "max_equity_check_diff_vs_portfolio": float(strat.max_equity_check_diff),
+        "n_equity_checks": int(strat.n_equity_checks),
         "weights_history": strat.weights_history,
         "submitted": strat.submitted,
     }
@@ -377,17 +485,50 @@ def run_backtest(
 ) -> dict:
     """Backtest ``allocator`` on ``symbols`` over [start, end]; return curves and metrics.
 
-    Returns a dict with ``equity`` (pd.Series read back from the sink),
-    ``fills`` (DataFrame, ``FILLS_SCHEMA`` columns), ``snapshot`` (final
-    ``PositionSnapshot``, non-zero lines), ``metrics`` (from the first fill),
-    ``stats`` (counts, runtimes, cross-checks), ``reports`` (Nautilus report
-    DataFrames), ``prices``; with ``benchmarks=True`` also ``equal_engine``
-    and ``equal_pandas`` sub-results and a combined ``curves`` DataFrame.
+    Inputs are validated before any engine is built (``ValueError``): at least
+    two symbols, no duplicates, all in the dataset (or, when ``prices`` is
+    passed, its columns are the universe and ``symbols`` is ignored), a known
+    ``allocator`` / ``order_mode``, ``lookback_bars >= 3``,
+    ``rebalance_every >= 1``.  A window too short to trade (see
+    :func:`check_window`) is *not* an error here: the engine runs, nothing
+    trades, and the result has the same keys with zero fills and empty curves.
+
+    Returns a dict with always the same keys:
+
+    * ``equity``   -- pd.Series read back from the sink (flat at the starting
+      cash until the first fill);
+    * ``fills``    -- DataFrame with the ``FILLS_SCHEMA`` columns, in event
+      order (possibly empty);
+    * ``snapshot`` -- final ``PositionSnapshot`` (non-zero lines, the
+      account's final ``cash``);
+    * ``metrics`` (from the first fill; over the whole flat curve if nothing
+      traded), ``stats`` (counts, runtimes, cross-checks), ``reports``
+      (Nautilus report DataFrames), ``prices``, ``first_fill`` (Timestamp or
+      None), ``runtime_seconds``;
+    * ``curves``   -- DataFrame indexed by ``date`` with the columns
+      :func:`equity_columns` ``(allocator, benchmarks)``; zero rows when
+      nothing traded (the benchmarks are anchored at the first fill);
+    * ``equal_engine`` / ``equal_pandas`` -- benchmark sub-results
+      (``equity``, ``metrics``, ...) with ``benchmarks=True`` and at least one
+      fill, else None.  For ``allocator="equal"``, ``equal_engine`` is the
+      main run itself (not re-run).
+
     ``sink`` receives every update live (a recorder is tee'd alongside it).
     """
+    from quantstack.execution.strategy import ALLOCATORS, ORDER_MODES
+
     t_all = time.perf_counter()
+    if allocator not in ALLOCATORS:
+        raise ValueError(f"allocator must be one of {ALLOCATORS}, got {allocator!r}")
+    if order_mode not in ORDER_MODES:
+        raise ValueError(f"order_mode must be one of {ORDER_MODES}, got {order_mode!r}")
+    if lookback_bars < 3 or rebalance_every < 1:
+        raise ValueError(f"lookback_bars must be >= 3 and rebalance_every >= 1, got "
+                         f"{lookback_bars} and {rebalance_every}")
     if prices is None:
-        prices = load_prices(symbols, start, end)
+        prices = load_prices(validate_symbols(symbols), start, end)
+    else:
+        validate_symbols(prices.columns)
     kw = dict(starting_cash=starting_cash, lookback_bars=lookback_bars,
               rebalance_every=rebalance_every, investment_cap=investment_cap,
               order_mode=order_mode, risk_checks=risk_checks, bar_volume=bar_volume,
@@ -404,14 +545,22 @@ def run_backtest(
         "first_fill": first_fill,
         "metrics": {**perf_metrics(main.equity, first_fill),
                     **turnover_stats(main.fills, main.equity, first_fill)},
+        "equal_engine": None,
+        "equal_pandas": None,
     }
-    if benchmarks and first_fill is not None:
-        eq_alloc = "equal" if allocator != "equal" else "hrp"
-        other = _engine_run(prices, eq_alloc, sink=None, **kw)
+    cols = equity_columns(allocator, benchmarks)
+    if first_fill is None:
+        # nothing traded: same keys, empty curves (nothing to anchor a benchmark on)
+        out["curves"] = pd.DataFrame(index=pd.DatetimeIndex([], name="date"), columns=cols, dtype=float)
+    elif not benchmarks:
+        out["curves"] = pd.DataFrame({cols[0]: main.equity}).rename_axis("date")
+    else:
+        # the equal-weight engine benchmark; for allocator="equal" it *is* the main run
+        other = main if allocator == "equal" else _engine_run(prices, "equal", sink=None, **kw)
         ew_bh = equal_weight_pandas(prices, first_fill, starting_cash)
         ew_daily = equal_weight_daily_rebalanced(prices, first_fill, starting_cash)
         other_ff = pd.Timestamp(other.stats["first_fill_date"]) if other.stats["first_fill_date"] else first_fill
-        out["equal_engine" if eq_alloc == "equal" else "hrp_engine"] = {
+        out["equal_engine"] = {
             "equity": other.equity, "fills": other.fills, "stats": other.stats,
             "metrics": {**perf_metrics(other.equity, first_fill),
                         **turnover_stats(other.fills, other.equity, other_ff)},
@@ -421,15 +570,39 @@ def run_backtest(
             "metrics": perf_metrics(ew_bh, first_fill),
             "daily_rebalanced_metrics": perf_metrics(ew_daily, first_fill),
         }
-        name_main = f"equity_{allocator}"
-        name_other = f"equity_{eq_alloc}_engine"
-        out["curves"] = pd.DataFrame({
-            name_main: main.equity,
-            name_other: other.equity,
-            "equity_equal_pandas": ew_bh,
-        }).rename_axis("date")
+        out["curves"] = pd.DataFrame(dict(zip(cols, (main.equity, other.equity, ew_bh)))).rename_axis("date")
     out["runtime_seconds"] = time.perf_counter() - t_all
     return out
+
+
+def write_results(res: dict, results_dir: str | Path) -> dict[str, Path]:
+    """Write a run's data files into ``results_dir``; return ``{output name: path}``.
+
+    * ``equity_csv``    -- ``res["curves"]`` rounded to cents, through
+      :func:`quantstack.contracts.write_equity_csv` (layout: :func:`equity_columns`);
+    * ``fills_csv``     -- exactly the ``FILLS_SCHEMA`` columns (the dashboard
+      replays this file into a Perspective table built from that schema),
+      rows sorted by :func:`sort_fills`;
+    * ``positions_csv`` -- the final snapshot, cash included, through
+      :func:`quantstack.contracts.write_positions_csv`;
+    * ``weights_csv``   -- the allocator's weights at every rebalance.
+    """
+    results = Path(results_dir)
+    results.mkdir(parents=True, exist_ok=True)
+    allocator = res["stats"]["allocator"]
+    paths = {
+        "equity_csv": results / "execution_equity.csv",
+        "fills_csv": results / "execution_fills.csv",
+        "positions_csv": results / "execution_positions.csv",
+        "weights_csv": results / f"execution_weights_{allocator}.csv",
+    }
+    write_equity_csv(res["curves"].round(2), paths["equity_csv"])
+    sort_fills(res["fills"])[list(FILLS_SCHEMA)].to_csv(paths["fills_csv"], index=False,
+                                                        float_format="%.4f")
+    write_positions_csv(res["snapshot"], paths["positions_csv"])
+    pd.DataFrame(res["stats"]["weights_history"]).to_csv(paths["weights_csv"], index=False,
+                                                         float_format="%.6f")
+    return paths
 
 
 # --------------------------------------------------------------------------- figure
@@ -440,82 +613,104 @@ LIGHT = {
 }
 
 
-def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, title_extra: str = "") -> Path:
-    """Three equity curves on a log scale + an underwater (drawdown) panel."""
-    import matplotlib
+STRATEGY_LABELS = {  # allocator -> (legend label, title name)
+    "hrp": ("HRP in NautilusTrader", "HRP"),
+    "equal": ("Equal weight in NautilusTrader (monthly)", "monthly equal weight"),
+}
 
-    matplotlib.use("Agg")
+
+def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, title_extra: str = "") -> Path:
+    """Equity curves on a log scale + an underwater (drawdown) panel.
+
+    ``curves`` follows :func:`equity_columns`: the first column is the
+    strategy, then the two equal-weight benchmarks (the engine benchmark is
+    not drawn when it duplicates the strategy, i.e. for ``allocator="equal"``).
+    No global matplotlib state is touched: the figure is a bare ``Figure`` on
+    an Agg canvas (no pyplot, no ``matplotlib.use``) and the styling lives in
+    an ``rc_context`` that is undone on exit.
+    """
+    import matplotlib
     import matplotlib.dates as mdates
-    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
     from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator, PercentFormatter
 
     c = LIGHT
+    main_col = str(curves.columns[0])
+    allocator = main_col.removeprefix("equity_")
+    label, title_name = STRATEGY_LABELS.get(allocator, (f"{allocator} in NautilusTrader", allocator))
     series = [
         ("equity_equal_pandas", "Equal weight, pandas buy-and-hold", c["s1"]),
-        ("equity_hrp", "HRP in NautilusTrader", c["s2"]),
+        (main_col, label, c["s2"]),
         ("equity_equal_engine", "Equal weight in NautilusTrader (monthly)", c["s3"]),
     ]
     series = [s for s in series if s[0] in curves.columns]
+    if allocator == "equal":  # the engine benchmark is a copy of the strategy column
+        series = [s for s in series if s[0] != "equity_equal_engine"]
     df = curves.loc[pd.Timestamp(first_fill) - pd.Timedelta(days=45):]
 
-    plt.rcParams.update({"font.size": 9, "axes.edgecolor": c["text2"], "axes.labelcolor": c["text2"],
-                         "xtick.color": c["text2"], "ytick.color": c["text2"]})
-    fig, (ax, axd) = plt.subplots(2, 1, figsize=(9, 6.2), sharex=True,
-                                  gridspec_kw={"height_ratios": [3, 1.3], "hspace": 0.08})
-    fig.patch.set_facecolor(c["surface"])
-    for a in (ax, axd):
-        a.set_facecolor(c["surface"])
-        a.grid(True, color=c["grid"], linewidth=0.6)
-        for side in ("top", "right"):
-            a.spines[side].set_visible(False)
+    style = {"font.size": 9, "axes.edgecolor": c["text2"], "axes.labelcolor": c["text2"],
+             "xtick.color": c["text2"], "ytick.color": c["text2"]}
+    with matplotlib.rc_context(style):
+        fig = Figure(figsize=(9, 6.2))
+        FigureCanvasAgg(fig)
+        ax, axd = fig.subplots(2, 1, sharex=True,
+                               gridspec_kw={"height_ratios": [3, 1.3], "hspace": 0.08})
+        fig.patch.set_facecolor(c["surface"])
+        for a in (ax, axd):
+            a.set_facecolor(c["surface"])
+            a.grid(True, color=c["grid"], linewidth=0.6)
+            for side in ("top", "right"):
+                a.spines[side].set_visible(False)
 
-    # shade the two stress windows so the drawdowns are easy to find
-    stress = [("2020-02-19", "2020-03-23", "COVID crash"), ("2022-01-03", "2022-10-12", "2022 bear market")]
-    for s0, s1, label in stress:
-        if pd.Timestamp(s1) >= df.index[0] and pd.Timestamp(s0) <= df.index[-1]:
-            for a in (ax, axd):
-                a.axvspan(pd.Timestamp(s0), pd.Timestamp(s1), color=c["shade"], zorder=0)
-            ax.text(pd.Timestamp(s0), 1.0, " " + label, transform=ax.get_xaxis_transform(),
-                    va="top", ha="left", fontsize=8, color=c["text2"])
+        # shade the two stress windows so the drawdowns are easy to find
+        stress = [("2020-02-19", "2020-03-23", "COVID crash"), ("2022-01-03", "2022-10-12", "2022 bear market")]
+        for s0, s1, label in stress:
+            if pd.Timestamp(s1) >= df.index[0] and pd.Timestamp(s0) <= df.index[-1]:
+                for a in (ax, axd):
+                    a.axvspan(pd.Timestamp(s0), pd.Timestamp(s1), color=c["shade"], zorder=0)
+                ax.text(pd.Timestamp(s0), 1.0, " " + label, transform=ax.get_xaxis_transform(),
+                        va="top", ha="left", fontsize=8, color=c["text2"])
 
-    ends = []
-    for col, label, color in series:
-        s = df[col].dropna()
-        ax.plot(s.index, s.values, color=color, linewidth=1.6, label=label)
-        ends.append((float(np.log10(s.iloc[-1])), s.iloc[-1], s.index[-1], color))
-        dd = s.loc[pd.Timestamp(first_fill):] / s.loc[pd.Timestamp(first_fill):].cummax() - 1.0
-        axd.plot(dd.index, dd.values, color=color, linewidth=1.2)
-    # direct end labels, nudged apart in log space so they never collide
-    lo, hi = np.log10(df[[s[0] for s in series]].min().min()), np.log10(df[[s[0] for s in series]].max().max())
-    gap = 0.045 * (hi - lo)
-    placed: list[float] = []
-    for y_log, v, x, color in sorted(ends, key=lambda e: e[0]):
-        y = max([y_log] + [p + gap for p in placed])
-        placed.append(y)
-        # colored dot carries identity, the value stays in text ink
-        ax.plot([x + pd.Timedelta(days=22)], [10 ** y], marker="o", markersize=5, color=color,
-                clip_on=False, zorder=5)
-        ax.annotate(f"${v / 1e6:.2f}M", xy=(x + pd.Timedelta(days=40), 10 ** y), va="center",
-                    ha="left", fontsize=8, color=c["text"], annotation_clip=False)
-    ax.axvline(pd.Timestamp(first_fill), color=c["text2"], linewidth=0.8, linestyle=":")
-    ax.set_yscale("log")
-    ax.yaxis.set_major_locator(FixedLocator([0.8e6, 1e6, 1.25e6, 1.5e6, 2e6, 2.5e6, 3e6, 4e6, 5e6]))
-    ax.yaxis.set_minor_locator(NullLocator())
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"${v / 1e6:g}M"))
-    ax.set_ylabel("Equity (log scale)")
-    ax.legend(loc="upper left", bbox_to_anchor=(0.0, 0.93), frameon=False, fontsize=8, labelcolor=c["text"])
-    ax.set_title("Equity from first fill: HRP vs equal weight, 8 US large caps" + title_extra,
-                 loc="left", fontsize=11, color=c["text"])
-    axd.set_ylabel("Drawdown")
-    axd.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
-    axd.xaxis.set_major_locator(mdates.YearLocator())
-    axd.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-    axd.set_xlabel("Date")
-    fig.subplots_adjust(left=0.1, right=0.88, top=0.93, bottom=0.08)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=120, facecolor=c["surface"])
-    plt.close(fig)
+        ends = []
+        for col, label, color in series:
+            s = df[col].dropna()
+            ax.plot(s.index, s.values, color=color, linewidth=1.6, label=label)
+            ends.append((float(np.log10(s.iloc[-1])), s.iloc[-1], s.index[-1], color))
+            dd = s.loc[pd.Timestamp(first_fill):] / s.loc[pd.Timestamp(first_fill):].cummax() - 1.0
+            axd.plot(dd.index, dd.values, color=color, linewidth=1.2)
+        # direct end labels, nudged apart in log space so they never collide
+        lo, hi = np.log10(df[[s[0] for s in series]].min().min()), np.log10(df[[s[0] for s in series]].max().max())
+        gap = 0.045 * (hi - lo)
+        placed: list[float] = []
+        for y_log, v, x, color in sorted(ends, key=lambda e: e[0]):
+            y = max([y_log] + [p + gap for p in placed])
+            placed.append(y)
+            # colored dot carries identity, the value stays in text ink
+            ax.plot([x + pd.Timedelta(days=22)], [10 ** y], marker="o", markersize=5, color=color,
+                    clip_on=False, zorder=5)
+            ax.annotate(f"${v / 1e6:.2f}M", xy=(x + pd.Timedelta(days=40), 10 ** y), va="center",
+                        ha="left", fontsize=8, color=c["text"], annotation_clip=False)
+        ax.axvline(pd.Timestamp(first_fill), color=c["text2"], linewidth=0.8, linestyle=":")
+        ax.set_yscale("log")
+        ax.yaxis.set_major_locator(FixedLocator([0.8e6, 1e6, 1.25e6, 1.5e6, 2e6, 2.5e6, 3e6, 4e6, 5e6]))
+        ax.yaxis.set_minor_locator(NullLocator())
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"${v / 1e6:g}M"))
+        ax.set_ylabel("Equity (log scale)")
+        ax.legend(loc="upper left", bbox_to_anchor=(0.0, 0.93), frameon=False, fontsize=8, labelcolor=c["text"])
+        ax.set_title(f"Equity from first fill: {title_name} vs equal weight" + title_extra,
+                     loc="left", fontsize=11, color=c["text"])
+        axd.set_ylabel("Drawdown")
+        axd.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
+        axd.xaxis.set_major_locator(mdates.YearLocator())
+        axd.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        axd.set_xlabel("Date")
+        fig.subplots_adjust(left=0.1, right=0.88, top=0.93, bottom=0.08)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path, dpi=120, facecolor=c["surface"])
     return path
+
+
 
 
 # --------------------------------------------------------------------------- sequencing experiment
@@ -586,7 +781,14 @@ def _public_stats(stats: dict) -> dict:
     return {k: v for k, v in stats.items() if k not in ("weights_history", "submitted")}
 
 
+def _display_path(path: Path) -> str:
+    """Repo-relative for paths inside the repo (``results/...``), else absolute."""
+    path = Path(path).resolve()
+    return str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+
+
 def main(argv: Sequence[str] | None = None) -> dict:
+    """The CLI.  Bad inputs (universe, window shorter than ``--lookback``) exit with status 2."""
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--allocator", default="hrp", choices=["hrp", "equal"])
     ap.add_argument("--start", default=DEFAULT_START)
@@ -601,28 +803,34 @@ def main(argv: Sequence[str] | None = None) -> dict:
     ap.add_argument("--results-dir", default=str(RESULTS_DIR))
     args = ap.parse_args(argv)
 
-    symbols = [s.strip().upper() for s in args.symbols.split(",") if s.strip()]
     results = Path(args.results_dir)
     figs = results / "figures"
     t0 = time.perf_counter()
+    # ---- validate before any engine is built (argparse's error(): message + exit status 2)
+    try:
+        symbols = validate_symbols([s for s in args.symbols.split(",") if s.strip()])
+        if args.lookback < 3 or args.rebalance_every < 1:
+            raise ValueError("--lookback must be >= 3 and --rebalance-every >= 1")
+        prices = load_prices(symbols, args.start, args.end)
+        check_window(prices, args.lookback)
+    except ValueError as exc:
+        ap.error(str(exc))
     res = run_backtest(symbols, args.start, args.end, allocator=args.allocator,
                        starting_cash=args.cash, lookback_bars=args.lookback,
-                       rebalance_every=args.rebalance_every, investment_cap=args.investment_cap)
-    main_key, other_key = (args.allocator, "equal_engine") if args.allocator == "hrp" else ("equal", "hrp_engine")
+                       rebalance_every=args.rebalance_every, investment_cap=args.investment_cap,
+                       prices=prices)
+    if res["first_fill"] is None:  # not expected once check_window passed; never write empty files
+        ap.exit(2, f"{ap.prog}: error: the backtest produced no fills "
+                   f"(orders {res['stats']['n_orders']}, denied {res['stats']['n_denied']}, "
+                   f"rejected {res['stats']['n_rejected']}); nothing written\n")
+    alloc = args.allocator
+    main_key, other_key = alloc, "equal_engine"
+    cols = equity_columns(alloc)
 
     # ---- files
-    results.mkdir(parents=True, exist_ok=True)
-    curves = res["curves"].copy()
-    curves.index = curves.index.strftime("%Y-%m-%d")
-    curves.to_csv(results / "execution_equity.csv", float_format="%.2f")
-    # exactly FILLS_SCHEMA columns: the dashboard replays this file straight into
-    # a Perspective table built from that schema (an extra column would not fit)
-    res["fills"][list(FILLS_SCHEMA)].to_csv(results / "execution_fills.csv", index=False,
-                                            float_format="%.4f")
-    write_positions_csv(res["snapshot"], results / "execution_positions.csv")
-    weights = pd.DataFrame(res["stats"]["weights_history"])
-    weights.to_csv(results / f"execution_weights_{args.allocator}.csv", index=False, float_format="%.6f")
-    fig_path = plot_equity(res["curves"], res["first_fill"], figs / "execution_equity.png")
+    paths = write_results(res, results)
+    paths["figure"] = plot_equity(res["curves"], res["first_fill"], figs / "execution_equity.png",
+                                  title_extra=f", {len(symbols)} US large caps")
 
     # ---- order-sequencing experiment (full window, same allocator), in a child
     # process: Nautilus logging is process-global and the first engine's
@@ -630,7 +838,7 @@ def main(argv: Sequence[str] | None = None) -> dict:
     seq = {}
     if not args.no_sequencing_experiment:
         seq = run_sequencing_experiment_subprocess(
-            symbols, args.start, args.end, args.allocator, args.cash, args.lookback,
+            symbols, args.start, args.end, alloc, args.cash, args.lookback,
             args.rebalance_every, args.investment_cap)
         st = res["stats"]
         seq["two_phase"] = {k: st[k] for k in ("n_orders", "n_fills", "n_denied", "n_rejected",
@@ -638,16 +846,27 @@ def main(argv: Sequence[str] | None = None) -> dict:
         seq["two_phase"]["final_equity"] = float(res["equity"].iloc[-1])
 
     m_main, m_other, m_pd = res["metrics"], res[other_key]["metrics"], res["equal_pandas"]["metrics"]
-    hrp_m = m_main if args.allocator == "hrp" else m_other
-    ew_m = m_other if args.allocator == "hrp" else m_main
     stress = {
         name: {
             "covid_2020": drawdown_in(res["curves"][col].dropna(), "2020-01-01", "2020-12-31"),
             "bear_2022": drawdown_in(res["curves"][col].dropna(), "2022-01-01", "2022-12-31"),
         }
-        for name, col in (("hrp", "equity_hrp"), ("equal_engine", "equity_equal_engine"),
-                          ("equal_pandas", "equity_equal_pandas"))
-        if col in res["curves"].columns
+        for name, col in zip((main_key, other_key, "equal_pandas"), cols)
+    }
+    if alloc == "hrp":
+        story_holds = bool(m_main["final_equity"] < min(m_other["final_equity"], m_pd["final_equity"])
+                           and abs(m_main["max_drawdown"] - m_other["max_drawdown"]) < 0.05)
+        story = "HRP under-earns equal weight in a decade the loud names won; drawdowns similar"
+    else:
+        story_holds = None
+        story = f"n/a for --allocator {alloc}: the HRP-vs-equal story needs --allocator hrp"
+    notes = {
+        "fill_assumption": FILL_ASSUMPTION,
+        "equity_csv": (f"columns: date, {', '.join(cols)}; the strategy's own curve first; "
+                       "dollars rounded to cents; written by contracts.write_equity_csv"
+                       + ("; equity_equal_engine duplicates equity_equal (same run)" if alloc == "equal" else "")),
+        "fills_csv": "FILLS_SCHEMA columns, rows sorted by (ts, symbol, side, qty)",
+        "positions_csv": "final PositionSnapshot incl. the account's cash, via contracts.write_positions_csv",
     }
     summary = {
         "module": "execution",
@@ -677,30 +896,22 @@ def main(argv: Sequence[str] | None = None) -> dict:
         "order_sequencing_experiment": seq,
         "article": ARTICLE,
         "comparison": {
-            "hrp_final_equity": hrp_m["final_equity"],
-            "equal_engine_final_equity": ew_m["final_equity"],
+            f"{alloc}_final_equity": m_main["final_equity"],
+            "equal_engine_final_equity": m_other["final_equity"],
             "equal_pandas_final_equity": m_pd["final_equity"],
-            "hrp_underperforms_equal_engine": hrp_m["final_equity"] < ew_m["final_equity"],
-            "hrp_underperforms_equal_pandas": hrp_m["final_equity"] < m_pd["final_equity"],
-            "max_dd_hrp": hrp_m["max_drawdown"],
-            "max_dd_equal_engine": ew_m["max_drawdown"],
+            f"{alloc}_underperforms_equal_engine": m_main["final_equity"] < m_other["final_equity"],
+            f"{alloc}_underperforms_equal_pandas": m_main["final_equity"] < m_pd["final_equity"],
+            f"max_dd_{alloc}": m_main["max_drawdown"],
+            "max_dd_equal_engine": m_other["max_drawdown"],
             "max_dd_equal_pandas": m_pd["max_drawdown"],
-            "qualitative_story_holds": bool(
-                hrp_m["final_equity"] < min(ew_m["final_equity"], m_pd["final_equity"])
-                and abs(hrp_m["max_drawdown"] - ew_m["max_drawdown"]) < 0.05
-            ),
-            "story": "HRP under-earns equal weight in a decade the loud names won; drawdowns similar",
+            "qualitative_story_holds": story_holds,
+            "story": story,
         },
         "runtime_seconds": {"backtest_with_benchmarks": res["runtime_seconds"],
-                            "hrp_engine_run": res["stats"]["engine_run_seconds"] if args.allocator == "hrp" else res[other_key]["stats"]["engine_run_seconds"],
+                            f"{alloc}_engine_run": res["stats"]["engine_run_seconds"],
                             "cli_total": time.perf_counter() - t0},
-        "outputs": {
-            "equity_csv": "results/execution_equity.csv",
-            "fills_csv": "results/execution_fills.csv",
-            "positions_csv": "results/execution_positions.csv",
-            "weights_csv": f"results/execution_weights_{args.allocator}.csv",
-            "figure": "results/figures/execution_equity.png",
-        },
+        "outputs": {k: _display_path(v) for k, v in paths.items()},
+        "notes": notes,
     }
     (results / "execution_summary.json").write_text(json.dumps(_round(summary), indent=2, default=str))
 
@@ -713,14 +924,14 @@ def main(argv: Sequence[str] | None = None) -> dict:
           f"{len(symbols)} names {summary['window']['first_bar']}..{summary['window']['last_bar']}")
     print(f"  fills {summary['fills']} (orders {summary['orders']}, rejected {summary['rejections']}, "
           f"denied {summary['denied']}), first fill {summary['first_fill_date']}")
-    print(line(f"{args.allocator} (engine)", m_main))
-    print(line(other_key.replace("_", " "), m_other))
+    print(line(f"{alloc} (engine)", m_main))
+    print(line(other_key.replace("_", " "), m_other, " (same run)" if alloc == "equal" else ""))
     print(line("equal (pandas B&H)", m_pd))
     for mode, v in seq.items():
         print(f"  order mode {mode:<11} orders {v['n_orders']:>4} fills {v['n_fills']:>4} "
               f"denied {v['n_denied']:>3} halted {v['halted_early']} (last day {v['last_published_day']})")
     print(f"  runtime: backtest+benchmarks {res['runtime_seconds']:.1f}s, CLI total "
-          f"{summary['runtime_seconds']['cli_total']:.1f}s -> {fig_path.relative_to(REPO_ROOT) if fig_path.is_relative_to(REPO_ROOT) else fig_path}")
+          f"{summary['runtime_seconds']['cli_total']:.1f}s -> {summary['outputs']['figure']}")
     return summary
 
 

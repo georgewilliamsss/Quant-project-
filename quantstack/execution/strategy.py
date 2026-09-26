@@ -76,7 +76,19 @@ already holds rather than trusting ``Portfolio.equity(venue)`` blindly
 (that one depends on which price source the portfolio has cached, and warns
 and *drops* unpriced instruments); both are computed once all of a day's bars
 are in, and the largest absolute difference is kept in
-``self.max_equity_check_diff`` as a cross-check.
+``self.max_equity_check_diff`` as a cross-check (``self.n_equity_checks``
+counts the days the comparison actually ran, so a zero difference cannot come
+from a check that never happened).  The check has no exception handler: a
+failure there is a bug to surface, not a diagnostic to hide.
+
+Fill assumption (optimistic market-on-close)
+--------------------------------------------
+Weights are sized on a day's closes and the orders fill at that same close:
+the strategy sees the close, then trades at it.  With close-only bars and the
+default fill model that is what the simulated venue does.  It is the
+article's simplification, and an optimistic one: a live strategy would size
+on an estimate before the close and submit market-on-close orders, or trade
+the next day.
 
 When the book is published (fill timing)
 ----------------------------------------
@@ -213,6 +225,7 @@ class SkfolioRebalance(Strategy):
         self.rejections: list[str] = []
         self.fit_seconds: list[float] = []
         self.max_equity_check_diff = 0.0
+        self.n_equity_checks = 0
         self.published_days = 0
         self.last_snapshot: PositionSnapshot | None = None
 
@@ -282,13 +295,18 @@ class SkfolioRebalance(Strategy):
         return self.cash() + sum(q * self.last.get(s, 0.0) for s, q in qtys.items())
 
     def _check_equity(self) -> None:
-        try:
-            nt = self.portfolio.equity(self.venue).get(USD)
-        except Exception:  # noqa: BLE001 - diagnostic only
+        """Compare :meth:`equity` with ``Portfolio.equity(venue)`` and keep the worst gap.
+
+        ``Portfolio.equity`` returns ``{}`` until the venue's account exists;
+        that day is skipped (not counted).  Anything else that goes wrong
+        raises: no broad ``except`` here.
+        """
+        nt = self.portfolio.equity(self.venue).get(USD)
+        if nt is None:
             return
-        if nt is not None:
-            diff = abs(float(nt) - self.equity())
-            self.max_equity_check_diff = max(self.max_equity_check_diff, diff)
+        diff = abs(nt.as_double() - self.equity())
+        self.max_equity_check_diff = max(self.max_equity_check_diff, diff)
+        self.n_equity_checks += 1
 
     def snapshot(self, as_of: date) -> PositionSnapshot:
         qtys = self.current_qtys()

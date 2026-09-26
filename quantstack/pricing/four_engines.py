@@ -113,7 +113,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-import QuantLib as ql
+from quantstack._swig_order import ensure_ore_before_quantlib
+
+ensure_ore_before_quantlib()  # ORE (if installed) must load before QuantLib: see quantstack/_swig_order.py
+import QuantLib as ql  # noqa: E402
 
 # --------------------------------------------------------------------------
 # Fixed contract & market data
