@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantstack"
+version = "0.1.0"
+description = "Five repos, one engine: QuantLib + ORE + skfolio + NautilusTrader + Perspective wired into one process."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "perspective-python",
+  "QuantLib",
+  "open-source-risk-engine",
+  "skfolio",
+  "nautilus_trader",
+  "tornado",
+  "matplotlib",
+  "pandas",
+  "numpy",
+  "pyarrow",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["quantstack*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "slow: long-running end-to-end runs (ORE simulation, full backtest)",
+]

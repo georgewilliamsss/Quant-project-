@@ -1,0 +1,13 @@
+matplotlib==3.11.2
+nautilus-trader==1.231.0
+numpy==2.5.3
+open-source-risk-engine==1.8.17.0
+pandas==3.0.6
+perspective-python==5.5.1
+pyarrow==25.0.1
+pytest==9.1.1
+quantlib==1.43
+scikit-learn==1.9.1
+scipy==1.18.1
+skfolio==1.4.0
+tornado==6.5.10
