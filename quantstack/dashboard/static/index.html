@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>quantstack dashboard</title>
+<!--
+  Pinned to perspective-python's installed version (5.5.1) so the wasm wire
+  protocol between this page and the Tornado/Perspective server matches.
+
+  NOTE (version skew, Sept 2026): most tutorials still say
+  `@finos/perspective`. As of 5.5.1 the upstream project renamed its npm
+  packages to the @perspective-dev/* scope -- pulled straight out of the
+  installed perspective-python package's own CDN-URL-building code
+  (perspective/widget/__init__.py, the Jupyter "export as HTML" path):
+    @finos/perspective                 -> @perspective-dev/client
+    @finos/perspective-viewer          -> @perspective-dev/viewer
+    @finos/perspective-viewer-datagrid -> @perspective-dev/viewer-datagrid
+    @finos/perspective-viewer-d3fc     -> @perspective-dev/viewer-charts
+  See quantstack/dashboard/server.py's module docstring for the full story.
+-->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@perspective-dev/client@5.5.1/dist/cdn/perspective.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/cdn/perspective-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-datagrid@5.5.1/dist/cdn/perspective-viewer-datagrid.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer-charts@5.5.1/dist/cdn/perspective-viewer-charts.js"></script>
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@perspective-dev/viewer@5.5.1/dist/css/themes.css" />
+<style>
+  :root { color-scheme: dark; }
+  html, body {
+    margin: 0; height: 100%; background: #12151a; color: #e6e6e6;
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  header {
+    padding: 10px 16px; border-bottom: 1px solid #2a2f3a;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  header span { font-size: 12px; color: #8a94a6; }
+  main { display: flex; flex-direction: column; height: calc(100% - 42px); }
+  section { flex: 1 1 50%; min-height: 0; display: flex; flex-direction: column; }
+  section h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #8a94a6; margin: 6px 16px 4px;
+  }
+  perspective-viewer { flex: 1; width: 100%; }
+  #status { font-size: 12px; }
+  #status.ok { color: #4fd18b; }
+  #status.err { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>quantstack &middot; dashboard</h1>
+  <span id="status">connecting to /ws&hellip;</span>
+</header>
+<main>
+  <section>
+    <h2>positions</h2>
+    <perspective-viewer id="positions-viewer"></perspective-viewer>
+  </section>
+  <section>
+    <h2>equity curve</h2>
+    <perspective-viewer id="equity-viewer"></perspective-viewer>
+  </section>
+</main>
+<script type="module">
+  import perspective from "https://cdn.jsdelivr.net/npm/@perspective-dev/client@5.5.1/dist/cdn/perspective.js";
+
+  const statusEl = document.getElementById("status");
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${proto}//${location.host}/ws`;
+  const setStatus = (text, cls) => { statusEl.textContent = text; statusEl.className = cls; };
+
+  try {
+    // 5.5.1: websocket() takes perspective-client.wasm from the registered
+    // <perspective-viewer> element, which registers only after its own
+    // top-level `await` on the wasm. Without this line the page fails with
+    // "Missing perspective-client.wasm" (the installed package's
+    // templates/exported_widget.html.template does the same wait).
+    await customElements.whenDefined("perspective-viewer");
+    const websocket = await perspective.websocket(wsUrl);
+
+    const hosted = await websocket.get_hosted_table_names();
+    for (const name of ["positions", "equity"]) {
+      if (!hosted.includes(name)) throw new Error(`server has no "${name}" table (has: ${hosted})`);
+    }
+    setStatus(`connected: ${wsUrl} (loading viewers…)`, "ok");
+
+    // load(client) + restore({table}) -- load(table) is deprecated in 5.5.1.
+    const positionsViewer = document.getElementById("positions-viewer");
+    await positionsViewer.load(websocket);
+    await positionsViewer.restore({
+      table: "positions", plugin: "Datagrid", sort: [["symbol", "asc"]], theme: "Pro Dark",
+    });
+
+    const equityViewer = document.getElementById("equity-viewer");
+    await equityViewer.load(websocket);
+    await equityViewer.restore({
+      table: "equity", plugin: "Y Line", group_by: ["date"], columns: ["equity"], theme: "Pro Dark",
+    });
+
+    setStatus(`connected: ${wsUrl}`, "ok");
+  } catch (err) {
+    setStatus(`connection failed: ${err}`, "err");
+    console.error(err);
+  }
+</script>
+</body>
+</html>

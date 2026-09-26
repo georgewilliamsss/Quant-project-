@@ -1,0 +1,100 @@
+{
+  "perspective_version": "5.5.1",
+  "tables": {
+    "positions": {
+      "schema": {
+        "symbol": "string",
+        "qty": "float",
+        "last": "float",
+        "value": "float"
+      },
+      "index": "symbol"
+    },
+    "equity": {
+      "schema": {
+        "date": "string",
+        "equity": "float"
+      },
+      "index": "date"
+    },
+    "fills": {
+      "schema": {
+        "ts": "string",
+        "symbol": "string",
+        "side": "string",
+        "qty": "float",
+        "price": "float"
+      },
+      "index": null
+    }
+  },
+  "update_path": "Arrow IPC bytes (typed from contracts schemas), not list-of-dicts JSON",
+  "npm_packages_used_by_static_index_html": {
+    "@perspective-dev/client": "5.5.1",
+    "@perspective-dev/viewer": "5.5.1",
+    "@perspective-dev/viewer-datagrid": "5.5.1",
+    "@perspective-dev/viewer-charts": "5.5.1",
+    "note": "renamed from @finos/perspective* upstream; see module docstring in quantstack/dashboard/server.py"
+  },
+  "wire_selftest": {
+    "port_used": 36927,
+    "measured_this_run": true,
+    "hosted_tables": [
+      "equity",
+      "fills",
+      "positions"
+    ],
+    "positions_rows_read_back_over_websocket": [
+      {
+        "symbol": "AAPL",
+        "qty": 25.0,
+        "last": 101.5,
+        "value": 2537.5
+      },
+      {
+        "symbol": "MSFT",
+        "qty": 5.0,
+        "last": 98.27639451941653,
+        "value": 491.3819725970826
+      }
+    ],
+    "equity_rows_read_back_over_websocket": [
+      {
+        "date": "2026-09-24",
+        "equity": 1000000.0
+      },
+      {
+        "date": "2026-09-25",
+        "equity": 1004000.0
+      }
+    ],
+    "fills_rows_read_back_over_websocket": [
+      {
+        "ts": "2026-09-25T14:30:00",
+        "symbol": "AAPL",
+        "side": "BUY",
+        "qty": 25.0,
+        "price": 101.5
+      }
+    ],
+    "indexed_update_overwrote_in_place": true,
+    "float_round_trip_bit_exact": true
+  },
+  "replay": {
+    "is_demo": false,
+    "fallback_reason": null,
+    "equity_csv": "/home/user/Quant-project-/results/execution_equity.csv",
+    "positions_csv": "/home/user/Quant-project-/results/execution_positions.csv",
+    "fills_csv": "/home/user/Quant-project-/results/execution_fills.csv",
+    "equity_source_column": "equity_hrp",
+    "n_positions": 8,
+    "n_equity_points": 1760,
+    "n_fills": 573,
+    "table_sizes_after_load": {
+      "positions": 8,
+      "equity": 1760,
+      "fills": 573
+    },
+    "table_size_warnings": []
+  }
+}
