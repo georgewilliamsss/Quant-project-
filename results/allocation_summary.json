@@ -1,0 +1,346 @@
+{
+  "skfolio_version": "1.4.0",
+  "dataset": {
+    "source": "skfolio.datasets.load_sp500_dataset",
+    "n_assets": 20,
+    "assets": [
+      "AAPL",
+      "AMD",
+      "BAC",
+      "BBY",
+      "CVX",
+      "GE",
+      "HD",
+      "JNJ",
+      "JPM",
+      "KO",
+      "LLY",
+      "MRK",
+      "MSFT",
+      "PEP",
+      "PFE",
+      "PG",
+      "RRC",
+      "UNH",
+      "WMT",
+      "XOM"
+    ],
+    "full_range": [
+      "1990-01-03",
+      "2022-12-28"
+    ]
+  },
+  "fit_window": [
+    "2015-01-01",
+    "2019-12-31"
+  ],
+  "fit_span_actual": [
+    "2015-01-02",
+    "2019-12-31"
+  ],
+  "test_window": [
+    "2020-01-01",
+    "2022-12-31"
+  ],
+  "zero_tolerance": 0.0001,
+  "in_sample": {
+    "max_sharpe": {
+      "n_near_zero": 12,
+      "n_assets": 20,
+      "max_weight": 0.2659909696132426,
+      "effective_n": 5.255500107197458
+    },
+    "hrp": {
+      "n_near_zero": 0,
+      "n_assets": 20,
+      "max_weight": 0.10884811879659688,
+      "effective_n": 15.452609004250228
+    }
+  },
+  "out_of_sample": {
+    "max_sharpe": {
+      "annualized_sharpe": 0.806541225534426,
+      "annualized_mean_arithmetic": 0.2275470268122041,
+      "max_drawdown_uncompounded": 0.32095575191619674,
+      "cagr": 0.20636755039965338,
+      "max_drawdown_compounded": 0.3042982488884697,
+      "n_days": 754
+    },
+    "hrp": {
+      "annualized_sharpe": 0.7977763621614,
+      "annualized_mean_arithmetic": 0.17659697223767296,
+      "max_drawdown_uncompounded": 0.32945274160204246,
+      "cagr": 0.16417480852520328,
+      "max_drawdown_compounded": 0.3016866146898358,
+      "n_days": 754
+    }
+  },
+  "out_of_sample_measures": {
+    "annualized_sharpe": "mean/std(ddof=1)*sqrt(252) of daily returns (skfolio annualized_sharpe_ratio)",
+    "annualized_mean_arithmetic": "mean daily return * 252, uncompounded (skfolio annualized_mean); not CAGR",
+    "cagr": "(prod(1+r))**(252/n_days) - 1",
+    "max_drawdown_uncompounded": "skfolio default max_drawdown: drawdown of cumulative summed returns",
+    "max_drawdown_compounded": "peak-to-trough loss of compounded wealth prod(1+r), starting at 1"
+  },
+  "walk_forward_oos_sharpe": {
+    "max_sharpe": 0.8606621540395861,
+    "hrp": 0.7771800901825054
+  },
+  "walk_forward_oos_span": [
+    "2018-01-03",
+    "2022-12-28"
+  ],
+  "walk_forward": {
+    "splitter": {
+      "class": "skfolio.model_selection.WalkForward",
+      "test_size": 252,
+      "train_size": 756
+    },
+    "input_span": [
+      "2015-01-02",
+      "2022-12-28"
+    ],
+    "input_rows": 2012,
+    "headline_variant": "reduce_test_true",
+    "variants": {
+      "reduce_test_true": {
+        "reduce_test": true,
+        "n_folds": 5,
+        "n_oos_days": 1256,
+        "oos_span": [
+          "2018-01-03",
+          "2022-12-28"
+        ],
+        "oos_sharpe": {
+          "max_sharpe": 0.8606621540395861,
+          "hrp": 0.7771800901825054
+        },
+        "folds": [
+          {
+            "oos_start": "2018-01-03",
+            "oos_end": "2019-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 0.44242949118795305,
+              "hrp": -0.10466316340677381
+            }
+          },
+          {
+            "oos_start": "2019-01-04",
+            "oos_end": "2020-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 2.574943207228723,
+              "hrp": 2.563399564805015
+            }
+          },
+          {
+            "oos_start": "2020-01-06",
+            "oos_end": "2021-01-04",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 1.088147090241165,
+              "hrp": 0.5230359696439333
+            }
+          },
+          {
+            "oos_start": "2021-01-05",
+            "oos_end": "2022-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 2.0683340737794467,
+              "hrp": 2.6170686844280446
+            }
+          },
+          {
+            "oos_start": "2022-01-04",
+            "oos_end": "2022-12-28",
+            "n_days": 248,
+            "sharpe": {
+              "max_sharpe": -0.6901106290383098,
+              "hrp": 0.219066219795702
+            }
+          }
+        ]
+      },
+      "reduce_test_false_default": {
+        "reduce_test": false,
+        "n_folds": 4,
+        "n_oos_days": 1008,
+        "oos_span": [
+          "2018-01-03",
+          "2022-01-03"
+        ],
+        "oos_sharpe": {
+          "max_sharpe": 1.3937468595635556,
+          "hrp": 0.9049896475770094
+        },
+        "folds": [
+          {
+            "oos_start": "2018-01-03",
+            "oos_end": "2019-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 0.44242949118795305,
+              "hrp": -0.10466316340677381
+            }
+          },
+          {
+            "oos_start": "2019-01-04",
+            "oos_end": "2020-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 2.574943207228723,
+              "hrp": 2.563399564805015
+            }
+          },
+          {
+            "oos_start": "2020-01-06",
+            "oos_end": "2021-01-04",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 1.088147090241165,
+              "hrp": 0.5230359696439333
+            }
+          },
+          {
+            "oos_start": "2021-01-05",
+            "oos_end": "2022-01-03",
+            "n_days": 252,
+            "sharpe": {
+              "max_sharpe": 2.0683340737794467,
+              "hrp": 2.6170686844280446
+            }
+          }
+        ]
+      }
+    },
+    "note": "skfolio's default WalkForward(reduce_test=False) scores 4 folds, OOS 2018-01-03..2022-01-03 (1008 days): Max Sharpe 1.39 vs HRP 0.90. It drops the final partial fold (2022-01-04..2022-12-28, 248 days), in which Max Sharpe scored -0.69 vs HRP 0.22. With reduce_test=True (5 folds, OOS 2018-01-03..2022-12-28, 1256 days): Max Sharpe 0.86 vs HRP 0.78. The Max Sharpe minus HRP gap goes from 0.49 to 0.08 once the final fold is included."
+  },
+  "equal_weight_benchmark": {
+    "n_assets": 20,
+    "weight_each": 0.05
+  },
+  "weights": {
+    "max_sharpe": {
+      "AAPL": 2.766745628169102e-05,
+      "AMD": 0.1326073106020964,
+      "BAC": 1.1144496035613649e-06,
+      "BBY": 0.06942386482316872,
+      "CVX": 6.347889414968236e-07,
+      "GE": 2.408561375764039e-07,
+      "HD": 0.004453659071798953,
+      "JNJ": 2.340008152688042e-06,
+      "JPM": 0.03671959504863802,
+      "KO": 1.4055649753059204e-05,
+      "LLY": 0.08898198726841548,
+      "MRK": 6.985601151273964e-06,
+      "MSFT": 0.2606199462499424,
+      "PEP": 0.14111188883717377,
+      "PFE": 9.735551395745612e-07,
+      "PG": 2.7137445491236553e-05,
+      "RRC": 1.156340545863086e-07,
+      "UNH": 0.2659909696132426,
+      "WMT": 9.100783032067046e-06,
+      "XOM": 4.122577851179352e-07
+    },
+    "hrp": {
+      "AAPL": 0.0369536988053299,
+      "AMD": 0.005975515677195452,
+      "BAC": 0.028675274511294667,
+      "BBY": 0.016556050994494566,
+      "CVX": 0.031175377229974474,
+      "GE": 0.027665557976587096,
+      "HD": 0.057143856589728294,
+      "JNJ": 0.06372232104850616,
+      "JPM": 0.0429548554908186,
+      "KO": 0.10884811879659688,
+      "LLY": 0.04483505259744601,
+      "MRK": 0.06267077395197064,
+      "MSFT": 0.04195171132232544,
+      "PEP": 0.10421118378053627,
+      "PFE": 0.06796533297519222,
+      "PG": 0.06917820337073079,
+      "RRC": 0.00507910809146065,
+      "UNH": 0.059401474666518655,
+      "WMT": 0.07045630794783882,
+      "XOM": 0.05458022417545439
+    }
+  },
+  "article_comparison": {
+    "article_skfolio_version": "1.0.2",
+    "article": {
+      "max_sharpe": {
+        "n_near_zero": 12,
+        "max_weight": 0.266,
+        "effective_n": 5.3,
+        "oos_sharpe": 0.81
+      },
+      "hrp": {
+        "n_near_zero": 0,
+        "max_weight": 0.109,
+        "effective_n": 15.5,
+        "oos_sharpe": 0.8
+      }
+    },
+    "article_printed_decimals": {
+      "n_near_zero": 0,
+      "max_weight": 3,
+      "effective_n": 1,
+      "oos_sharpe": 2
+    },
+    "computed": {
+      "max_sharpe": {
+        "n_near_zero": 12,
+        "max_weight": 0.2659909696132426,
+        "effective_n": 5.255500107197458,
+        "oos_sharpe": 0.806541225534426
+      },
+      "hrp": {
+        "n_near_zero": 0,
+        "max_weight": 0.10884811879659688,
+        "effective_n": 15.452609004250228,
+        "oos_sharpe": 0.7977763621614
+      }
+    },
+    "delta_computed_minus_article": {
+      "max_sharpe": {
+        "n_near_zero": 0,
+        "max_weight": -9.030386757424846e-06,
+        "effective_n": -0.044499892802542185,
+        "oos_sharpe": -0.003458774465574077
+      },
+      "hrp": {
+        "n_near_zero": 0,
+        "max_weight": -0.00015188120340312028,
+        "effective_n": -0.04739099574977246,
+        "oos_sharpe": -0.0022236378386000233
+      }
+    },
+    "matches_article_at_printed_precision": {
+      "max_sharpe": {
+        "n_near_zero": true,
+        "max_weight": true,
+        "effective_n": true,
+        "oos_sharpe": true
+      },
+      "hrp": {
+        "n_near_zero": true,
+        "max_weight": true,
+        "effective_n": true,
+        "oos_sharpe": true
+      }
+    },
+    "all_match_at_printed_precision": true,
+    "story_checks": {
+      "max_sharpe_fewer_effective_names": true,
+      "max_sharpe_more_near_zero": true,
+      "oos_sharpe_gap_max_sharpe_minus_hrp": 0.008764863373025955,
+      "oos_sharpe_gap_threshold": 0.1,
+      "oos_sharpe_similar": true
+    },
+    "qualitative_story_holds": true,
+    "version_note": "Checked by hand, not at runtime: no API change was needed between skfolio 1.0.2 and 1.4.0 (ObjectiveFunction is imported from skfolio.optimization in both), and running this comparison against the skfolio 1.0.2 source with this venv's numpy/scikit-learn/cvxpy gives the same numbers to at least 4 decimals.",
+    "note": "skfolio 1.4.0 here vs 1.0.2 in the article. Max Sharpe: 12/20 near-zero, max 26.6%, effective N 5.26 (article 12/20, 26.6%, 5.3). HRP: 0/20, max 10.9%, effective N 15.45 (article 0/20, 10.9%, 15.5). OOS Sharpe 0.807 vs 0.798 (article 0.81 vs 0.80). Every metric matches the article at the precision it prints. The qualitative story holds: Max Sharpe is more concentrated and its OOS Sharpe is within 0.1 of HRP's."
+  }
+}

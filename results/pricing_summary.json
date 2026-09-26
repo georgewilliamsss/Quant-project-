@@ -1,0 +1,150 @@
+{
+  "quantlib_version": "1.43",
+  "evaluation_date": "2026-01-15",
+  "market": {
+    "spot": 100.0,
+    "strike": 100.0,
+    "vol": 0.2,
+    "rate_continuous": 0.02,
+    "day_counter": "Actual/365 (Fixed)",
+    "dividends": 0.0,
+    "tenor": "1Y",
+    "maturity_date": "2027-01-15",
+    "year_fraction": 1.0
+  },
+  "analytic_price": 8.916037278572539,
+  "engines": {
+    "binomial_crr": {
+      "finest_level": 3200,
+      "finest_price": 8.915415738290344,
+      "abs_error_vs_analytic": 0.0006215402821947436,
+      "seconds": 0.008535673000096722,
+      "check": "abs_error < 0.001",
+      "check_passed": true
+    },
+    "fd_black_scholes": {
+      "finest_level": 800,
+      "finest_price": 8.91611610244603,
+      "abs_error_vs_analytic": 7.88238734905633e-05,
+      "seconds": 0.021611332999782462,
+      "check": "abs_error < 0.001",
+      "check_passed": true
+    },
+    "mc_pseudo_random": {
+      "finest_level": 1000000,
+      "finest_price": 8.915456649585996,
+      "abs_error_vs_analytic": 0.0005806289865422087,
+      "seconds": 0.2648041689999445,
+      "check": "abs_error < 3 * std_error (= 0.041352)",
+      "check_passed": true,
+      "std_error": 0.013784021945729091,
+      "abs_error_in_std_errors": 0.042123335905026885,
+      "within_finest_tolerance": true,
+      "note": "A fixed 0.001 tolerance is ~0.07 SE at this sample size and is not attainable in expectation for pseudo-random MC.  If it passes, that is because seed 42 landed close by chance."
+    },
+    "mc_sobol": {
+      "finest_level": 1000000,
+      "finest_price": 8.915912450751524,
+      "abs_error_vs_analytic": 0.00012482782101486123,
+      "seconds": 0.2832992559997365,
+      "check": "abs_error < 0.001",
+      "check_passed": true,
+      "note": "Same MCEuropeanEngine with a Sobol ('ld') sequence: a labelled quasi-MC variant of engine 4, deterministic and seed-independent here."
+    }
+  },
+  "finest_tolerance": 0.001,
+  "mc_se_multiple": 3.0,
+  "mc_seed": 42,
+  "article_reference_prices": {
+    "analytic": 8.9294,
+    "binomial_crr": 8.9288,
+    "fd_black_scholes": 8.9295,
+    "mc_pseudo_random": 8.9292
+  },
+  "gap_vs_article": {
+    "binomial_crr": -0.013384,
+    "fd_black_scholes": -0.013384,
+    "mc_pseudo_random": -0.013743,
+    "analytic": -0.013363
+  },
+  "gap_explanation": "Built as the brief specifies (evaluation date 2026-01-15, 1Y expiry 2027-01-15, Actual365Fixed on every curve, so T = 1.000000), the closed-form price is 8.916037, not the article's 8.9294.  The gap comes from the option life, not the engines.  The article's numbers are this same contract priced with a 366-day life: an evaluation date whose 1Y period contains 29 Feb (e.g. 2024-01-15 -> 2025-01-15) gives T = 366/365 = 1.0027397 under Act/365F.  At that date this module reproduces analytic 8.929429, CRR-3200 8.928806 and FD-800 8.929508, matching the article's 8.9294 / 8.9288 / 8.9295 at 4dp.  MC-1000000 gives 8.928845 vs 8.9292, 0.03 standard errors apart (see article_setup_repro).  It is not a day-count mismatch.  An Actual360 discount curve with an Actual365Fixed vol curve, an earlier incorrect explanation, gives 8.929657 analytic and ~8.983 for tree and FD.  Those engines take T from the risk-free curve's day counter.  It is not a QuantLib version issue either.  All abs_error values in this file are measured against the main run's analytic price (8.916037).",
+  "article_setup_repro": {
+    "evaluation_date": "2024-01-15",
+    "maturity_date": "2025-01-15",
+    "days": 366,
+    "year_fraction": 1.0027397260273974,
+    "prices": {
+      "analytic": {
+        "level": 1,
+        "price": 8.9294285580563
+      },
+      "binomial_crr": {
+        "level": 3200,
+        "price": 8.928806168168038
+      },
+      "fd_black_scholes": {
+        "level": 800,
+        "price": 8.929507536250908
+      },
+      "mc_pseudo_random": {
+        "level": 1000000,
+        "price": 8.928845137056628,
+        "std_error": 0.013805889588671419
+      },
+      "mc_sobol": {
+        "level": 1000000,
+        "price": 8.929303483189534
+      }
+    },
+    "article_reference_prices": {
+      "analytic": 8.9294,
+      "binomial_crr": 8.9288,
+      "fd_black_scholes": 8.9295,
+      "mc_pseudo_random": 8.9292
+    },
+    "diff_vs_article": {
+      "analytic": 2.8558056300198587e-05,
+      "binomial_crr": 6.168168036779775e-06,
+      "fd_black_scholes": 7.536250906881037e-06,
+      "mc_pseudo_random": -0.0003548629433716144
+    },
+    "matches_article_4dp": {
+      "analytic": true,
+      "binomial_crr": true,
+      "fd_black_scholes": true,
+      "mc_pseudo_random": false
+    },
+    "mc_pseudo_random_diff_in_std_errors": 0.025703736154952396,
+    "note": "Same contract and market as the main run.  Only the evaluation date moves to 2024-01-15, so the 1Y life spans 29 Feb 2024 and T = 366/365 under Act/365F.  Analytic, tree and FD match the article at 4dp.  Pseudo-random MC is compared in standard errors because two MC runs agree only to within SE."
+  },
+  "instrument_identity": {
+    "rows_checked": 27,
+    "distinct_instrument_ids": 1,
+    "passed": true,
+    "how": "Every row records id() of the VanillaOption it was priced on.  check_single_instrument() requires one id, that of the single live object built by build_option(), across the analytic row and all four ladders.  tests/test_pricing.py also counts VanillaOption constructions."
+  },
+  "schedule_demo": {
+    "calendar": "TARGET",
+    "convention": "Following",
+    "tenor": "20Y annual",
+    "count": 21,
+    "first_dates": [
+      "2016-03-01",
+      "2017-03-01",
+      "2018-03-01"
+    ],
+    "last_dates": [
+      "2034-03-01",
+      "2035-03-01",
+      "2036-03-03"
+    ],
+    "first_period": {
+      "start": "2016-03-01",
+      "end": "2017-03-01"
+    },
+    "day_count_fraction": {
+      "thirty360_bondbasis": 1.0,
+      "actual360": 1.0138888888888888
+    }
+  }
+}
