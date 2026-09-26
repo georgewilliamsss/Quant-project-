@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>quantstack dashboard</title>
+<link rel="icon" href="data:," />
 <!--
   Pinned to perspective-python's installed version (5.5.1) so the wasm wire
   protocol between this page and the Tornado/Perspective server matches.
@@ -30,13 +31,21 @@
     margin: 0; height: 100%; background: #12151a; color: #e6e6e6;
     font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   }
+  body { display: flex; flex-direction: column; }
   header {
     padding: 10px 16px; border-bottom: 1px solid #2a2f3a;
-    display: flex; align-items: baseline; gap: 10px;
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
   }
   header h1 { font-size: 15px; margin: 0; font-weight: 600; }
   header span { font-size: 12px; color: #8a94a6; }
-  main { display: flex; flex-direction: column; height: calc(100% - 42px); }
+  #source { margin-left: auto; }
+  #demo-banner {
+    padding: 6px 16px; background: #5c4400; color: #ffd98a;
+    border-bottom: 1px solid #8a6700; font-size: 13px;
+  }
+  #demo-banner[hidden] { display: none; }
+  #demo-banner strong { letter-spacing: 0.04em; }
+  main { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
   section { flex: 1 1 50%; min-height: 0; display: flex; flex-direction: column; }
   section h2 {
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
@@ -52,7 +61,14 @@
 <header>
   <h1>quantstack &middot; dashboard</h1>
   <span id="status">connecting to /ws&hellip;</span>
+  <span id="source"></span>
 </header>
+<!-- Shown when the server's "meta" table says data_source = "demo"
+     (the CLI fell back to its synthetic sample: no replay files yet). -->
+<div id="demo-banner" role="alert" hidden>
+  <strong>DEMO DATA</strong> &mdash; synthetic sample, not a backtest result.
+  <span id="demo-reason"></span>
+</div>
 <main>
   <section>
     <h2>positions</h2>
@@ -86,17 +102,33 @@
     }
     setStatus(`connected: ${wsUrl} (loading viewers…)`, "ok");
 
+    // Optional "meta" key/value table: where the data came from. A server
+    // that does not host it (e.g. a live sink with no label) shows no label.
+    if (hosted.includes("meta")) {
+      const metaView = await (await websocket.open_table("meta")).view();
+      const meta = Object.fromEntries((await metaView.to_json()).map((r) => [r.key, r.value]));
+      await metaView.delete();
+      document.getElementById("source").textContent = meta.note || "";
+      if (meta.data_source === "demo") {
+        document.getElementById("demo-reason").textContent = meta.note || "";
+        document.getElementById("source").textContent = "";
+        document.getElementById("demo-banner").hidden = false;
+      }
+    }
+
     // load(client) + restore({table}) -- load(table) is deprecated in 5.5.1.
     const positionsViewer = document.getElementById("positions-viewer");
     await positionsViewer.load(websocket);
     await positionsViewer.restore({
-      table: "positions", plugin: "Datagrid", sort: [["symbol", "asc"]], theme: "Pro Dark",
+      table: "positions", title: "positions (last snapshot, one row per symbol)",
+      plugin: "Datagrid", sort: [["symbol", "asc"]], theme: "Pro Dark",
     });
 
     const equityViewer = document.getElementById("equity-viewer");
     await equityViewer.load(websocket);
     await equityViewer.restore({
-      table: "equity", plugin: "Y Line", group_by: ["date"], columns: ["equity"], theme: "Pro Dark",
+      table: "equity", title: "equity (one point per date)",
+      plugin: "Y Line", group_by: ["date"], columns: ["equity"], theme: "Pro Dark",
     });
 
     setStatus(`connected: ${wsUrl}`, "ok");
