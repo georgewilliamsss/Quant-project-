@@ -66,6 +66,7 @@ from quantstack.allocation.weights import (
     build_max_sharpe,
     equal_weight,
     hrp_weights,
+    check_unique_asset_labels,
 )
 from quantstack.contracts import fit_weights
 
@@ -199,6 +200,7 @@ def fixed_split_comparison(returns: pd.DataFrame) -> dict:
     Returns ``{"weights": {name: pd.Series}, "in_sample": {name: stats},
     "out_of_sample": {name: stats}}`` for ``name`` in ``max_sharpe``, ``hrp``.
     """
+    check_unique_asset_labels(returns.columns)
     fit_returns, test_returns = fit_test_split(returns)
     weights, in_sample, out_of_sample = {}, {}, {}
     for name, estimator in (("max_sharpe", build_max_sharpe()), ("hrp", build_hrp())):

@@ -13,8 +13,19 @@ import math
 
 import QuantLib as ql
 import pytest
+from scipy.stats import norm as scipy_norm
 
 from quantstack.pricing import four_engines as fe
+
+# The exact analytic price for the brief's contract (S=K=100, vol=20%,
+# r=2% continuous, T=1.0 exactly under Act/365F).  This value only comes out
+# this way when T is *exactly* 1.0, i.e. when the module prices at its fixed
+# EVAL_DATE (2026-01-15 -> 2027-01-15 is a 365-day, non-leap-spanning year).
+# Pinning it guards T == 1.0 under Act/365F (a day-count change or a
+# leap-spanning evaluation date would move it).  A deleted MC seed or a swap to
+# ql.Date.todaysDate() are caught elsewhere: by the seed round-trip test and by
+# the EVAL_DATE / Settings assertions.
+PINNED_ANALYTIC_PRICE = 8.916037278572539
 
 
 def _norm_cdf(x: float) -> float:
@@ -30,6 +41,19 @@ def closed_form_call(spot: float, strike: float, rate: float, vol: float, t: flo
     d1 = (math.log(spot / strike) + (rate + 0.5 * vol * vol) * t) / (vol * math.sqrt(t))
     d2 = d1 - vol * math.sqrt(t)
     return spot * _norm_cdf(d1) - strike * math.exp(-rate * t) * _norm_cdf(d2)
+
+
+def closed_form_call_scipy(spot: float, strike: float, rate: float, vol: float, t: float) -> float:
+    """A second, independent Black-Scholes call price, built on
+    ``scipy.stats.norm`` instead of ``math.erf``.
+
+    This shares neither QuantLib nor the ``math.erf``-based CDF above, so
+    agreement between all three (QuantLib, math.erf, scipy) is a genuine
+    triangulation, not the same formula checked against itself twice.
+    """
+    d1 = (math.log(spot / strike) + (rate + 0.5 * vol * vol) * t) / (vol * math.sqrt(t))
+    d2 = d1 - vol * math.sqrt(t)
+    return spot * scipy_norm.cdf(d1) - strike * math.exp(-rate * t) * scipy_norm.cdf(d2)
 
 
 @pytest.fixture(autouse=True)
@@ -81,6 +105,57 @@ def test_analytic_price(option_and_process):
     by_hand = 100.0 * _norm_cdf(0.2) - 100.0 * math.exp(-0.02) * 0.5
     assert closed_form_call(fe.SPOT, fe.STRIKE, fe.RATE, fe.VOL, t) == pytest.approx(by_hand, abs=1e-12)
     assert row["price"] == pytest.approx(by_hand, abs=1e-10)
+
+
+def test_prices_at_the_fixed_evaluation_date_not_todays_date(option_and_process):
+    """Pin the module to its brief-mandated evaluation date, 2026-01-15.
+
+    A regression that swaps ``EVAL_DATE`` for ``ql.Date.todaysDate()`` (or
+    any other date) would not necessarily be caught by ``year_fraction() ==
+    1.0`` alone, since most dates a year apart also give T = 1.0 under
+    Act/365F.  This pins three independent things instead: the module
+    constant itself, that QuantLib's global evaluation date actually equals
+    it after pricing (not just some date giving the same T), and the
+    resulting analytic price to 1e-9 against a value that is only exactly
+    right for T == 1.0 to double precision.
+    """
+    assert fe.EVAL_DATE == ql.Date(15, 1, 2026)
+    option, process = option_and_process
+    row = fe.price_analytic(option, process)
+
+    # build_process()/build_option() must have left QuantLib's global
+    # evaluation date at the module's fixed constant, not at today's date.
+    assert ql.Settings.instance().evaluationDate == fe.EVAL_DATE
+
+    assert row["price"] == pytest.approx(PINNED_ANALYTIC_PRICE, abs=1e-9)
+
+    # Independent cross-check computed in the test itself, via scipy's
+    # normal CDF -- no QuantLib and no reuse of the math.erf helper above.
+    t = fe.year_fraction()
+    scipy_price = closed_form_call_scipy(fe.SPOT, fe.STRIKE, fe.RATE, fe.VOL, t)
+    assert scipy_price == pytest.approx(PINNED_ANALYTIC_PRICE, abs=1e-8)
+    assert scipy_price == pytest.approx(row["price"], abs=1e-8)
+
+
+def test_mc_pseudo_random_seed_is_byte_identical_across_runs(option_and_process, monkeypatch):
+    """Reproducibility, pinned directly: running the module's own seeded MC
+    ladder twice in the same process must give bit-for-bit identical prices.
+
+    This exercises :func:`fe.run_mc_ladder`, the production code path, with
+    the module's own ``MC_SEED`` -- not a hand-built engine.  If the ``seed``
+    kwarg were ever dropped from :func:`fe._mc_engine`, QuantLib would draw a
+    fresh pseudo-random stream on every call and this would fail.
+    """
+    option, process = option_and_process
+    analytic = fe.price_analytic(option, process)["price"]
+    monkeypatch.setattr(fe, "MC_SAMPLES_LADDER", [50_000])
+
+    rows_first = fe.run_mc_ladder(option, process, analytic)
+    rows_second = fe.run_mc_ladder(option, process, analytic)
+
+    assert len(rows_first) == len(rows_second) == 1
+    assert rows_first[-1]["price"] == rows_second[-1]["price"]
+    assert rows_first[-1]["std_error"] == rows_second[-1]["std_error"]
 
 
 def test_article_numbers_reproduced_with_366_day_life():
@@ -161,6 +236,46 @@ def test_mc_pseudo_random_within_standard_errors(option_and_process):
     engine = fe._mc_engine(process, 50_000, "pr")
     price, _ = fe._price(option, engine)
     assert abs(price - analytic) < fe.MC_SE_MULTIPLE * option.errorEstimate()
+
+
+def test_mc_pseudo_random_ladder_honest_bound(option_and_process, monkeypatch):
+    """The same honest bound as above, but exercised through the production
+    ladder helper (:func:`fe.run_mc_ladder`, which calls :func:`fe._row`)
+    instead of hand-building an engine.
+
+    This is the tightened, still-honest check: abs_error < MC_SE_MULTIPLE *
+    std_error, where std_error is QuantLib's own ``errorEstimate()`` at the
+    ladder's 50k-sample checkpoint (~0.06 here) -- not a fixed tolerance that
+    happens to be loose (a fixed 3*0.062 ~= 0.185 tolerance is honest; a
+    fixed 0.01 tolerance would be ~0.16 SE and pass only for a lucky seed).
+    """
+    option, process = option_and_process
+    analytic = fe.price_analytic(option, process)["price"]
+    monkeypatch.setattr(fe, "MC_SAMPLES_LADDER", [50_000])
+
+    row = fe.run_mc_ladder(option, process, analytic)[-1]
+
+    assert row["level"] == 50_000
+    assert row["std_error"] is not None
+    assert 0.05 < row["std_error"] < 0.075
+    assert row["abs_error"] < fe.MC_SE_MULTIPLE * row["std_error"]
+
+
+def test_mc_sobol_ladder_2_16_samples(option_and_process, monkeypatch):
+    """Deterministic, seed-independent Sobol check at 2**16 samples, run
+    through :func:`fe.run_sobol_ladder` (the production ladder helper) rather
+    than a hand-built engine.  No seed is needed: Sobol gives the same price
+    for any seed, so this is a real convergence result, not luck.
+    """
+    option, process = option_and_process
+    analytic = fe.price_analytic(option, process)["price"]
+    monkeypatch.setattr(fe, "MC_SAMPLES_LADDER", [2**16])
+
+    row = fe.run_sobol_ladder(option, process, analytic)[-1]
+
+    assert row["level"] == 2**16
+    assert row["std_error"] is None  # QuantLib gives no error estimate for "ld"
+    assert row["abs_error"] < 0.002
 
 
 def test_mc_sobol_moderate_and_finest(option_and_process):
@@ -244,6 +359,10 @@ def test_full_cli_run(tmp_path, monkeypatch, vanilla_option_constructions):
     on_disk = json.loads((tmp_path / "pricing_summary.json").read_text())
     assert on_disk == json.loads(json.dumps(summary))
     assert on_disk["evaluation_date"] == fe.EVAL_DATE.ISO()
+    # main() must price on the fixed date: pin the canonical number itself, so a
+    # build_process(ql.Date.todaysDate()) inside main() cannot slip through.
+    assert on_disk["analytic_price"] == pytest.approx(PINNED_ANALYTIC_PRICE, abs=1e-9)
+    assert ql.Settings.instance().evaluationDate == fe.EVAL_DATE
     assert on_disk["market"]["year_fraction"] == 1.0
     assert on_disk["instrument_identity"]["distinct_instrument_ids"] == 1
     assert all(e["check_passed"] for e in on_disk["engines"].values())

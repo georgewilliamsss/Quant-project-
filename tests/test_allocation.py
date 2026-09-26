@@ -184,8 +184,15 @@ def test_hrp_weights_two_assets_falls_back_to_inverse_variance():
     assert sum(w.values()) == pytest.approx(1.0, abs=1e-12)
 
 
-def test_hrp_weights_single_asset_is_fully_invested():
-    assert weights.hrp_weights(_random_returns(30, "A")) == {"A": 1.0}
+def test_hrp_weights_single_asset_is_rejected():
+    """A one-asset frame is a position, not a portfolio: HRP refuses it so a
+    caller cannot silently 'allocate' 100% by passing a degenerate universe."""
+    import numpy as np
+    import pandas as pd
+
+    one = pd.DataFrame({"A": np.random.default_rng(0).normal(size=40)})
+    with pytest.raises(ValueError, match="at least 2 assets"):
+        compare.hrp_weights(one)
 
 
 def test_hrp_weights_stringifies_int_labels():
@@ -210,6 +217,53 @@ def test_hrp_weights_rejects_bad_input_with_clear_error(mutate, match):
         weights.hrp_weights(mutate(_random_returns(40, "ABCD")))
 
 
+def test_hrp_weights_rejects_duplicate_labels():
+    """Two columns literally named "A" must not silently collapse into one
+    dict key (and one asset's weight) via ``dict(zip(...))``."""
+    frame = _random_returns(40, "ABCD")
+    frame.columns = ["A", "A", "C", "D"]
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.hrp_weights(frame)
+
+
+def test_hrp_weights_rejects_labels_colliding_after_str():
+    """The int 1 and the string "1" are different dict keys until ``str()``
+    is applied, at which point they collide -- exactly what every weight
+    function here does before returning."""
+    frame = _random_returns(40, range(4))
+    frame.columns = [1, "1", 2, 3]
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.hrp_weights(frame)
+    # Falls through the same check on the <MIN_HRP_ASSETS closed-form path.
+    small = _random_returns(30, range(2))
+    small.columns = [1, "1"]
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.hrp_weights(small)
+
+
+def test_inverse_variance_weights_rejects_duplicate_labels():
+    frame = _random_returns(30, "AB")
+    frame.columns = ["A", "A"]
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.inverse_variance_weights(frame)
+
+
+def test_hrp_weights_requires_enough_rows_relative_to_asset_count():
+    """Below :data:`weights.MIN_HRP_ROWS_PER_ASSET` x n_assets rows, HRP's
+    sample covariance is too noisy to trust, even though it clears the
+    generic ``check_returns`` floor of 2 rows."""
+    n_assets = 5
+    min_rows = weights.MIN_HRP_ROWS_PER_ASSET * n_assets
+    too_few = _random_returns(min_rows - 1, "ABCDE")
+    with pytest.raises(ValueError, match=f"at least {min_rows} rows"):
+        weights.hrp_weights(too_few)
+    # One row more clears the floor and fits normally.
+    enough = _random_returns(min_rows, "ABCDE")
+    w = weights.hrp_weights(enough)
+    c.validate_weights(w)
+    assert set(w) == set("ABCDE")
+
+
 def test_equal_weight_sums_to_one_and_is_uniform():
     small = _random_returns(60, "WXYZ", seed=1)
     w = compare.equal_weight(small)
@@ -228,18 +282,52 @@ def test_equal_weight_depends_only_on_columns():
         weights.equal_weight(pd.DataFrame())
 
 
+def test_equal_weight_rejects_duplicate_labels():
+    """Without this check, ``{c: 1.0 / n for c in columns}`` would collapse
+    the two "A" columns into one key still worth 1/n, so the mapping would
+    sum to 3/4 instead of 1 and validate_weights would accept it (<= 1)."""
+    frame = pd.DataFrame(np.nan, index=range(5), columns=["A", "A", "B", "C"])
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.equal_weight(frame)
+
+
+def test_equal_weight_rejects_labels_colliding_after_str():
+    frame = pd.DataFrame(np.nan, index=range(5), columns=[1, "1", 2])
+    with pytest.raises(ValueError, match="duplicate"):
+        weights.equal_weight(frame)
+
+
 def test_importing_weights_does_not_touch_matplotlib():
     """Importing the allocators must not switch the global matplotlib backend.
     Run in a fresh interpreter because this test process may already have
-    matplotlib loaded."""
+    matplotlib loaded.
+
+    The subprocess must not depend on the caller's cwd or on quantstack
+    already being importable from it (quantstack is not pip-installed; it is
+    only importable via ``python -m`` from the repo root, or with the repo
+    root on ``PYTHONPATH``). Both are set explicitly here so this test passes
+    regardless of where pytest itself was invoked from.
+    """
+    import os
     import subprocess
     import sys
+    from pathlib import Path
 
+    repo_root = Path(__file__).resolve().parents[1]
     code = (
         "import sys; import quantstack.allocation.weights, quantstack.allocation.compare; "
         "print('matplotlib' in sys.modules)"
     )
-    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(repo_root)
+    out = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd=repo_root,
+        env=env,
+    )
     assert out.stdout.strip() == "False"
 
 
@@ -291,3 +379,17 @@ def test_main_writes_expected_files(tmp_path, monkeypatch):
     compare.main()
     assert (tmp_path / "allocation_summary.json").read_text() == first
     assert "runtime" not in json.loads(first)
+
+
+
+def test_fixed_split_comparison_rejects_duplicate_labels():
+    import numpy as np
+    import pandas as pd
+    import pytest as _pytest
+
+    from quantstack.allocation.compare import fixed_split_comparison
+
+    idx = pd.bdate_range("2015-01-01", periods=60)
+    dup = pd.DataFrame(np.random.default_rng(1).normal(size=(60, 3)), index=idx, columns=["A", "A", "B"])
+    with _pytest.raises(ValueError):
+        fixed_split_comparison(dup)
