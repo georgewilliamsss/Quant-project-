@@ -99,3 +99,36 @@ def test_null_sink_accepts_anything():
     c.NullSink().update_positions([{"symbol": "A"}])
     c.NullSink().update_equity(iter([]))
     c.NullSink().update_fills([])
+
+
+def test_target_deltas_is_deterministic_on_ties():
+    # Same delta for two names: order must not depend on set/hash order.
+    kwargs = dict(weights={"B": 0.5, "A": 0.5}, equity=1_000.0, prices={"A": 10.0, "B": 10.0}, positions={})
+    out = [o.symbol for o in c.target_deltas(**kwargs)]
+    assert out == ["A", "B"]
+    kwargs["weights"] = {"A": 0.5, "B": 0.5}
+    assert [o.symbol for o in c.target_deltas(**kwargs)] == out
+
+
+def test_position_snapshot_persists_cash_and_reads_legacy_files(tmp_path):
+    snap = c.PositionSnapshot(date(2022, 12, 28), [c.Position("AAPL", 1, 2.0)], cash=51_934.97)
+    back = c.read_positions_csv(c.write_positions_csv(snap, tmp_path / "p.csv"))
+    assert back.cash == 51_934.97 and back.equity == snap.equity
+    (tmp_path / "legacy.csv").write_text("as_of,symbol,qty,last,value\n2022-12-28,AAPL,1,2.0,2.0\n")
+    assert c.read_positions_csv(tmp_path / "legacy.csv").cash == 0.0
+
+
+def test_equity_csv_roundtrip_single_and_multi(tmp_path):
+    idx = pd.to_datetime(["2020-01-02", "2020-01-03"])
+    single = pd.Series([100.0, 101.5], index=idx)
+    back = c.read_equity_csv(c.write_equity_csv(single, tmp_path / "e.csv"))
+    assert back.name == "equity" and list(back.values) == [100.0, 101.5]
+    multi = pd.DataFrame({"equity_hrp": [1.0, 2.0], "equity_equal_engine": [1.0, 3.0]}, index=idx)
+    path = c.write_equity_csv(multi, tmp_path / "m.csv")
+    assert c.equity_csv_columns(path) == ["equity_hrp", "equity_equal_engine"]
+    assert c.read_equity_csv(path).name == "equity_hrp"  # first equity* column by default
+    assert list(c.read_equity_csv(path, "equity_equal_engine").values) == [1.0, 3.0]
+    with pytest.raises(ValueError):
+        c.read_equity_csv(path, "equity_nope")
+    with pytest.raises(ValueError):
+        c.write_equity_csv(pd.DataFrame({"pnl": [1.0]}, index=idx[:1]), tmp_path / "bad.csv")

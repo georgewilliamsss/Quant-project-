@@ -117,7 +117,10 @@ def target_deltas(
     """
     deployable = equity * investment_cap
     intents: list[OrderIntent] = []
-    symbols = set(weights) | {s for s, q in positions.items() if q}
+    # Iterate in sorted order so the output does not depend on set/hash order
+    # (PYTHONHASHSEED): two symbols with the same delta must always come out
+    # in the same order, or fills files differ between otherwise identical runs.
+    symbols = sorted(set(weights) | {s for s, q in positions.items() if q})
     for symbol in symbols:
         px = prices.get(symbol)
         if px is None or px <= 0:
@@ -127,7 +130,7 @@ def target_deltas(
         if delta == 0 or abs(delta) * px < min_trade_value:
             continue
         intents.append(OrderIntent(symbol, float(delta)))
-    intents.sort(key=lambda o: o.delta_qty)  # most negative (sells) first
+    intents.sort(key=lambda o: (o.delta_qty, o.symbol))  # sells first, ties by symbol
     return intents
 
 
@@ -174,7 +177,7 @@ class PositionSnapshot:
         ]
 
 
-POSITIONS_CSV_COLUMNS = ("as_of", "symbol", "qty", "last", "value")
+POSITIONS_CSV_COLUMNS = ("as_of", "symbol", "qty", "last", "value", "cash")
 
 
 def write_positions_csv(snapshot: PositionSnapshot, path: str | Path) -> Path:
@@ -183,6 +186,10 @@ def write_positions_csv(snapshot: PositionSnapshot, path: str | Path) -> Path:
     The industry separates execution from risk on purpose: ORE reads a file
     that the execution engine wrote, rather than one process marking its own
     homework.  ``quantstack.risk`` turns this file into an ORE portfolio.
+
+    The account's cash is repeated on every row (a flat file has no header
+    record); readers take it from the first row.  Files written before the
+    ``cash`` column existed still read back, with cash 0.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +197,9 @@ def write_positions_csv(snapshot: PositionSnapshot, path: str | Path) -> Path:
         w = csv.writer(fh)
         w.writerow(POSITIONS_CSV_COLUMNS)
         for p in snapshot.positions:
-            w.writerow([snapshot.as_of.isoformat(), p.symbol, p.qty, p.last, p.value])
+            w.writerow(
+                [snapshot.as_of.isoformat(), p.symbol, p.qty, p.last, p.value, snapshot.cash]
+            )
     return path
 
 
@@ -203,7 +212,67 @@ def read_positions_csv(path: str | Path) -> PositionSnapshot:
     positions = [
         Position(str(r.symbol), float(r.qty), float(r.last)) for r in df.itertuples()
     ]
-    return PositionSnapshot(as_of=as_of, positions=positions)
+    cash = float(df["cash"].iloc[0]) if "cash" in df.columns else 0.0
+    return PositionSnapshot(as_of=as_of, positions=positions, cash=cash)
+
+
+# The equity curve is the other artefact that leaves the execution engine as a
+# file: one ``date`` column plus one or more ``equity*`` columns (a backtest
+# writes the strategy and its benchmarks side by side, e.g. ``equity_hrp``,
+# ``equity_equal_engine``, ``equity_equal_pandas``).
+EQUITY_CSV_DATE_COLUMN = "date"
+EQUITY_CSV_COLUMN_PREFIX = "equity"
+
+
+def write_equity_csv(curves: pd.Series | pd.DataFrame, path: str | Path) -> Path:
+    """Persist one or more equity curves indexed by date.
+
+    A bare Series is written as the single column ``equity``.  A DataFrame's
+    columns are kept as given; every column must start with ``equity``.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(curves, pd.Series):
+        frame = curves.rename(EQUITY_CSV_COLUMN_PREFIX).to_frame()
+    else:
+        frame = curves.copy()
+    bad = [c for c in frame.columns if not str(c).startswith(EQUITY_CSV_COLUMN_PREFIX)]
+    if bad:
+        raise ValueError(f"equity columns must start with '{EQUITY_CSV_COLUMN_PREFIX}': {bad}")
+    frame = frame.sort_index()
+    frame.index = pd.to_datetime(frame.index).strftime("%Y-%m-%d")
+    frame.index.name = EQUITY_CSV_DATE_COLUMN
+    frame.to_csv(path, float_format="%.6f")
+    return path
+
+
+def equity_csv_columns(path: str | Path) -> list[str]:
+    """The equity curve columns available in an equity CSV, in file order."""
+    header = pd.read_csv(path, nrows=0).columns
+    return [c for c in header if str(c).startswith(EQUITY_CSV_COLUMN_PREFIX)]
+
+
+def read_equity_csv(path: str | Path, column: str | None = None) -> pd.Series:
+    """Inverse of :func:`write_equity_csv` for one curve.
+
+    ``column`` picks the curve; by default the plain ``equity`` column if it
+    exists, else the first ``equity*`` column (the strategy's own curve is
+    written first by convention).
+    """
+    df = pd.read_csv(path)
+    if EQUITY_CSV_DATE_COLUMN not in df.columns:
+        raise ValueError(f"{path} has no '{EQUITY_CSV_DATE_COLUMN}' column")
+    candidates = [c for c in df.columns if str(c).startswith(EQUITY_CSV_COLUMN_PREFIX)]
+    if not candidates:
+        raise ValueError(f"{path} has no '{EQUITY_CSV_COLUMN_PREFIX}*' column")
+    if column is None:
+        column = EQUITY_CSV_COLUMN_PREFIX if EQUITY_CSV_COLUMN_PREFIX in candidates else candidates[0]
+    if column not in candidates:
+        raise ValueError(f"{path} has no column {column!r}; available: {candidates}")
+    s = pd.Series(df[column].astype(float).values, index=pd.to_datetime(df[EQUITY_CSV_DATE_COLUMN]))
+    s.name = column
+    s.index.name = EQUITY_CSV_DATE_COLUMN
+    return s.sort_index()
 
 
 # --------------------------------------------------------------------------
@@ -291,6 +360,11 @@ __all__: Sequence[str] = (
     "write_positions_csv",
     "read_positions_csv",
     "POSITIONS_CSV_COLUMNS",
+    "EQUITY_CSV_DATE_COLUMN",
+    "EQUITY_CSV_COLUMN_PREFIX",
+    "write_equity_csv",
+    "read_equity_csv",
+    "equity_csv_columns",
     "POSITIONS_SCHEMA",
     "EQUITY_SCHEMA",
     "FILLS_SCHEMA",
