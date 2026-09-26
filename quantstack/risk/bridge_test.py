@@ -42,17 +42,52 @@ What we found (QuantLib 1.43 / ORE 1.8.17.0, Example_9 inputs)
 * ORE's EUR6M curve is LogLinear in the discount factor on its 14 native pillars
   (the curve config sets no ``InterpolationMethod``, so ORE's default applies).
   The monthly grid samples that curve exactly, so QuantLib's LogLinear rebuild is
-  exact to ~1e-9 EUR per cashflow except in the nine grid months that contain a
-  native pillar, where one kink is smeared over one month; those errors come in
-  +/- pairs on consecutive float coupons and net to ~5 EUR in total.
+  exact (cashflow PVs to ~2e-9 EUR) except in the nine grid months that contain
+  a native pillar, where the monthly chord misses ORE's forward kink.
+* What those nine months cost was measured cashflow by cashflow against ORE's
+  report (``in_grid_residual`` in the summary).  The whole in-grid residual,
+  -5.18 EUR (QuantLib - ORE), is the **fixed leg**: the eight annual coupons
+  paid in early March 2018/19/20/21/23/26/28/31 fall in the grid month (~5 Feb to
+  ~5 Mar) that holds that year's swap pillar (~9-11 Feb), and nothing offsets
+  their DF errors (-8.0e-6 to +1.2e-6).  The float coupons ending in those
+  months (and in Aug/Sep 2016, around the 6M pillar) are off by up to 80 EUR
+  each, but a single-curve par-coupon float leg telescopes to
+  N x (DF(first start) - DF(last end)), so each DF error comes back with the
+  opposite sign in the next coupon: the nine +/- pairs net to ~1e-8 EUR.  The
+  rebuild agrees: inserting the native pillars into the 240-node grid moves
+  QuantLib by +5.18 EUR (variant ``grid_plus_native_pillars`` vs
+  ``grid_plus_native_tail``).  The rebuild-based ``gap_attribution`` says 5.17
+  EUR because it compares against the 8-dp native pillars (-0.03 EUR rounding
+  residual).
 * Hence the "smoother interpolation" variants barely move the price (+7 EUR):
   a smoother curve is *less* like ORE's piecewise-flat-forward curve, and no
   interpolation scheme can know what the curve does after the last pillar.
-  Adding the native pillars beyond the grid end (from ORE's
-  ``todaysmarketcalibration`` report) or simply ORE's own discount factor on the
-  last payment date (from the cashflow report) closes the gap to ~5 EUR; the
-  native 14-pillar LogLinear curve closes it to cents (the calibration report
-  prints 8 decimals).
+  Adding the native pillars beyond the grid end or simply ORE's own discount
+  factor on the last payment date (from the cashflow report) closes the gap to
+  ~5 EUR; the native 14-pillar LogLinear curve, alone or inserted into the
+  grid, closes it to cents (the pillars carry ORE's 8 decimals).
+
+Inputs and where they come from
+-------------------------------
+Only the curves report and the NPV are required.  The optional companions -
+ORE's cashflow report, the native pillars and the risk summary (for the market
+configuration) - are, with ``"auto"``, looked up **next to the curves report
+under the same file prefix**: for ``results/risk_curves.csv`` that is
+``results/risk_cashflows.csv``, ``results/risk_curve_pillars.csv`` and
+``results/risk_summary.json`` (all committed, so the committed summary can be
+regenerated from committed files alone); for a tagged run
+``risk_<tag>_curves.csv`` the ``risk_<tag>_*`` files; for ORE's own
+``curves.csv`` its ``flows.csv`` and ``todaysmarketcalibration.csv`` in the same
+directory.  The run's raw ORE output directory (``ore_output/``, or
+``ore_output/<tag>/`` for a tagged run; gitignored) is a fallback only when the
+prefixed file is missing.  A curves file not named ``<prefix>curves.csv`` gets
+no companions, and repo-level defaults are never used for a non-default curves
+path.  Each companion is checked against the core inputs (the cashflow PVs must
+sum to the NPV to a cent; the native pillars must reproduce the curves grid at
+the grid dates to 1e-7 in log DF): an auto-discovered file that fails comes from
+a different run and is rejected with ``ValueError``; an explicit one is used
+with a warning.  ``summary['inputs']`` records which files were used, how each
+was found, and the check results.
 
 Version-skew notes
 ------------------
@@ -66,6 +101,10 @@ Version-skew notes
   the abstract base); to pass an interpolator positionally, the calendar
   argument must be a concrete one - we pass ``ql.NullCalendar()``, which is what
   the C++ default ``Calendar()`` behaves like for a curve built from dates.
+* Native pillars are read from ``risk_curve_pillars.csv``, which has no
+  day-counter field; ``read_native_pillars`` identifies Actual/365 (Fixed) from
+  its own columns (zero_rate = -ln(DF) / t fits A365F to ~7e-9, A360 is off by
+  1.6e-4) - the same day counter ORE's calibration report names.
 * The curves report has no DF at the as-of date (its first row is the 1M point,
   2016-03-07).  ``ql.DiscountCurve`` requires ``(reference date, 1.0)`` as its
   first node, so we prepend it; ORE's curve has the same anchor.
@@ -105,7 +144,8 @@ DEFAULT_CURVES_CSV = RESULTS_DIR / "risk_curves.csv"
 DEFAULT_NPV_CSV = RESULTS_DIR / "risk_npv.csv"
 DEFAULT_CASHFLOWS_CSV = RESULTS_DIR / "risk_cashflows.csv"
 DEFAULT_ORE_OUTPUT = RESULTS_DIR / "ore_output"
-DEFAULT_CALIBRATION_CSV = DEFAULT_ORE_OUTPUT / "todaysmarketcalibration.csv"
+DEFAULT_PILLARS_CSV = RESULTS_DIR / "risk_curve_pillars.csv"  # committed, written by run_ore
+DEFAULT_CALIBRATION_CSV = DEFAULT_ORE_OUTPUT / "todaysmarketcalibration.csv"  # gitignored fallback
 DEFAULT_FIXINGS_FILE = MODULE_DIR / "input" / "fixings_20160205.txt"
 
 ASOF = date(2016, 2, 5)
@@ -181,6 +221,17 @@ def _evaluation_date(asof: date) -> Iterator[None]:
         settings.evaluationDate = old
 
 
+def _parse_date(v) -> date | None:
+    """A python date, or None for a missing / unparseable value."""
+    if v is None or (isinstance(v, float) and math.isnan(v)):
+        return None
+    try:
+        ts = pd.Timestamp(v)
+    except (ValueError, TypeError):
+        return None
+    return None if pd.isna(ts) else ts.date()
+
+
 def _read_ore_csv(path: str | Path) -> pd.DataFrame:
     """Read an ORE CSV report: header may start with ``#``, nulls are ``#N/A``."""
     df = pd.read_csv(path, na_values=["#N/A"])
@@ -198,11 +249,23 @@ def read_curves_report(path: str | Path) -> pd.DataFrame:
 
     Works for both ``results/risk_curves.csv`` (the in-memory report saved by
     the risk module) and ORE's own ``curves.csv`` (``#Tenor`` header).
+    Raises ``ValueError`` for a report with no rows, a missing or unparseable
+    date, or a date that appears twice (a curve cannot have two values on one
+    date, and silently keeping one of them would hide a broken file).
     """
     df = _read_ore_csv(path)
     if "Date" not in df.columns:
         raise ValueError(f"{path}: not an ORE curves report (no 'Date' column)")
-    df["date"] = [pd.Timestamp(d).date() for d in df["Date"]]
+    if df.empty:
+        raise ValueError(f"{path}: curves report has no rows")
+    dates = [_parse_date(d) for d in df["Date"]]
+    bad = [str(v) for v, d in zip(df["Date"], dates) if d is None]
+    if bad:
+        raise ValueError(f"{path}: {len(bad)} missing or unparseable date(s) in 'Date', e.g. {bad[:3]}")
+    df["date"] = dates
+    dup = sorted({d for d in df["date"][df["date"].duplicated()]})
+    if dup:
+        raise ValueError(f"{path}: duplicate date(s) {[d.isoformat() for d in dup[:3]]}")
     return df.sort_values("date").reset_index(drop=True)
 
 
@@ -243,15 +306,60 @@ def read_ore_cashflows(path: str | Path, trade_id: str = TRADE_ID) -> pd.DataFra
     return df.sort_values(["leg", "PayDate"]).reset_index(drop=True)
 
 
-def read_native_pillars(path: str | Path, curve_id: str = "EUR6M") -> pd.DataFrame:
-    """Native bootstrap pillars of one ORE yield curve from ``todaysmarketcalibration.csv``.
+#: Tolerance on max |zero_rate + ln(DF) / t| for identifying the day counter of
+#: ``risk_curve_pillars.csv`` (8-dp values fit A365F to ~7e-9; A360 misses by 1.6e-4).
+_DAY_COUNTER_FIT_TOL = 1e-7
 
-    ORE writes, per pillar, time / zeroRate / discountFactor / forwardRate /
-    mdQuote with 8 decimals.  This is the curve ORE *actually* priced with
-    (14 pillars for EUR6M: 6M deposit, 2Y..50Y swaps); the 240 x 1M ``curves``
-    report is a resampling of it.
+
+def read_native_pillars(path: str | Path, curve_id: str = "EUR6M", *, asof: date = ASOF) -> pd.DataFrame:
+    """Native bootstrap pillars of one ORE yield curve.
+
+    This is the curve ORE *actually* priced with (14 pillars for EUR6M: 6M
+    deposit, 2Y..50Y swaps); the 240 x 1M ``curves`` report is a resampling of
+    it.  Two sources, detected from the header, both carrying ORE's 8 decimals:
+
+    * ``risk_curve_pillars.csv`` (committed; written by
+      :mod:`quantstack.risk.run_ore`): columns ``curve_id, date,
+      discount_factor, zero_rate, forward_rate``.  It has no day-counter or time
+      field, so ``time`` is the Actual/365 (Fixed) year fraction from ``asof``
+      and ``attrs['day_counter']`` is set to ``"Actual/365 (Fixed)"`` only if
+      the file's zero rates confirm it (``zero_rate = -ln(DF) / t`` to 1e-7);
+    * ORE's own ``todaysmarketcalibration.csv`` report (gitignored run output):
+      per pillar time / zeroRate / discountFactor / forwardRate / mdQuote, plus
+      the curve's ``dayCounter``.
+
+    ``attrs['format']`` names the source format.  ``KeyError`` if the file has
+    no pillars for ``curve_id``.
     """
     df = _read_ore_csv(path)
+    if {"curve_id", "date", "discount_factor"} <= set(df.columns):
+        sel = df[df["curve_id"].astype(str) == curve_id]
+        if sel.empty:
+            raise KeyError(f"{path}: no pillars for curve {curve_id!r}")
+        dates = [_parse_date(d) for d in sel["date"]]
+        if any(d is None for d in dates):
+            raise ValueError(f"{path}: missing or unparseable pillar date for {curve_id!r}")
+        t = np.array([(d - asof).days / 365.0 for d in dates])
+        disc = sel["discount_factor"].astype(float).to_numpy()
+        zero = (sel["zero_rate"].astype(float).to_numpy() if "zero_rate" in sel
+                else np.full(len(sel), np.nan))
+        out = pd.DataFrame({
+            "date": dates,
+            "instrument": [None] * len(sel),
+            "discount": disc,
+            "zero_rate": zero,
+            "forward_rate": (sel["forward_rate"].astype(float).to_numpy() if "forward_rate" in sel
+                             else np.full(len(sel), np.nan)),
+            "time": t,
+        }).sort_values("date").reset_index(drop=True)
+        ok = (t > 0) & np.isfinite(zero) & (disc > 0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            fit = float(np.max(np.abs(zero[ok] + np.log(disc[ok]) / t[ok]))) if ok.any() else float("nan")
+        out.attrs["day_counter"] = "Actual/365 (Fixed)" if fit <= _DAY_COUNTER_FIT_TOL else None
+        out.attrs["day_counter_fit"] = fit
+        out.attrs["curve_id"] = curve_id
+        out.attrs["format"] = "risk_curve_pillars"
+        return out
     sel = df[(df["MarketObjectType"] == "yieldCurve") & (df["MarketObjectId"] == curve_id)]
     if sel.empty:
         raise KeyError(f"{path}: no yieldCurve {curve_id!r}")
@@ -269,6 +377,7 @@ def read_native_pillars(path: str | Path, curve_id: str = "EUR6M") -> pd.DataFra
     }).sort_values("date").reset_index(drop=True)
     out.attrs["day_counter"] = meta.get("dayCounter")
     out.attrs["curve_id"] = curve_id
+    out.attrs["format"] = "todaysmarketcalibration"
     return out
 
 
@@ -326,9 +435,38 @@ def build_curve(dates: Sequence, dfs: Sequence[float], asof: date = ASOF,
     interpolation runs on, and matching ORE's makes LogLinear reproduce ORE's
     LogLinear curve exactly.  Extrapolation is enabled because the swap's last
     payment is after the last grid date - that is precisely the residual.
+
+    ``ValueError`` for no nodes, unequal numbers of dates and discount factors,
+    a missing date, a non-finite or non-positive discount factor, or a date
+    given twice.
     """
     ql = _ql()
-    nodes = sorted({_to_date(d): float(v) for d, v in zip(dates, dfs)}.items())
+    dates, dfs = list(dates), list(dfs)
+    if len(dates) != len(dfs):
+        raise ValueError(f"{len(dates)} curve dates but {len(dfs)} discount factors")
+    if not dates:
+        raise ValueError("no curve nodes")
+    nodes, seen = [], set()
+    for d, v in zip(dates, dfs):
+        if d is None or d is pd.NaT:
+            dd = None
+        elif isinstance(d, date) or hasattr(d, "dayOfMonth"):
+            dd = _to_date(d)
+        else:
+            dd = _parse_date(d)
+        if dd is None:
+            raise ValueError(f"missing curve node date (discount factor {v!r})")
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"discount factor {v!r} on {dd} is not a number") from None
+        if not (math.isfinite(fv) and fv > 0.0):
+            raise ValueError(f"discount factor on {dd} is {fv!r}; it must be finite and > 0")
+        if dd in seen:
+            raise ValueError(f"curve node date {dd} given twice")
+        seen.add(dd)
+        nodes.append((dd, fv))
+    nodes.sort()
     if nodes[0][0] > asof:
         nodes.insert(0, (asof, 1.0))
     elif nodes[0][0] < asof:
@@ -539,6 +677,155 @@ def _kink_intervals(grid_dates: Sequence[date], native_dates: Sequence[date]) ->
 # --------------------------------------------------------------------------
 
 
+#: Consistency checks of the optional inputs against the core ones.
+_CASHFLOW_NPV_TOL_EUR = 0.01     # the trade's cashflow PVs must sum to the NPV input to a cent
+_PILLAR_GRID_TOL_LOG_DF = 1e-7   # native pillars (8 dp) reproduce the grid to ~5e-9 in log DF
+
+_SAME_PREFIX = "auto: same directory and prefix as the curves report"
+
+
+def _rel(p) -> str | None:
+    """Repo-relative path string (absolute outside the repo); None stays None."""
+    if p is None:
+        return None
+    p = Path(p).resolve()
+    return os.path.relpath(p, REPO_ROOT) if str(p).startswith(str(REPO_ROOT)) else str(p)
+
+
+def _companion_candidates(curves_csv: Path) -> dict[str, list[tuple[Path, str]]]:
+    """Where ``"auto"`` looks for the inputs that belong to ``curves_csv``, in order.
+
+    Only files of the same run: same directory and same file prefix as the
+    curves report (``<prefix>curves.csv`` -> ``<prefix>cashflows.csv``,
+    ``<prefix>curve_pillars.csv``, ``<prefix>summary.json``; ORE's own
+    ``curves.csv`` -> ``flows.csv``, ``todaysmarketcalibration.csv``), then, for
+    the risk module's ``risk_[<tag>_]`` prefix, that run's raw ORE output
+    directory (``ore_output/[<tag>/]``) as a fallback.  Never the repo-level
+    defaults: a curves file named otherwise gets no companions at all.
+    """
+    d, name = curves_csv.parent, curves_csv.name
+    out: dict[str, list[tuple[Path, str]]] = {"cashflows": [], "native_pillars": [], "risk_summary": []}
+    if not name.endswith("curves.csv"):
+        return out
+    prefix = name[: -len("curves.csv")]
+    if prefix == "":  # ORE's own output directory
+        out["cashflows"] = [(d / "flows.csv", _SAME_PREFIX)]
+        out["native_pillars"] = [(d / "todaysmarketcalibration.csv", _SAME_PREFIX)]
+        return out
+    out["cashflows"] = [(d / f"{prefix}cashflows.csv", _SAME_PREFIX)]
+    out["native_pillars"] = [(d / f"{prefix}curve_pillars.csv", _SAME_PREFIX)]
+    out["risk_summary"] = [(d / f"{prefix}summary.json", _SAME_PREFIX)]
+    if prefix.startswith("risk_"):
+        tag = prefix[len("risk_"):].rstrip("_")
+        ore_out = d / "ore_output" / tag if tag else d / "ore_output"
+        fallback = f"auto: fallback to the run's ORE output directory ({prefix}* file missing)"
+        out["cashflows"].append((ore_out / "flows.csv", fallback))
+        out["native_pillars"].append((ore_out / "todaysmarketcalibration.csv", fallback))
+    return out
+
+
+def _resolve_input(value, candidates: Sequence[tuple[Path, str]],
+                   no_candidates: str = "auto: no companion of this kind") -> tuple[Path | None, str]:
+    """``(path or None, how it was found)`` for an optional input: None, "auto" or a path."""
+    if value is None:
+        return None, "disabled"
+    if str(value) != "auto":
+        p = Path(value)
+        if not p.exists():
+            raise FileNotFoundError(value)
+        return p, "explicit"
+    for path, how in candidates:
+        if path.exists():
+            return path, how
+    return None, "auto: nothing found next to the curves report" if candidates else no_candidates
+
+
+def _inconsistent(kind: str, path: Path, how: str, msg: str) -> None:
+    """An optional input disagrees with the core inputs: reject if auto-discovered, else warn."""
+    if how.startswith("auto"):
+        raise ValueError(f"auto-discovered {kind} {path}: {msg}. It belongs to a different run than the "
+                         f"curves/NPV inputs; pass the matching file explicitly, or 'none'.")
+    warnings.warn(f"{kind} {path}: {msg}", RuntimeWarning, stacklevel=3)
+
+
+def _pillar_grid_gap(native: pd.DataFrame, grid_dates: Sequence[date], grid_df, asof: date) -> float:
+    """max |ln DF| gap between ORE's native pillars (LogLinear) and the curves grid, at the grid dates."""
+    c = build_curve(list(native["date"]), list(native["discount"]), asof)
+    return float(max(abs(math.log(c.discount(_ql_date(d))) - math.log(float(v)))
+                     for d, v in zip(grid_dates, grid_df)))
+
+
+def _in_grid_residual(cft: pd.DataFrame, kinks: Sequence[tuple[date, date]], in_kink,
+                      single_curve: bool) -> dict:
+    """Where the in-grid part of the gap sits, cashflow by cashflow (QuantLib - ORE's report).
+
+    Groups the cashflows paid on or before the grid end: fixed coupons paid in a
+    grid month that holds a native pillar; float coupons ending in such a month
+    paired with the next coupon (which starts on that date); everything else.
+    The ``reading`` states the fixed-leg / cancelling-pairs story only if the
+    numbers show it (single curve, pairs and the rest net below a cent);
+    otherwise it reports an unattributed residual with the breakdown.
+    """
+    ig = cft[~cft["beyond_grid_end"]]
+    total = float(ig["pv_diff_eur"].sum())
+    fixed_all = float(ig.loc[ig["leg"] == "fixed", "pv_diff_eur"].sum())
+    float_all = float(ig.loc[ig["leg"] == "float", "pv_diff_eur"].sum())
+    fx = ig[(ig["leg"] == "fixed") & ig["pay_date"].map(in_kink)]
+    fl = cft[cft["leg"] == "float"].reset_index(drop=True)
+    pairs = []
+    for i in range(len(fl) - 1):
+        if (not fl.at[i, "beyond_grid_end"] and in_kink(fl.at[i, "pay_date"])
+                and fl.at[i + 1, "accrual_start"] == fl.at[i, "accrual_end"]):
+            a, b = float(fl.at[i, "pv_diff_eur"]), float(fl.at[i + 1, "pv_diff_eur"])
+            pairs.append({"date": fl.at[i, "accrual_end"].isoformat(), "ending_coupon_eur": a,
+                          "next_coupon_eur": b, "net_eur": a + b})
+    fx_sum = float(fx["pv_diff_eur"].sum())
+    pair_sum = float(sum(p["net_eur"] for p in pairs))
+    rest = total - fx_sum - pair_sum
+    max_coupon = max((max(abs(p["ending_coupon_eur"]), abs(p["next_coupon_eur"])) for p in pairs), default=0.0)
+    max_net = max((abs(p["net_eur"]) for p in pairs), default=0.0)
+    if single_curve and fx.shape[0] and abs(pair_sum) < 0.01 and abs(rest) < 0.01:
+        reading = (
+            f"The in-grid residual ({total:+,.2f} EUR, QuantLib - ORE) is the fixed leg: the {len(fx)} fixed "
+            f"coupons paid in a grid month that holds a native pillar ({fx_sum:+,.2f} EUR; DF errors "
+            f"{fx['df_diff'].min():+.1e} to {fx['df_diff'].max():+.1e}). The float coupons ending in those "
+            f"months are off by up to {max_coupon:,.2f} EUR each, but single-curve par coupons telescope "
+            f"(float leg = N x (DF(first start) - DF(last end))), so each DF error returns with the opposite "
+            f"sign in the next coupon: the {len(pairs)} pairs net to {pair_sum:+.1e} EUR "
+            f"(largest pair {max_net:.1e}); all other in-grid cashflows {rest:+.1e} EUR.")
+        attributed = True
+    else:
+        reading = (f"Unattributed interpolation residual of {total:+,.2f} EUR inside the grid (fixed coupons "
+                   f"paid in native-pillar months {fx_sum:+,.2f}, float coupon pairs across those months "
+                   f"{pair_sum:+,.2f}, other in-grid cashflows {rest:+,.2f} EUR).")
+        attributed = False
+    return {
+        "convention": ("per cashflow, QuantLib (article rebuild) minus ORE's cashflow report, EUR, over the "
+                       "cashflows paid on or before the grid end"),
+        "native_pillar_months": [[a.isoformat(), b.isoformat()] for a, b in kinks],
+        "total_eur": total,
+        "fixed_leg_eur": fixed_all,
+        "float_leg_eur": float_all,
+        "fixed_coupons_paid_in_pillar_months": {
+            "n": int(len(fx)),
+            "pay_dates": [d.isoformat() for d in fx["pay_date"]],
+            "df_diff": [float(v) for v in fx["df_diff"]],
+            "pv_diff_eur": [float(v) for v in fx["pv_diff_eur"]],
+            "sum_eur": fx_sum,
+        },
+        "float_coupon_pairs_across_pillar_months": {
+            "n": len(pairs),
+            "pairs": pairs,
+            "max_abs_coupon_pv_diff_eur": max_coupon,
+            "max_abs_pair_net_eur": max_net,
+            "sum_eur": pair_sum,
+        },
+        "other_in_grid_cashflows_eur": rest,
+        "attributed": attributed,
+        "reading": reading,
+    }
+
+
 @dataclass
 class BridgeResult:
     summary: dict
@@ -565,11 +852,15 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
                    discount_column: str = "EUR", forward_column: str = "EUR-EURIBOR-6M") -> BridgeResult:
     """Everything the bridge test computes, as a summary dict plus tables.
 
-    ``cashflows_csv`` / ``calibration_csv`` = ``"auto"`` look for the risk
-    module's outputs next to ``curves_csv`` (``risk_cashflows.csv``, then
-    ``ore_output/flows.csv``) and in ``ore_output/todaysmarketcalibration.csv``;
-    ``None`` disables them.  The core test (rebuild + reprice + diff) only
-    needs the curves report and the NPV.
+    The core test (rebuild + reprice + diff) only needs the curves report and
+    the NPV.  ``cashflows_csv`` (ORE's cashflow report) and ``calibration_csv``
+    (native pillars: ``risk_curve_pillars.csv`` or ORE's
+    ``todaysmarketcalibration.csv``) take a path, ``None`` (disabled) or
+    ``"auto"``: the companion of ``curves_csv`` with the same directory and
+    prefix, see :func:`_companion_candidates` and the module docstring.  The
+    market configuration is read from the curves report's companion
+    ``<prefix>summary.json`` (or from ``npv_csv`` if that is a risk summary).
+    ``summary['inputs']`` records every file used and the consistency checks.
     """
     ql = _ql()
     curves_csv, npv_csv = Path(curves_csv), Path(npv_csv)
@@ -584,35 +875,55 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
                     or bool(np.max(np.abs(rep[forward_column].to_numpy() - grid_df)) == 0.0))
     fwd_df = None if single_curve else rep[forward_column].astype(float).to_numpy()
 
-    # market configuration, if the risk module's summary is next to the npv file
+    # optional inputs: companions of the curves report (same directory, same prefix)
+    cands = _companion_candidates(curves_csv)
+    none_how = ("auto: ORE's own output directory has no such file" if curves_csv.name.endswith("curves.csv")
+                else "auto: curves file is not named <prefix>curves.csv, so no companions")
+    cf_path, cf_how = _resolve_input(cashflows_csv, cands["cashflows"], none_how)
+    cal_path, cal_how = _resolve_input(calibration_csv, cands["native_pillars"], none_how)
+    rs_path, rs_how = _resolve_input("auto", cands["risk_summary"], none_how)
+    if rs_path is None and npv_csv.suffix.lower() == ".json":
+        rs_path, rs_how = npv_csv, "the NPV input (a risk summary)"
     market_cfg = None
-    rs = npv_csv.parent / "risk_summary.json"
-    if rs.exists():
+    if rs_path is not None:
         with contextlib.suppress(Exception):
-            market_cfg = json.loads(rs.read_text()).get("market_configuration")
+            market_cfg = json.loads(rs_path.read_text()).get("market_configuration")
 
-    # optional inputs ---------------------------------------------------------
-    def _auto(val, candidates):
-        if val is None:
-            return None
-        if val != "auto":
-            if not Path(val).exists():
-                raise FileNotFoundError(val)
-            return Path(val)
-        return next((c for c in candidates if c.exists()), None)
-
-    base = curves_csv.parent
-    cf_path = _auto(cashflows_csv, [base / "risk_cashflows.csv", base / "ore_output" / "flows.csv",
-                                    DEFAULT_CASHFLOWS_CSV, DEFAULT_ORE_OUTPUT / "flows.csv"])
-    cal_path = _auto(calibration_csv, [base / "ore_output" / "todaysmarketcalibration.csv",
-                                       DEFAULT_CALIBRATION_CSV])
+    checks: dict = {}
     ore_cf = read_ore_cashflows(cf_path) if cf_path else None
+    if ore_cf is not None:
+        pv_col = "PresentValue(Base)" if "PresentValue(Base)" in ore_cf else "PresentValue"
+        pv_sum = float(ore_cf[pv_col].sum())
+        checks["cashflows_pv_sum_minus_npv_eur"] = pv_sum - ore_npv
+        checks["cashflows_tolerance_eur"] = _CASHFLOW_NPV_TOL_EUR
+        if not abs(pv_sum - ore_npv) <= _CASHFLOW_NPV_TOL_EUR:
+            _inconsistent("cashflow report", cf_path, cf_how,
+                          f"its {TRADE_ID} PVs sum to {pv_sum:,.4f}, the NPV input {npv_csv} says {ore_npv:,.4f}")
     native_disc_id = "EUR6M" if single_curve else ("EUR1D" if market_cfg in (None, "xois_eur") else "EUR6M")
     native = native_fwd = None
     if cal_path:
-        with contextlib.suppress(KeyError):
-            native = read_native_pillars(cal_path, native_disc_id)
-            native_fwd = native if single_curve else read_native_pillars(cal_path, "EUR6M")
+        try:
+            native = read_native_pillars(cal_path, native_disc_id, asof=asof)
+            native_fwd = native if single_curve else read_native_pillars(cal_path, "EUR6M", asof=asof)
+        except KeyError as exc:
+            native = native_fwd = None
+            checks["native_pillars_not_used"] = str(exc)
+    if native is not None:
+        gap = _pillar_grid_gap(native, grid_dates, grid_df, asof)
+        if not single_curve:
+            gap = max(gap, _pillar_grid_gap(native_fwd, grid_dates, fwd_df, asof))
+        checks["native_pillars_max_abs_log_df_diff_at_grid_dates"] = gap
+        checks["native_pillars_tolerance_log_df"] = _PILLAR_GRID_TOL_LOG_DF
+        if not gap <= _PILLAR_GRID_TOL_LOG_DF:
+            _inconsistent("native pillars", cal_path, cal_how,
+                          f"their LogLinear curve misses the curves report {curves_csv} by up to {gap:.3g} in "
+                          f"log DF at the grid dates (tolerance {_PILLAR_GRID_TOL_LOG_DF:g})")
+    inputs = {
+        "curves": _rel(curves_csv), "npv": _rel(npv_csv), "cashflows": _rel(cf_path),
+        "native_pillars": _rel(cal_path), "risk_summary": _rel(rs_path),
+        "found_by": {"cashflows": cf_how, "native_pillars": cal_how, "risk_summary": rs_how},
+        "checks": checks,
+    }
 
     def curves_for(method, extra=None, extra_fwd=None, nodes=None, nodes_fwd=None):
         d_nodes = nodes if nodes is not None else list(zip(grid_dates, grid_df)) + (extra or [])
@@ -665,6 +976,20 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
             "native_pillars_loglinear", "ql.DiscountCurve (LogLinear)",
             f"asof + {len(nodes)} native ORE {native_disc_id} pillars only (todaysmarketcalibration, 8 dp)",
             n, price(d, f, spec, asof), ore_npv, ql_npv, spec.notional))
+        # The grid with every native pillar inserted (inside the grid and past its end).
+        # Minus grid_plus_native_tail, this measures by rebuild what the nine grid months
+        # that straddle a native pillar cost (see in_grid_residual for the per-cashflow view).
+        gset = set(grid_dates)
+        ins = [(dt, v) for dt, v in zip(native["date"], native["discount"]) if dt > asof and dt not in gset]
+        ins_f = None
+        if not single_curve:
+            ins_f = [(dt, v) for dt, v in zip(native_fwd["date"], native_fwd["discount"])
+                     if dt > asof and dt not in gset]
+        d, f, n = curves_for("loglinear_default", extra=ins, extra_fwd=ins_f)
+        rows.append(_variant_row(
+            "grid_plus_native_pillars", "ql.DiscountCurve (LogLinear)",
+            f"grid + all {len(ins)} native ORE {native_disc_id} pillars, inside the grid and after {grid_end} "
+            f"(todaysmarketcalibration, 8 dp)", n, price(d, f, spec, asof), ore_npv, ql_npv, spec.notional))
     variants = pd.DataFrame(rows)
     variants["abs_diff_eur"] = variants["diff_eur"].abs()
     variants["gap_closed_pct"] = (1 - variants["abs_diff_eur"] / abs(diff)) * 100 if diff else 0.0
@@ -699,6 +1024,7 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
     schedule = {"source": None, "all_match": None, "note": "no ORE cashflow report found"}
     cft = pd.DataFrame()
     clean_max = None
+    in_grid_residual = None
     if ore_cf is not None:
         with _evaluation_date(asof):
             swap, _ = build_swap(disc0, fwd0, spec, asof)
@@ -718,6 +1044,14 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
             clean = cft[~cft["in_native_pillar_month"] & ~cft["beyond_grid_end"]]
             # a float coupon's PV also depends on its accrual start DF, handled above
             clean_max = float(clean["pv_diff_eur"].abs().max()) if len(clean) else None
+            in_grid_residual = _in_grid_residual(cft, kinks, in_kink, single_curve)
+            if {"grid_plus_native_pillars", "grid_plus_native_tail"} <= set(vmap.index):
+                in_grid_residual["rebuild_check_eur"] = float(
+                    vmap.loc["grid_plus_native_pillars", "ql_npv"] - vmap.loc["grid_plus_native_tail", "ql_npv"])
+                in_grid_residual["rebuild_check"] = (
+                    "ql_npv(grid_plus_native_pillars) - ql_npv(grid_plus_native_tail): the NPV change from "
+                    "inserting the native pillars inside the grid (ORE - QuantLib convention: removes that "
+                    "much of diff)")
 
     # forward rate over the stretch past the grid end: extrapolated vs ORE's own
     tail_fwd = None
@@ -758,12 +1092,7 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
         plot_data["cashflows"] = cft
 
     # 6. summary -----------------------------------------------------------------------
-    def rel(p):
-        if p is None:
-            return None
-        p = Path(p).resolve()
-        return os.path.relpath(p, REPO_ROOT) if str(p).startswith(str(REPO_ROOT)) else str(p)
-
+    rel = _rel
     diff_bp = diff / spec.notional * 1e4
     ore_fixed = ore_float = None
     if ore_cf is not None:
@@ -786,7 +1115,8 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
             "has_zero_rates": any("zero" in c.lower() for c in rep.columns),
             "note": ("discount factors only, no zero rates; grid = asof + k x 1M, k = 1..240, "
                      "so it ends before the swap's last payment. ORE's native pillars (with zero "
-                     "and forward rates, 8 dp) are in ore_output/todaysmarketcalibration.csv."),
+                     "and forward rates, 8 dp, from ORE's todaysmarketcalibration report) are in "
+                     "risk_curve_pillars.csv."),
         },
         "swap": {"start": spec.start.isoformat(), "end": spec.end.isoformat(), "notional": spec.notional,
                  "fixed_rate": spec.fixed_rate, "receive_fixed": spec.receive_fixed,
@@ -815,13 +1145,20 @@ def compute_bridge(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | P
             for r in last_rows.itertuples()] if not last_rows.empty else [],
         "tail_forward_rates": tail_fwd,
         "max_abs_pv_diff_clean_cashflows_eur": clean_max,
+        "in_grid_residual": in_grid_residual,
         "native_curve": None if native is None else {
-            "source": rel(cal_path), "curve_id": native_disc_id, "n_pillars": int(len(native)),
+            "source": rel(cal_path), "source_format": native.attrs.get("format"),
+            "curve_id": native_disc_id, "n_pillars": int(len(native)),
             "pillar_dates": [d.isoformat() for d in native["date"]],
             "day_counter": native.attrs.get("day_counter"),
+            **({"day_counter_check": (
+                "not in risk_curve_pillars.csv; its zero rates fit zero_rate = -ln(DF) / t with t "
+                f"Actual/365 (Fixed) to {native.attrs['day_counter_fit']:.1e}")}
+               if native.attrs.get("format") == "risk_curve_pillars" else {}),
             "interpolation": "LogLinear on discount factors (ORE default; the grid reproduces it to "
                              "machine precision outside the months holding a native pillar)",
         },
+        "inputs": inputs,
         "files": {"cashflows_input": rel(cf_path), "calibration_input": rel(cal_path)},
     }
     summary["article_comparison"] = {
@@ -854,6 +1191,13 @@ def _diagnosis(s: Mapping) -> list[str]:
             f"last grid date {s['curves_report']['last_date']} to the final payment "
             f"{s['swap']['last_payment_date']} ({s['swap']['days_beyond_grid_end']} days); interpolation "
             f"inside the grid accounts for {a['interpolation_within_grid_eur']:,.2f} EUR.")
+    ig = s.get("in_grid_residual")
+    if ig:
+        note = ig["reading"]
+        if ig.get("rebuild_check_eur") is not None:
+            note += (f" Rebuild check: inserting the native pillars into the grid moves QuantLib by "
+                     f"{ig['rebuild_check_eur']:+,.2f} EUR (grid_plus_native_pillars vs grid_plus_native_tail).")
+        notes.append(note)
     v = {r["variant"]: r for r in s.get("variants", [])}
     if "grid_monotonic_logcubic" in v:
         notes.append(
@@ -912,8 +1256,10 @@ def plot_bridge(result: BridgeResult, path: str | Path) -> Path:
 
     # (a) full curve
     style(ax1)
-    ax1.plot(days, pdta["ql_df"], color=c1, lw=2, label="QuantLib DiscountCurve (LogLinear) on ORE grid")
-    ax1.plot(gd, pdta["grid_df"], "o", ms=3, color=ink2, alpha=0.8, label="ORE curves report, 240 x 1M")
+    # grid markers under the QuantLib line and thinned to every 6th node, so the line stays visible
+    ax1.plot(days, pdta["ql_df"], color=c1, lw=2, zorder=3, label="QuantLib DiscountCurve (LogLinear) on ORE grid")
+    ax1.plot(gd, pdta["grid_df"], "o", ms=4, mfc="none", mec=ink2, mew=0.8, markevery=6, zorder=2,
+             label="ORE curves report, 240 x 1M (every 6th node shown)")
     if "native_dates" in pdta:
         nd = pd.to_datetime(pdta["native_dates"])
         m = nd <= days.max()
@@ -934,11 +1280,12 @@ def plot_bridge(result: BridgeResult, path: str | Path) -> Path:
     style(ax2)
     lo, hi = grid_end - pd.Timedelta(days=100), last_pay + pd.Timedelta(days=12)
     m = (days >= lo) & (days <= hi)
-    ax2.plot(days[m], pdta["ql_df"][m], color=c1, lw=2, label="QuantLib (extrapolated)")
+    ax2.plot(days[m], pdta["ql_df"][m], color=c1, lw=2, zorder=3, label="QuantLib (extrapolated)")
     if "native_curve_df" in pdta:
-        ax2.plot(days[m], pdta["native_curve_df"][m], color=c2, lw=2, label="ORE native curve")
+        ax2.plot(days[m], pdta["native_curve_df"][m], color=c2, lw=2, zorder=3, label="ORE native curve")
     mg = (gd >= lo) & (gd <= hi)
-    ax2.plot(gd[mg], pdta["grid_df"][mg], "o", ms=8, color=ink2, mec=surface, mew=1.5, label="ORE grid")
+    ax2.plot(gd[mg], pdta["grid_df"][mg], "o", ms=7, mfc="none", mec=ink2, mew=1.2, zorder=2,
+             label="ORE grid")
     cft = pdta.get("cashflows")
     if cft is not None and not cft.empty:
         lastrow = cft[cft["pay_date"] == pdta["last_payment"]].iloc[0]
@@ -985,12 +1332,20 @@ def plot_bridge(result: BridgeResult, path: str | Path) -> Path:
     ax3.set_xlabel("Payment date", color=ink)
     ax3.xaxis.set_major_locator(YearLocator(2))
     ax3.xaxis.set_major_formatter(DateFormatter("%Y"))
-    a = s.get("gap_attribution", {})
-    sub_t = "Per-cashflow PV difference"
-    if "extrapolation_beyond_grid_end_eur" in a:
-        sub_t += (f": {a['extrapolation_beyond_grid_end_eur']:,.0f} EUR from the last period beyond the "
-                  f"grid, {a['interpolation_within_grid_eur']:,.1f} EUR from +/- pairs in native-pillar months")
-    ax3.set_title(sub_t, color=ink, fontsize=10, loc="left")
+    # subtitle from the per-cashflow numbers the panel shows (QuantLib - ORE)
+    sub_t = "Per-cashflow PV difference, QuantLib - ORE"
+    beyond = s.get("beyond_grid_cashflows") or []
+    ig = s.get("in_grid_residual") or {}
+    if beyond:
+        sub_t += f": {sum(r['pv_diff_eur'] for r in beyond):,.0f} EUR in the last period, past the grid end"
+    if ig.get("attributed"):
+        fx = ig["fixed_coupons_paid_in_pillar_months"]
+        sub_t += (f"\nInside the grid: {fx['sum_eur']:,.1f} EUR on the {fx['n']} fixed coupons paid in "
+                  f"native-pillar months (bars too small to see); the float +/- pairs cancel to "
+                  f"{ig['float_coupon_pairs_across_pillar_months']['sum_eur']:.0e} EUR")
+    elif ig:
+        sub_t += f"\nInside the grid: unattributed interpolation residual of {ig['total_eur']:,.1f} EUR"
+    ax3.set_title(sub_t, color=ink, fontsize=9.5, loc="left")
     leg = ax3.legend(frameon=False, fontsize=8.5, loc="upper left")
     for t in leg.get_texts():
         t.set_color(ink)
@@ -1018,20 +1373,18 @@ def write_outputs(result: BridgeResult, results_dir: str | Path = RESULTS_DIR,
     vpath = results_dir / "bridge_variants.csv"
     result.variants.to_csv(vpath, index=False, float_format="%.10g")
     written["variants"] = vpath
+    cpath = results_dir / "bridge_cashflows.csv"
     if not result.cashflows.empty:
-        cpath = results_dir / "bridge_cashflows.csv"
         result.cashflows.to_csv(cpath, index=False, float_format="%.12g")
         written["cashflows"] = cpath
+    elif cpath.exists():
+        cpath.unlink()  # a table from an earlier run with a cashflow report would contradict this summary
     if make_figure:
         written["figure"] = plot_bridge(result, results_dir / "figures" / "bridge_discount_curve.png")
 
-    def rel(p):
-        p = Path(p).resolve()
-        return os.path.relpath(p, REPO_ROOT) if str(p).startswith(str(REPO_ROOT)) else str(p)
-
-    result.summary["files"].update({k: rel(v) for k, v in written.items()})
+    result.summary["files"].update({k: _rel(v) for k, v in written.items()})
     spath = results_dir / "bridge_summary.json"
-    result.summary["files"]["summary"] = rel(spath)
+    result.summary["files"]["summary"] = _rel(spath)
     spath.write_text(json.dumps(result.summary, indent=2, default=_json_default) + "\n")
     written["summary"] = spath
     return {k: str(v) for k, v in written.items()}
@@ -1054,10 +1407,11 @@ def run_bridge_test(curves_csv: str | Path = DEFAULT_CURVES_CSV, npv_csv: str | 
                     results_dir: str | Path | None = None, make_figure: bool = True) -> dict:
     """Rebuild ORE's curve in QuantLib, reprice the swap, diagnose the gap.
 
-    Returns the summary dict (JSON-safe apart from nothing: dates are ISO
-    strings) with ``ore_npv``, ``ql_npv``, ``diff_eur`` (ORE - QuantLib),
+    Returns the summary dict (JSON-safe: dates are ISO strings, numpy scalars
+    plain floats) with ``ore_npv``, ``ql_npv``, ``diff_eur`` (ORE - QuantLib),
     ``diff_bp``, ``variants`` (list of rows), ``schedule_match`` and
-    ``gap_attribution``.  With ``results_dir`` it also writes
+    ``gap_attribution``, ``in_grid_residual`` and ``inputs``.  With
+    ``results_dir`` it also writes
     ``bridge_summary.json``, ``bridge_variants.csv``, ``bridge_cashflows.csv``
     and ``figures/bridge_discount_curve.png`` there.
     """
@@ -1081,7 +1435,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--npv", default=str(DEFAULT_NPV_CSV), help="ORE npv report or risk_summary.json")
     ap.add_argument("--cashflows", default="auto", help="ORE cashflow report ('auto', a path, or 'none')")
     ap.add_argument("--calibration", default="auto",
-                    help="ORE todaysmarketcalibration.csv ('auto', a path, or 'none')")
+                    help="native pillars: risk_curve_pillars.csv or ORE's todaysmarketcalibration.csv "
+                         "('auto' = the curves report's companion, a path, or 'none')")
     ap.add_argument("--results", default=str(RESULTS_DIR), help="where bridge_* files go")
     ap.add_argument("--no-figure", action="store_true")
     args = ap.parse_args(argv)
@@ -1097,14 +1452,32 @@ def main(argv: list[str] | None = None) -> int:
     print(f"diff ORE-QL   {s['diff_eur']:>16,.2f} EUR = {s['diff_bp']:.3f} bp of notional "
           f"(article {ARTICLE['diff_eur']:,.2f} = {ARTICLE['diff_bp']} bp)")
     sm = s["schedule_match"]
-    print(f"schedules     all_match={sm.get('all_match')}  ({sm.get('n_fixed_ql')} fixed, "
-          f"{sm.get('n_float_ql')} float cashflows vs {sm.get('source')})")
+    if sm.get("source") is None:
+        print("schedules     not compared (no ORE cashflow report used)")
+    else:
+        print(f"schedules     all_match={sm.get('all_match')}  ({sm.get('n_fixed_ql')} fixed, "
+              f"{sm.get('n_float_ql')} float cashflows vs {sm.get('source')})")
     a = s["gap_attribution"]
     if "extrapolation_beyond_grid_end_eur" in a:
-        print(f"attribution   extrapolation past {s['curves_report']['last_date']}: "
-              f"{a['extrapolation_beyond_grid_end_eur']:,.2f} EUR ({a.get('extrapolation_share_pct', 0):.1f}%), "
-              f"interpolation: {a['interpolation_within_grid_eur']:,.2f} EUR, "
-              f"residual: {a.get('residual_vs_ore_eur') if a.get('residual_vs_ore_eur') is None else round(a['residual_vs_ore_eur'], 4)} EUR")
+        line = (f"attribution   extrapolation past {s['curves_report']['last_date']}: "
+                f"{a['extrapolation_beyond_grid_end_eur']:,.2f} EUR ({a.get('extrapolation_share_pct', 0):.1f}%), "
+                f"interpolation: {a['interpolation_within_grid_eur']:,.2f} EUR")
+        if a.get("residual_vs_ore_eur") is not None:
+            line += f", residual: {a['residual_vs_ore_eur']:.4f} EUR"
+        print(line)
+    ig = s.get("in_grid_residual")
+    if ig:
+        fx, pr = ig["fixed_coupons_paid_in_pillar_months"], ig["float_coupon_pairs_across_pillar_months"]
+        line = (f"in-grid       QL-ORE per cashflow {ig['total_eur']:+,.4f} EUR = {fx['n']} fixed coupons in "
+                f"native-pillar months {fx['sum_eur']:+,.4f} + {pr['n']} float pairs {pr['sum_eur']:+.1e} "
+                f"+ rest {ig['other_in_grid_cashflows_eur']:+.1e}")
+        if ig.get("rebuild_check_eur") is not None:
+            line += f"; rebuild check {ig['rebuild_check_eur']:+,.4f} EUR"
+        print(line)
+    inp = s["inputs"]
+    used = lambda k: inp[k] or "not used"  # noqa: E731
+    print(f"inputs        curves {used('curves')}, npv {used('npv')}, cashflows {used('cashflows')}, "
+          f"native pillars {used('native_pillars')}, risk summary {used('risk_summary')}")
     print("variants (diff = ORE - QL):")
     for r in s["variants"]:
         print(f"  {r['variant']:<32} {r['ql_npv']:>15,.2f}  diff {r['diff_eur']:>10,.2f}  "

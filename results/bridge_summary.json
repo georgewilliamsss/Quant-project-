@@ -30,7 +30,7 @@
       "USD-LIBOR-3M"
     ],
     "has_zero_rates": false,
-    "note": "discount factors only, no zero rates; grid = asof + k x 1M, k = 1..240, so it ends before the swap's last payment. ORE's native pillars (with zero and forward rates, 8 dp) are in ore_output/todaysmarketcalibration.csv."
+    "note": "discount factors only, no zero rates; grid = asof + k x 1M, k = 1..240, so it ends before the swap's last payment. ORE's native pillars (with zero and forward rates, 8 dp, from ORE's todaysmarketcalibration report) are in risk_curve_pillars.csv."
   },
   "swap": {
     "start": "2016-03-01",
@@ -224,6 +224,22 @@
       "last_float_rate": 0.015079434699507665,
       "abs_diff_eur": 0.025231699226424098,
       "gap_closed_pct": 99.99767427060785
+    },
+    {
+      "variant": "grid_plus_native_pillars",
+      "curve": "ql.DiscountCurve (LogLinear)",
+      "pillars": "grid + all 14 native ORE EUR6M pillars, inside the grid and after 2036-02-05 (todaysmarketcalibration, 8 dp)",
+      "n_nodes": 255,
+      "ql_npv": 1609885.8688762356,
+      "diff_eur": -0.033302262192592025,
+      "diff_bp": -3.3302262192592027e-05,
+      "change_vs_article_rebuild_eur": 1084.927327832207,
+      "fixed_leg_npv": 3665332.610182975,
+      "float_leg_npv": -2055446.7413067394,
+      "df_last_payment": 0.7944382437441039,
+      "last_float_rate": 0.015079428043526404,
+      "abs_diff_eur": 0.033302262192592025,
+      "gap_closed_pct": 99.99693036726099
     }
   ],
   "smoother_interpolation_closer": true,
@@ -264,8 +280,154 @@
     }
   },
   "max_abs_pv_diff_clean_cashflows_eur": 2.2214408090803772e-09,
+  "in_grid_residual": {
+    "convention": "per cashflow, QuantLib (article rebuild) minus ORE's cashflow report, EUR, over the cashflows paid on or before the grid end",
+    "native_pillar_months": [
+      [
+        "2016-08-05",
+        "2016-09-05"
+      ],
+      [
+        "2018-02-05",
+        "2018-03-05"
+      ],
+      [
+        "2019-02-05",
+        "2019-03-05"
+      ],
+      [
+        "2020-02-05",
+        "2020-03-05"
+      ],
+      [
+        "2021-02-05",
+        "2021-03-05"
+      ],
+      [
+        "2023-02-06",
+        "2023-03-06"
+      ],
+      [
+        "2026-02-05",
+        "2026-03-05"
+      ],
+      [
+        "2028-02-07",
+        "2028-03-06"
+      ],
+      [
+        "2031-02-05",
+        "2031-03-05"
+      ]
+    ],
+    "total_eur": -5.175789418367117,
+    "fixed_leg_eur": -5.175789414090104,
+    "float_leg_eur": -4.277012521924917e-09,
+    "fixed_coupons_paid_in_pillar_months": {
+      "n": 8,
+      "pay_dates": [
+        "2018-03-01",
+        "2019-03-01",
+        "2020-03-02",
+        "2021-03-01",
+        "2023-03-01",
+        "2026-03-02",
+        "2028-03-01",
+        "2031-03-03"
+      ],
+      "df_diff": [
+        -1.818166242228969e-06,
+        -5.944528650214664e-06,
+        -2.9483661507789805e-06,
+        -6.269417367921193e-06,
+        -7.967927467267266e-06,
+        -8.84639721254743e-07,
+        -1.2658873707049878e-06,
+        1.2016277162185673e-06
+      ],
+      "pv_diff_eur": [
+        -0.3636332484311424,
+        -1.1889057300286368,
+        -0.5913112113776151,
+        -1.2504004639049526,
+        -1.5935854934505187,
+        -0.17643647774821147,
+        -0.25317747410736047,
+        0.24166068516205996
+      ],
+      "sum_eur": -5.175789413886378
+    },
+    "float_coupon_pairs_across_pillar_months": {
+      "n": 9,
+      "pairs": [
+        {
+          "date": "2016-09-01",
+          "ending_coupon_eur": 13.454219991012792,
+          "next_coupon_eur": -13.454219994311643,
+          "net_eur": -3.2988509701681323e-09
+        },
+        {
+          "date": "2018-03-01",
+          "ending_coupon_eur": -18.1816624222497,
+          "next_coupon_eur": 18.181662421490728,
+          "net_eur": -7.589733286295086e-10
+        },
+        {
+          "date": "2019-03-01",
+          "ending_coupon_eur": -59.445286502453655,
+          "next_coupon_eur": 59.44528650263783,
+          "net_eur": 1.8417267710901797e-10
+        },
+        {
+          "date": "2020-03-02",
+          "ending_coupon_eur": -29.483661505984855,
+          "next_coupon_eur": 29.48366150586662,
+          "net_eur": -1.1823431123048067e-10
+        },
+        {
+          "date": "2021-03-01",
+          "ending_coupon_eur": -62.69417367780625,
+          "next_coupon_eur": 62.69417367699498,
+          "net_eur": -8.11269273981452e-10
+        },
+        {
+          "date": "2023-03-01",
+          "ending_coupon_eur": -79.67927467235859,
+          "next_coupon_eur": 79.67927467197296,
+          "net_eur": -3.8562575355172157e-10
+        },
+        {
+          "date": "2026-03-02",
+          "ending_coupon_eur": -8.846397213594173,
+          "next_coupon_eur": 8.846397211993462,
+          "net_eur": -1.6007106751203537e-09
+        },
+        {
+          "date": "2028-03-01",
+          "ending_coupon_eur": -12.658873706517625,
+          "next_coupon_eur": 12.658873706604936,
+          "net_eur": 8.731149137020111e-11
+        },
+        {
+          "date": "2031-03-03",
+          "ending_coupon_eur": 12.016277161121252,
+          "next_coupon_eur": -12.016277163027553,
+          "net_eur": -1.9063008949160576e-09
+        }
+      ],
+      "max_abs_coupon_pv_diff_eur": 79.67927467235859,
+      "max_abs_pair_net_eur": 3.2988509701681323e-09,
+      "sum_eur": -8.608481039118487e-09
+    },
+    "other_in_grid_cashflows_eur": 4.127741703996435e-09,
+    "attributed": true,
+    "reading": "The in-grid residual (-5.18 EUR, QuantLib - ORE) is the fixed leg: the 8 fixed coupons paid in a grid month that holds a native pillar (-5.18 EUR; DF errors -8.0e-06 to +1.2e-06). The float coupons ending in those months are off by up to 79.68 EUR each, but single-curve par coupons telescope (float leg = N x (DF(first start) - DF(last end))), so each DF error returns with the opposite sign in the next coupon: the 9 pairs net to -8.6e-09 EUR (largest pair 3.3e-09); all other in-grid cashflows +4.1e-09 EUR.",
+    "rebuild_check_eur": 5.175470385700464,
+    "rebuild_check": "ql_npv(grid_plus_native_pillars) - ql_npv(grid_plus_native_tail): the NPV change from inserting the native pillars inside the grid (ORE - QuantLib convention: removes that much of diff)"
+  },
   "native_curve": {
-    "source": "results/ore_output/todaysmarketcalibration.csv",
+    "source": "results/risk_curve_pillars.csv",
+    "source_format": "risk_curve_pillars",
     "curve_id": "EUR6M",
     "n_pillars": 14,
     "pillar_dates": [
@@ -285,11 +447,30 @@
       "2066-02-09"
     ],
     "day_counter": "Actual/365 (Fixed)",
+    "day_counter_check": "not in risk_curve_pillars.csv; its zero rates fit zero_rate = -ln(DF) / t with t Actual/365 (Fixed) to 6.7e-09",
     "interpolation": "LogLinear on discount factors (ORE default; the grid reproduces it to machine precision outside the months holding a native pillar)"
+  },
+  "inputs": {
+    "curves": "results/risk_curves.csv",
+    "npv": "results/risk_npv.csv",
+    "cashflows": "results/risk_cashflows.csv",
+    "native_pillars": "results/risk_curve_pillars.csv",
+    "risk_summary": "results/risk_summary.json",
+    "found_by": {
+      "cashflows": "auto: same directory and prefix as the curves report",
+      "native_pillars": "auto: same directory and prefix as the curves report",
+      "risk_summary": "auto: same directory and prefix as the curves report"
+    },
+    "checks": {
+      "cashflows_pv_sum_minus_npv_eur": -2.3283064365386963e-10,
+      "cashflows_tolerance_eur": 0.01,
+      "native_pillars_max_abs_log_df_diff_at_grid_dates": 4.965585331806466e-09,
+      "native_pillars_tolerance_log_df": 1e-07
+    }
   },
   "files": {
     "cashflows_input": "results/risk_cashflows.csv",
-    "calibration_input": "results/ore_output/todaysmarketcalibration.csv",
+    "calibration_input": "results/risk_curve_pillars.csv",
     "variants": "results/bridge_variants.csv",
     "cashflows": "results/bridge_cashflows.csv",
     "figure": "results/figures/bridge_discount_curve.png",
@@ -318,6 +499,7 @@
       "Same inputs as the article (ORE Example_9 files, libor configuration, 240 x 1M curves grid): ORE 1,609,885.84 vs QuantLib 1,608,800.94, gap 1,084.89 EUR = 1.08 bp.",
       "Schedules agree exactly with ORE's cashflow report: 20 fixed and 40 float payment dates, accrual dates, fixing dates and accrual fractions - both processes share QuantLib's TARGET calendar, 30/360 and A360.",
       "The gap is not mainly interpolation: 1,079.75 EUR (99.5%) comes from extrapolating past the last grid date 2036-02-05 to the final payment 2036-03-03 (27 days); interpolation inside the grid accounts for 5.17 EUR.",
+      "The in-grid residual (-5.18 EUR, QuantLib - ORE) is the fixed leg: the 8 fixed coupons paid in a grid month that holds a native pillar (-5.18 EUR; DF errors -8.0e-06 to +1.2e-06). The float coupons ending in those months are off by up to 79.68 EUR each, but single-curve par coupons telescope (float leg = N x (DF(first start) - DF(last end))), so each DF error returns with the opposite sign in the next coupon: the 9 pairs net to -8.6e-09 EUR (largest pair 3.3e-09); all other in-grid cashflows +4.1e-09 EUR. Rebuild check: inserting the native pillars into the grid moves QuantLib by +5.18 EUR (grid_plus_native_pillars vs grid_plus_native_tail).",
       "Smoother interpolation on the same grid moves the price by only +7.05 EUR (monotonic log-cubic) / +7.04 EUR (natural log-cubic): ORE's curve is itself LogLinear in DF, so LogLinear is already the right scheme.",
       "Over 2036-02-05 -> 2036-03-03 QuantLib extrapolates a 1.550% forward (continuous A365) where ORE's curve implies 1.370%.",
       "Away from native-pillar months and the grid end, cashflow PVs agree to 2.2e-09 EUR."
