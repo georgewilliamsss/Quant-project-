@@ -1,0 +1,86 @@
+{
+  "ore_version": "1.8.17.0",
+  "wall_time_s": 7.31,
+  "market_configuration": "libor",
+  "trade_id": "Swap_20y",
+  "netting_set": "CPTY_A",
+  "cube": {
+    "ids": 1,
+    "dates": 81,
+    "samples": 1000,
+    "depth": 1
+  },
+  "npv_base": 1609885.8355739734,
+  "npv_currency": "EUR",
+  "cva": 107446.98184820297,
+  "dva": 74749.57153459691,
+  "fba": 18318.131760102526,
+  "fca": -58081.34110800466,
+  "BaselEPE": 1658974.3859604883,
+  "BaselEEPE": 1658974.3859604883,
+  "fva": -39763.20934790213,
+  "cva_pct_notional": 1.0744698184820296,
+  "exposure_rows": 82,
+  "exposure_future_dates": 81,
+  "horizon_years": 20.248633879781423,
+  "epe_t0": 1608754.875,
+  "max_epe": 1707219.625,
+  "max_epe_time_years": 1.003001721685755,
+  "max_epe_date": "2017-02-06",
+  "max_ene": 719217.25,
+  "max_ene_time_years": 8.497267759562842,
+  "max_pfe": 6114784.0,
+  "max_pfe_time_years": 9.496152406617263,
+  "article_comparison": {
+    "article": {
+      "npv": 1609885.84,
+      "cva": 107446.98,
+      "epe_peak": 1710000.0,
+      "pfe95_peak": 6110000.0,
+      "samples": 1000,
+      "dates": 81,
+      "wall_time_s": 6.3
+    },
+    "ours": {
+      "npv": 1609885.8355739734,
+      "cva": 107446.98184820297,
+      "epe_peak": 1707219.625,
+      "pfe95_peak": 6114784.0,
+      "wall_time_s": 7.31,
+      "samples": 1000,
+      "dates": 81
+    },
+    "abs_diff": {
+      "npv": -0.004426026716828346,
+      "cva": 0.0018482029699953273,
+      "epe_peak": -2780.375,
+      "pfe95_peak": 4784.0,
+      "wall_time_s": 1.0099999999999998,
+      "samples": 0.0,
+      "dates": 0.0
+    },
+    "notes": [
+      "Inputs: ORE v1.8.16.0 Example_9 files with simulation Samples=1000 (Example_9 ships 100), ORE wheel 1.8.17.0.",
+      "NPV and CVA match the article to the cent: the article ran the same Example_9 inputs at 1000 paths.",
+      "The article's EPE/PFE peaks are quoted rounded (1.71M / 6.11M); ours are the unrounded values.",
+      "Example_9's ExpectedOutput CVA 101,160.81 is the same setup at 100 paths, not a defaults fallback.",
+      "Wall time depends on the machine and on concurrent load (4 shared CPUs here)."
+    ]
+  },
+  "inputs": {
+    "input_dir": "quantstack/risk/input",
+    "source": "ORE v1.8.16.0 Examples/ORE-Python/Notebooks/Example_9/Input (+ Examples/Input calendaradjustment.xml, currencies.xml); simulation Samples 100 -> 1000",
+    "resolved_ore_xml": "results/ore_output/ore_resolved.xml",
+    "curves_report_configuration": "libor",
+    "curves_report_columns": "EUR = discount curve of that configuration (EUR6M under 'libor', EUR1D under 'xois_eur'); EUR-EURIBOR-6M = 6M projection curve; EUR-EONIA = OIS curve EUR1D"
+  },
+  "files": {
+    "exposure_nettingset_CPTY_A": "results/risk_exposure_nettingset.csv",
+    "exposure_trade_Swap_20y": "results/risk_exposure_trade_Swap_20y.csv",
+    "npv": "results/risk_npv.csv",
+    "xva": "results/risk_xva.csv",
+    "curves": "results/risk_curves.csv",
+    "cashflow": "results/risk_cashflows.csv",
+    "figure": "results/figures/risk_exposure_profile.png"
+  }
+}

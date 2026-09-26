@@ -1,0 +1,280 @@
+{
+  "module": "execution",
+  "versions": {
+    "nautilus_trader": "1.231.0",
+    "skfolio": "1.4.0",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3",
+    "python": "3.13.12"
+  },
+  "universe": [
+    "AAPL",
+    "MSFT",
+    "JPM",
+    "JNJ",
+    "XOM",
+    "PG",
+    "HD",
+    "UNH"
+  ],
+  "window": {
+    "start": "2016-01-01",
+    "end": "2022-12-28",
+    "first_bar": "2016-01-04",
+    "last_bar": "2022-12-28",
+    "trading_days": 1760
+  },
+  "data_source": "skfolio.datasets.load_sp500_dataset (daily adjusted closes, bundled, no network)",
+  "config": {
+    "starting_cash": 1000000,
+    "lookback_bars": 252,
+    "rebalance_every": 21,
+    "investment_cap": 0.98,
+    "order_mode": "two_phase",
+    "venue": "XNAS",
+    "oms": "NETTING",
+    "account": "CASH",
+    "fill_model": "default",
+    "fees": "none",
+    "bar_volume": 1000000000,
+    "risk_checks_close_trades": true
+  },
+  "fills": 573,
+  "orders": 573,
+  "rejections": 0,
+  "denied": 0,
+  "first_fill_date": "2016-12-30",
+  "hrp": {
+    "metrics": {
+      "start_date": "2016-12-30",
+      "end_date": "2022-12-28",
+      "start_equity": 1000000.0,
+      "final_equity": 2479775.76,
+      "years": 5.993155,
+      "total_return": 1.479776,
+      "cagr": 0.163618,
+      "max_drawdown": 0.308632,
+      "max_drawdown_peak": "2020-02-06",
+      "max_drawdown_trough": "2020-03-23",
+      "ann_vol": 0.18069,
+      "sharpe": 0.930679,
+      "traded_notional": 9420445.05,
+      "initial_buy_in_notional": 979743.74,
+      "turnover_annual_oneway": 0.466924,
+      "turnover_annual_oneway_ex_initial": 0.418363
+    },
+    "stats": {
+      "allocator": "hrp",
+      "order_mode": "two_phase",
+      "risk_checks": true,
+      "n_orders": 573,
+      "n_fills": 573,
+      "n_rejected": 0,
+      "n_denied": 0,
+      "n_canceled": 0,
+      "rejections_sample": [],
+      "n_rebalances": 72,
+      "first_rebalance": "2016-12-30",
+      "first_fill_date": "2016-12-30",
+      "hrp_fit_seconds_total": 1.132692,
+      "hrp_fit_seconds_mean": 0.015732,
+      "engine_run_seconds": 2.162979,
+      "days_published": 1760,
+      "halted_early": false,
+      "last_published_day": "2022-12-28",
+      "final_cash": 51934.97,
+      "final_cash_engine_account": 51934.97,
+      "fills_report_rows": 573,
+      "order_fills_report_rows": 573,
+      "positions_report_rows": 8,
+      "account_report_rows": 574,
+      "max_equity_check_diff_vs_portfolio": 0.0
+    }
+  },
+  "equal_engine": {
+    "metrics": {
+      "start_date": "2016-12-30",
+      "end_date": "2022-12-28",
+      "start_equity": 1000000.0,
+      "final_equity": 2838765.94,
+      "years": 5.993155,
+      "total_return": 1.838766,
+      "cagr": 0.190167,
+      "max_drawdown": 0.325958,
+      "max_drawdown_peak": "2020-02-19",
+      "max_drawdown_trough": "2020-03-23",
+      "ann_vol": 0.193346,
+      "sharpe": 0.999083,
+      "traded_notional": 6518462.37,
+      "initial_buy_in_notional": 979721.24,
+      "turnover_annual_oneway": 0.295444,
+      "turnover_annual_oneway_ex_initial": 0.251039
+    },
+    "stats": {
+      "allocator": "equal",
+      "order_mode": "two_phase",
+      "risk_checks": true,
+      "n_orders": 572,
+      "n_fills": 572,
+      "n_rejected": 0,
+      "n_denied": 0,
+      "n_canceled": 0,
+      "rejections_sample": [],
+      "n_rebalances": 72,
+      "first_rebalance": "2016-12-30",
+      "first_fill_date": "2016-12-30",
+      "hrp_fit_seconds_total": 0.004229,
+      "hrp_fit_seconds_mean": 5.9e-05,
+      "engine_run_seconds": 0.978844,
+      "days_published": 1760,
+      "halted_early": false,
+      "last_published_day": "2022-12-28",
+      "final_cash": 60160.95,
+      "final_cash_engine_account": 60160.95,
+      "fills_report_rows": 572,
+      "order_fills_report_rows": 572,
+      "positions_report_rows": 8,
+      "account_report_rows": 573,
+      "max_equity_check_diff_vs_portfolio": 0.0
+    }
+  },
+  "equal_pandas": {
+    "metrics": {
+      "start_date": "2016-12-30",
+      "end_date": "2022-12-28",
+      "start_equity": 1000000.0,
+      "final_equity": 2804157.815833,
+      "years": 5.993155,
+      "total_return": 1.804158,
+      "cagr": 0.187733,
+      "max_drawdown": 0.316873,
+      "max_drawdown_peak": "2020-02-19",
+      "max_drawdown_trough": "2020-03-23",
+      "ann_vol": 0.209763,
+      "sharpe": 0.926912
+    },
+    "daily_rebalanced_metrics": {
+      "start_date": "2016-12-30",
+      "end_date": "2022-12-28",
+      "start_equity": 1000000.0,
+      "final_equity": 2894958.447116,
+      "years": 5.993155,
+      "total_return": 1.894958,
+      "cagr": 0.194066,
+      "max_drawdown": 0.330125,
+      "max_drawdown_peak": "2020-02-19",
+      "max_drawdown_trough": "2020-03-23",
+      "ann_vol": 0.198258,
+      "sharpe": 0.995729
+    },
+    "definition": "starting_cash * (prices.loc[first_fill:] / prices.loc[first_fill]).mean(axis=1)"
+  },
+  "stress_drawdowns": {
+    "hrp": {
+      "covid_2020": {
+        "drawdown": 0.308632,
+        "peak": "2020-02-06",
+        "trough": "2020-03-23"
+      },
+      "bear_2022": {
+        "drawdown": 0.140471,
+        "peak": "2022-01-04",
+        "trough": "2022-06-17"
+      }
+    },
+    "equal_engine": {
+      "covid_2020": {
+        "drawdown": 0.325958,
+        "peak": "2020-02-19",
+        "trough": "2020-03-23"
+      },
+      "bear_2022": {
+        "drawdown": 0.143659,
+        "peak": "2022-01-04",
+        "trough": "2022-06-17"
+      }
+    },
+    "equal_pandas": {
+      "covid_2020": {
+        "drawdown": 0.316873,
+        "peak": "2020-02-19",
+        "trough": "2020-03-23"
+      },
+      "bear_2022": {
+        "drawdown": 0.207222,
+        "peak": "2022-01-03",
+        "trough": "2022-06-17"
+      }
+    }
+  },
+  "order_sequencing_experiment": {
+    "sells_first": {
+      "n_orders": 571,
+      "n_fills": 551,
+      "n_denied": 20,
+      "n_rejected": 0,
+      "halted_early": false,
+      "last_published_day": "2022-12-28",
+      "final_equity": 2482004.1,
+      "rejections_sample": [
+        "DENIED O-20170201-210000-001-000-16: NOTIONAL_EXCEEDS_FREE_BALANCE: free=20256.26 USD, balance_impact=-46901.44 USD",
+        "DENIED O-20170802-210000-001-000-63: NOTIONAL_EXCEEDS_FREE_BALANCE: free=22678.14 USD, balance_impact=-27581.63 USD"
+      ]
+    },
+    "buys_first": {
+      "n_orders": 16,
+      "n_fills": 9,
+      "n_denied": 1,
+      "n_rejected": 0,
+      "halted_early": true,
+      "last_published_day": "2017-02-01",
+      "final_equity": 1010415.91,
+      "rejections_sample": [
+        "DENIED O-20170201-210000-001-000-9: NOTIONAL_EXCEEDS_FREE_BALANCE: free=20256.26 USD, balance_impact=-46901.44 USD"
+      ]
+    },
+    "two_phase": {
+      "n_orders": 573,
+      "n_fills": 573,
+      "n_denied": 0,
+      "n_rejected": 0,
+      "halted_early": false,
+      "last_published_day": "2022-12-28",
+      "final_equity": 2479775.76
+    }
+  },
+  "article": {
+    "fills": 558,
+    "start_equity": 1000000,
+    "final_equity_hrp": 2260000,
+    "first_fill": "2016-12",
+    "cagr_hrp": 0.146,
+    "max_dd_hrp": 0.323,
+    "final_equity_equal_weight": 2740000,
+    "note": "article's own 8 names and data source; not reproducible here"
+  },
+  "comparison": {
+    "hrp_final_equity": 2479775.76,
+    "equal_engine_final_equity": 2838765.94,
+    "equal_pandas_final_equity": 2804157.815833,
+    "hrp_underperforms_equal_engine": true,
+    "hrp_underperforms_equal_pandas": true,
+    "max_dd_hrp": 0.308632,
+    "max_dd_equal_engine": 0.325958,
+    "max_dd_equal_pandas": 0.316873,
+    "qualitative_story_holds": true,
+    "story": "HRP under-earns equal weight in a decade the loud names won; drawdowns similar"
+  },
+  "runtime_seconds": {
+    "backtest_with_benchmarks": 5.152319,
+    "hrp_engine_run": 2.162979,
+    "cli_total": 10.87194
+  },
+  "outputs": {
+    "equity_csv": "results/execution_equity.csv",
+    "fills_csv": "results/execution_fills.csv",
+    "positions_csv": "results/execution_positions.csv",
+    "weights_csv": "results/execution_weights_hrp.csv",
+    "figure": "results/figures/execution_equity.png"
+  }
+}

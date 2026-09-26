@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!--
+  quantstack/risk/input/ore.xml - the article's "Five Repos, One Engine" ORE case,
+  as a SELF-CONTAINED input set.
+
+  Trade      : 20y EUR IRS Swap_20y, 10M notional, receive 2% fixed (30/360, 1Y, TARGET, F)
+               vs pay EUR-EURIBOR-6M (A360, 6M, MF), 2016-03-01 -> 2036-03-01, CPTY_A.
+  As-of      : 2016-02-05 (ORE demo market).
+  Provenance : every file in this directory was copied from the ORE repository at tag
+               v1.8.16.0, Examples/ORE-Python/Notebooks/Example_9/Input, except
+               calendaradjustment.xml and currencies.xml (Examples/Input). Deliberate edits
+               are marked with "quantstack:" comments inside each file.
+
+  Paths      : inputPath "." and outputPath "../Output" are relative to THIS directory, so
+               `cd quantstack/risk/input` followed by the ORE CLI / ORE.OREApp works as-is.
+               quantstack.risk.run_ore rewrites both to absolute paths in a resolved copy
+               (written to the output directory) so the Python run never depends on the CWD.
+
+  Market configuration: "libor" everywhere (single-curve: EUR discounted AND projected on
+               Yield/EUR/EUR6M). This is what Example_9 does and it reproduces the article's
+               NPV 1,609,885.84 EUR to the cent. The OIS-discounted alternative ("xois_eur",
+               discounting on Yield/EUR/EUR1D) is a legitimate modern choice but changes the
+               NPV; see quantstack/risk/run_ore.py for the numbers.
+
+  Explicitness: every file the run needs is named below and present in this directory;
+               calendaradjustment.xml and currencies.xml are given explicitly instead of
+               relying on ORE's built-in calendars/currency table. (They leave all numbers
+               bit-identical to the Example_9 run, which is the point: no hidden inputs.)
+-->
+<ORE>
+  <Setup>
+    <Parameter name="asofDate">2016-02-05</Parameter>
+    <Parameter name="inputPath">.</Parameter>
+    <Parameter name="outputPath">../Output</Parameter>
+    <Parameter name="logFile">log.txt</Parameter>
+    <Parameter name="logMask">31</Parameter>
+    <Parameter name="marketDataFile">market_20160205.txt</Parameter>
+    <Parameter name="fixingDataFile">fixings_20160205.txt</Parameter>
+    <Parameter name="implyTodaysFixings">Y</Parameter>
+    <Parameter name="curveConfigFile">curveconfig.xml</Parameter>
+    <Parameter name="conventionsFile">conventions.xml</Parameter>
+    <Parameter name="marketConfigFile">todaysmarket.xml</Parameter>
+    <Parameter name="pricingEnginesFile">pricingengine.xml</Parameter>
+    <Parameter name="portfolioFile">portfolio_swap.xml</Parameter>
+    <Parameter name="calendarAdjustment">calendaradjustment.xml</Parameter>
+    <Parameter name="currencyConfiguration">currencies.xml</Parameter>
+    <Parameter name="observationModel">None</Parameter>
+    <Parameter name="continueOnError">false</Parameter>
+  </Setup>
+  <Markets>
+    <!-- quantstack: single-curve "libor" configuration, as Example_9 (reproduces NPV 1,609,885.84) -->
+    <Parameter name="lgmcalibration">libor</Parameter>
+    <Parameter name="fxcalibration">libor</Parameter>
+    <Parameter name="eqcalibration">libor</Parameter>
+    <Parameter name="pricing">libor</Parameter>
+    <Parameter name="simulation">libor</Parameter>
+  </Markets>
+  <Analytics>
+    <Analytic type="npv">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="baseCurrency">EUR</Parameter>
+      <Parameter name="outputFileName">npv.csv</Parameter>
+    </Analytic>
+    <Analytic type="cashflow">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="outputFileName">flows.csv</Parameter>
+    </Analytic>
+    <Analytic type="curves">
+      <Parameter name="active">Y</Parameter>
+      <!-- quantstack: Example_9 reports the curves under "default" (= xois_eur, i.e. the EUR
+           column would be the EONIA/OIS curve EUR1D). We report them under the PRICING
+           configuration "libor" instead, so that column "EUR" is exactly the discount curve
+           the NPV was computed with (Yield/EUR/EUR6M). The OIS curve is still in the report
+           as column "EUR-EONIA" (Yield/EUR/EUR1D), and "EUR-EURIBOR-6M" is the projection
+           curve (also EUR6M). The QuantLib bridge test reads these discount factors. -->
+      <Parameter name="configuration">libor</Parameter>
+      <Parameter name="grid">240,1M</Parameter>
+      <Parameter name="outputFileName">curves.csv</Parameter>
+    </Analytic>
+    <Analytic type="simulation">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="simulationConfigFile">simulation.xml</Parameter>
+      <Parameter name="pricingEnginesFile">pricingengine.xml</Parameter>
+      <Parameter name="baseCurrency">EUR</Parameter>
+      <Parameter name="cubeFile">cube.dat</Parameter>
+      <Parameter name="aggregationScenarioDataFileName">scenariodata.dat</Parameter>
+    </Analytic>
+    <Analytic type="xva">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="csaFile">netting.xml</Parameter>
+      <Parameter name="cubeFile">cube.dat</Parameter>
+      <Parameter name="scenarioFile">scenariodata.dat</Parameter>
+      <Parameter name="baseCurrency">EUR</Parameter>
+      <Parameter name="exposureProfiles">Y</Parameter>
+      <!-- quantstack: explicit (Example_9 relies on the default) -->
+      <Parameter name="exposureProfilesByTrade">Y</Parameter>
+      <Parameter name="quantile">0.95</Parameter>
+      <Parameter name="calculationType">Symmetric</Parameter>
+      <Parameter name="allocationMethod">None</Parameter>
+      <Parameter name="marginalAllocationLimit">1.0</Parameter>
+      <Parameter name="exerciseNextBreak">N</Parameter>
+      <Parameter name="cva">Y</Parameter>
+      <Parameter name="dva">Y</Parameter>
+      <Parameter name="dvaName">BANK</Parameter>
+      <Parameter name="fva">Y</Parameter>
+      <Parameter name="fvaBorrowingCurve">BANK_EUR_BORROW</Parameter>
+      <Parameter name="fvaLendingCurve">BANK_EUR_LEND</Parameter>
+      <Parameter name="colva">N</Parameter>
+      <Parameter name="collateralFloor">N</Parameter>
+      <Parameter name="rawCubeOutputFile">rawcube.csv</Parameter>
+      <Parameter name="netCubeOutputFile">netcube.csv</Parameter>
+    </Analytic>
+    <Analytic type="initialMargin">
+      <Parameter name="active">N</Parameter>
+      <Parameter name="method"/>
+    </Analytic>
+  </Analytics>
+</ORE>
