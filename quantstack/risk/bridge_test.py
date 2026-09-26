@@ -185,6 +185,9 @@ class SwapSpec:
 
 
 def _ql():
+    from quantstack._swig_order import ensure_ore_before_quantlib
+
+    ensure_ore_before_quantlib()  # ORE (if installed) must load first: see quantstack/_swig_order.py
     import QuantLib as ql  # the standalone wheel, deliberately NOT ORE
 
     return ql
