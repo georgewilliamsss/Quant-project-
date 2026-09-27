@@ -120,6 +120,8 @@ own risk/return statistics, betas, VaR/CVaR, drawdowns and backtests are compute
 `combined_positions.csv` / `weights.csv` / `fx_daily.csv` / `prices_local_daily.csv` and
 related files. A runner/backtest script built against this thesis should read prices
 from `prices_gbp_daily.csv` (repo root) rather than from anywhere under `data/thesis/`.
+This is exactly what `quantstack.thesis.run` does: its `DEFAULT_PRICES` points at the
+repo-root file, and the CLI's `--prices` flag overrides it for a different panel.
 
 This directory does not duplicate or move that file. (An earlier version of this
 project attempted to build a stand-in proxy panel under `data/thesis/proxy/` from

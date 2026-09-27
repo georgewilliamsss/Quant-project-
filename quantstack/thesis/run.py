@@ -525,7 +525,8 @@ def run_scheme(scheme: str, prices: pd.DataFrame, target: Mapping[str, float] | 
                            f"{st['rejections_sample']}")
     paths = write_results(res, out_dir)
     paths["figure"] = plot_equity(res["curves"], res["first_fill"], out_dir / "figures" / "execution_equity.png",
-                                  title_extra=f", thesis book ({prices.shape[1]} names, GBP engine units)")
+                                  title_extra=f", thesis book ({prices.shape[1]} names)",
+                                  currency="£", scale=cfg.equity_scale)
     paths["summary"] = out_dir / "execution_summary.json"
     _write_json(_execution_summary(scheme, res, cfg, fixed, paths, prices_path), paths["summary"])
     return res

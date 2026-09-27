@@ -744,15 +744,75 @@ STRATEGY_LABELS = {  # allocator -> (legend label, title name)
 }
 
 
-def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, title_extra: str = "") -> Path:
+def _money_ticks(lo: float, hi: float, max_ticks: int = 7) -> list[float]:
+    """Round-number ticks spanning [lo, hi] on a log axis.
+
+    Wide ranges: 1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8 x 10^k.  Narrow ranges
+    (fewer than three of those inside): evenly spaced steps of 1, 2, 2.5 or 5
+    x 10^k, so a curve that moves a small percent (e.g. a book held near a
+    single order of magnitude, GBP 180k-220k) still gets labelled gridlines
+    instead of the single decade tick a plain log locator would give it.
+    """
+    mantissas = (1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8)
+    k0, k1 = int(math.floor(math.log10(lo))), int(math.ceil(math.log10(hi)))
+    cands = [m * 10 ** k for k in range(k0, k1 + 1) for m in mantissas if lo <= m * 10 ** k <= hi]
+    if len(cands) < 3:
+        k = math.floor(math.log10((hi - lo) / max_ticks))
+        step = next(m * 10 ** k for m in (1, 2, 2.5, 5, 10) if (hi - lo) / (m * 10 ** k) <= max_ticks)
+        cands = [step * i for i in range(math.ceil(lo / step), math.floor(hi / step) + 1)]
+    while len(cands) > max_ticks:
+        cands = cands[::2]
+    return cands
+
+
+def _money(v: float, currency: str = "$", *, precise: bool = False) -> str:
+    """Compact, thousands-separated label for an axis tick or end-of-curve value.
+
+    E.g. ``_money(1e6) == "$1.0M"``, ``_money(1.2e8) == "$120M"``,
+    ``_money(8.5e5) == "$850k"``. ``precise=True`` (the end-of-curve point
+    labels) keeps one extra decimal digit, so several strategies that finish
+    near the same round number (e.g. $1.05M / $1.02M / $1.01M) stay
+    distinguishable; axis ticks use the coarser default.
+    """
+    av = abs(v)
+    if av >= 1e7:
+        return f"{currency}{v / 1e6:,.{1 if precise else 0}f}M"
+    if av >= 1e6:
+        return f"{currency}{v / 1e6:,.{2 if precise else 1}f}M"
+    if av >= 1e3:
+        return f"{currency}{v / 1e3:,.{1 if precise else 0}f}k"
+    return f"{currency}{v:,.0f}"
+
+
+def plot_equity(
+    curves: pd.DataFrame,
+    first_fill: pd.Timestamp,
+    path: Path,
+    title_extra: str = "",
+    *,
+    currency: str = "$",
+    scale: float = 1.0,
+    title: str | None = None,
+) -> Path:
     """Equity curves on a log scale + an underwater (drawdown) panel.
 
     ``curves`` follows :func:`equity_columns`: the first column is the
     strategy, then the two equal-weight benchmarks (the engine benchmark is
     not drawn when it duplicates the strategy, i.e. for ``allocator="equal"``).
-    No global matplotlib state is touched: the figure is a bare ``Figure`` on
-    an Agg canvas (no pyplot, no ``matplotlib.use``) and the styling lives in
-    an ``rc_context`` that is undone on exit.
+    Y-ticks are chosen from the plotted data itself (:func:`_money_ticks`),
+    labelled with thousands separators and a compact M/k suffix
+    (:func:`_money`), so the same code reads correctly whether the curve
+    sits around $1M or a GBP 100M+ notional. ``currency`` (default ``"$"``)
+    labels the axis and the end-of-curve annotations; ``scale`` (default
+    ``1.0``, a no-op) multiplies every curve before plotting, so a caller
+    that runs the engine in abstract/notional units can display the
+    equivalent book value, e.g. ``currency="£", scale=book_value /
+    starting_cash``. ``title`` overrides the auto-generated title outright;
+    ``title_extra`` is ignored when ``title`` is given, otherwise appended
+    to the default title as before. No global matplotlib state is touched:
+    the figure is a bare ``Figure`` on an Agg canvas (no pyplot, no
+    ``matplotlib.use``) and the styling lives in an ``rc_context`` that is
+    undone on exit.
     """
     import matplotlib
     import matplotlib.dates as mdates
@@ -772,7 +832,8 @@ def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, titl
     series = [s for s in series if s[0] in curves.columns]
     if allocator == "equal":  # the engine benchmark is a copy of the strategy column
         series = [s for s in series if s[0] != "equity_equal_engine"]
-    df = curves.loc[pd.Timestamp(first_fill) - pd.Timedelta(days=45):]
+    # scale=1.0 is an exact no-op (1.0 * x == x in float64): the default $ output is unchanged
+    df = curves.loc[pd.Timestamp(first_fill) - pd.Timedelta(days=45):] * scale
 
     style = {"font.size": 9, "axes.edgecolor": c["text2"], "axes.labelcolor": c["text2"],
              "xtick.color": c["text2"], "ytick.color": c["text2"]}
@@ -805,7 +866,9 @@ def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, titl
             dd = s.loc[pd.Timestamp(first_fill):] / s.loc[pd.Timestamp(first_fill):].cummax() - 1.0
             axd.plot(dd.index, dd.values, color=color, linewidth=1.2)
         # direct end labels, nudged apart in log space so they never collide
-        lo, hi = np.log10(df[[s[0] for s in series]].min().min()), np.log10(df[[s[0] for s in series]].max().max())
+        vals = df[[s[0] for s in series]]
+        val_lo, val_hi = float(vals.min().min()), float(vals.max().max())
+        lo, hi = np.log10(val_lo), np.log10(val_hi)
         gap = 0.045 * (hi - lo)
         placed: list[float] = []
         for y_log, v, x, color in sorted(ends, key=lambda e: e[0]):
@@ -814,16 +877,18 @@ def plot_equity(curves: pd.DataFrame, first_fill: pd.Timestamp, path: Path, titl
             # colored dot carries identity, the value stays in text ink
             ax.plot([x + pd.Timedelta(days=22)], [10 ** y], marker="o", markersize=5, color=color,
                     clip_on=False, zorder=5)
-            ax.annotate(f"${v / 1e6:.2f}M", xy=(x + pd.Timedelta(days=40), 10 ** y), va="center",
+            ax.annotate(_money(v, currency, precise=True), xy=(x + pd.Timedelta(days=40), 10 ** y), va="center",
                         ha="left", fontsize=8, color=c["text"], annotation_clip=False)
         ax.axvline(pd.Timestamp(first_fill), color=c["text2"], linewidth=0.8, linestyle=":")
         ax.set_yscale("log")
-        ax.yaxis.set_major_locator(FixedLocator([0.8e6, 1e6, 1.25e6, 1.5e6, 2e6, 2.5e6, 3e6, 4e6, 5e6]))
+        ax.set_ylim(val_lo * 0.97, val_hi * 1.03)
+        ax.yaxis.set_major_locator(FixedLocator(_money_ticks(val_lo * 0.97, val_hi * 1.03)))
         ax.yaxis.set_minor_locator(NullLocator())
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"${v / 1e6:g}M"))
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: _money(v, currency)))
         ax.set_ylabel("Equity (log scale)")
-        ax.legend(loc="upper left", bbox_to_anchor=(0.0, 0.93), frameon=False, fontsize=8, labelcolor=c["text"])
-        ax.set_title(f"Equity from first fill: {title_name} vs equal weight" + title_extra,
+        ax.legend(loc="best", frameon=False, fontsize=8, labelcolor=c["text"])
+        ax.set_title(title if title is not None
+                     else f"Equity from first fill: {title_name} vs equal weight" + title_extra,
                      loc="left", fontsize=11, color=c["text"])
         axd.set_ylabel("Drawdown")
         axd.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
