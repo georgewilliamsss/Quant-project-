@@ -1,0 +1,2075 @@
+{
+  "as_of": "2026-09-16",
+  "as_of_completeness": {
+    "as_of": "2026-09-16",
+    "n_tickers_with_as_of_bar": 89,
+    "n_tickers_lagging_one_day": 0,
+    "tickers_lagging_one_day_last_bar_2026_09_15": [],
+    "note": "0 tickers (all LSE-listed ETFs/ETCs/the DBMG trend fund and the two gilts' ETF proxies IGLT.L/GLTL.L -- 0 of 0) have their raw Yahoo history stop at 2026-09-15, one trading day short of the 2026-09-16 as-of close, confirmed by direct fresh (non-cached) re-queries at the time of this fetch (not a script/caching bug): every LSE-listed INDIVIDUAL STOCK (both core stocks and all 40 unicorns, on every exchange -- LSE, NYSE, NASDAQ, Euronext, Xetra, Borsa Italiana, TSX, ASX, HKEX -- checked) DOES have a bar dated 2026-09-16, so this is not a 'this exchange closes before London/New York' timezone effect; it is specific to LSE-domiciled ETF/ETC/fund-wrapper products, whose official NAV-based EOD close is evidently posted to Yahoo with a same-day-plus lag relative to ordinary equities on the same exchange. All statistics and the Excel/PDF deliverables built on prices_gbp_daily.csv should treat these 0 tickers' last common-calendar observation as the 2026-09-15 close (forward-filled onto 2026-09-16 by the <=3-day forward-fill rule, per PROJECT_BRIEF's Yahoo-holiday handling), not read it as a same-day 2026-09-16 print."
+  },
+  "refresh": {
+    "from": "2026-09-11",
+    "to": "2026-09-16",
+    "forced_full_redownload_this_run": false,
+    "note": "MOONSHOT-SLEEVE REFRESH (2026-09-17, as-of unchanged at the 2026-09-16 close). This run supersedes the 2026-09-16 QUALITY-SLEEVE fetch (archived complete under archive/2026-09-16-quality-sleeve/data/, including its own data/raw, data/info, data/fin) with --refresh: data/raw, data/info and data/fin were cleared and every ticker in the NEW universe was re-pulled fresh from yfinance -- both the ~54 core instruments/proxies/benchmarks/FX pairs that are unchanged from the quality-sleeve build (kept for exact reproducibility -- see the 10-ticker cross-check in verify_data_refresh_moonshot.md) and the unicorn sleeve, which is now universe/unicorn_final.json's 40 moonshot names: 34 of the prior quality sleeve's 40 tickers were dropped (no longer held) and 34 new moonshot tickers were fetched for the first time; 6 names (ARA.TO, BIOA, FTC.L, IMSR, SLX.AX, VUL.AX) appear in both sleeves and were simply re-fetched fresh rather than carried over from cache. This is also the first run to compute avg_daily_value_usd_k_3m (trailing ~3-month mean of Close x Volume, converted to USD) per ticker, written into both this file and data/fundamentals.{json,csv}, per SPEC Section 6/8's liquidity-reporting requirement for the smaller/thinner moonshot names."
+  },
+  "common_calendar_start": "2016-09-16",
+  "common_calendar_end": "2026-09-16",
+  "n_common_calendar_days": 2526,
+  "n_tickers_fetched": 90,
+  "gbp_dividend_check": {
+    "RR.L": {
+      "raw_dividend_to_raw_close_ratios_last6_events": [
+        0.007659133801577218,
+        0.0065528171155541095,
+        0.008398655927988087,
+        0.004178272980501393,
+        0.00430960197416806,
+        0.003912873291033564
+      ],
+      "ratios_in_plausible_band_0.05pct_to_6pct": true,
+      "conclusion": "Dividends column is ALREADY expressed in the same unit as Close (pence for GBp tickers) -- ratio is directly plausible, no extra /100 or *100 rescale needed for the raw Dividends figure itself. The actual trap is that Yahoo's own Adj Close column mis-applies this dividend (see adjclose_trap_evidence) -- so Adj Close is discarded and TR is rebuilt from raw Close + raw Dividends via split_adjust() / build_local_tr_index().",
+      "adjclose_trap_evidence": {
+        "ex_div_date": "2026-08-06",
+        "prior_close": 1570.4000244140625,
+        "prior_adj_close_yahoo": 1570.3399658203125,
+        "dividend_on_date": 6.0,
+        "close_on_date": 1533.4000244140625,
+        "expected_prior_adjclose_if_full_div_applied": 1564.2552481022944,
+        "expected_prior_adjclose_if_only_1pct_of_div_applied": 1570.3385766509448,
+        "conclusion": "Yahoo Adj Close matches the '1/100th of dividend applied' figure, confirming the GBp under-adjustment trap"
+      }
+    },
+    "SHEL.L": {
+      "raw_dividend_to_raw_close_ratios_last6_events": [
+        0.010679336029114436,
+        0.01012937595129376,
+        0.009389753453400944,
+        0.009466711616847825,
+        0.009008952763198519,
+        0.008795620437956205
+      ],
+      "ratios_in_plausible_band_0.05pct_to_6pct": true,
+      "conclusion": "Dividends column is ALREADY expressed in the same unit as Close (pence for GBp tickers) -- ratio is directly plausible, no extra /100 or *100 rescale needed for the raw Dividends figure itself. The actual trap is that Yahoo's own Adj Close column mis-applies this dividend (see adjclose_trap_evidence) -- so Adj Close is discarded and TR is rebuilt from raw Close + raw Dividends via split_adjust() / build_local_tr_index().",
+      "adjclose_trap_evidence": {
+        "ex_div_date": "2026-08-13",
+        "prior_close": 3322.5,
+        "prior_adj_close_yahoo": 3322.2109375,
+        "dividend_on_date": 28.92,
+        "close_on_date": 3288.0,
+        "expected_prior_adjclose_if_full_div_applied": 3293.2765510948902,
+        "expected_prior_adjclose_if_only_1pct_of_div_applied": 3322.2077655109492,
+        "conclusion": "Yahoo Adj Close matches the '1/100th of dividend applied' figure, confirming the GBp under-adjustment trap"
+      }
+    },
+    "ISF.L": {
+      "raw_dividend_to_raw_close_ratios_last6_events": [
+        0.0057029653749158925,
+        0.013491971624469308,
+        0.008148148590381427,
+        0.0055837561720835155,
+        0.00500457748162147,
+        0.012737341618388917
+      ],
+      "ratios_in_plausible_band_0.05pct_to_6pct": true,
+      "conclusion": "Dividends column is ALREADY expressed in the same unit as Close (pence for GBp tickers) -- ratio is directly plausible, no extra /100 or *100 rescale needed for the raw Dividends figure itself. The actual trap is that Yahoo's own Adj Close column mis-applies this dividend (see adjclose_trap_evidence) -- so Adj Close is discarded and TR is rebuilt from raw Close + raw Dividends via split_adjust() / build_local_tr_index().",
+      "adjclose_trap_evidence": {
+        "ex_div_date": "2026-06-18",
+        "prior_close": 1034.0,
+        "prior_adj_close_yahoo": 1033.8712158203125,
+        "dividend_on_date": 12.88,
+        "close_on_date": 1011.2000122070312,
+        "expected_prior_adjclose_if_full_div_applied": 1020.8295887665859,
+        "expected_prior_adjclose_if_only_1pct_of_div_applied": 1033.868295887666,
+        "conclusion": "Yahoo Adj Close matches the '1/100th of dividend applied' figure, confirming the GBp under-adjustment trap"
+      }
+    },
+    "IGLT.L": {
+      "raw_dividend_to_raw_close_ratios_last6_events": [
+        0.015886385836824925,
+        0.02038248529916143,
+        0.020397885134092714,
+        0.02103969311272758,
+        0.02189537545317003,
+        0.02242455855347151
+      ],
+      "ratios_in_plausible_band_0.05pct_to_6pct": true,
+      "conclusion": "Dividends column is ALREADY expressed in the same unit as Close (pence for GBp tickers) -- ratio is directly plausible, no extra /100 or *100 rescale needed for the raw Dividends figure itself. The actual trap is that Yahoo's own Adj Close column mis-applies this dividend (see adjclose_trap_evidence) -- so Adj Close is discarded and TR is rebuilt from raw Close + raw Dividends via split_adjust() / build_local_tr_index().",
+      "adjclose_trap_evidence": {
+        "ex_div_date": "2026-05-22",
+        "prior_close": 9.552499771118164,
+        "prior_adj_close_yahoo": 9.336999893188477,
+        "dividend_on_date": 0.2155,
+        "close_on_date": 9.609999656677246,
+        "expected_prior_adjclose_if_full_div_applied": 9.338289180668703,
+        "expected_prior_adjclose_if_only_1pct_of_div_applied": 9.550357665213669,
+        "conclusion": "Adj Close looks closer to a fully-applied dividend adjustment"
+      }
+    }
+  },
+  "gilt_ticker_discrepancy_note": "SPEC_ANALYSIS.md Section 5 refers to the 10y gilt instrument column as 'T4Q' (Treasury 4.25% 2036, per market_params.json benchmark_gilt_10y, which is a generic 10y-benchmark reference used for the yield write-up). core_universe.json's actual 10y-gilt universe entry uses yahoo_ticker 'T36N' (Treasury 4.875% 2036, ISIN GB00BWBR1N39) marked yahoo_ticker_is_label=true -- i.e. 'T36N' is a column LABEL (the ii EPIC), not a live Yahoo symbol; its return series is entirely the spliced proxy IGLT.L. core_universe.json is treated as authoritative (it is the binding universe input) so the instrument column used throughout this pipeline is 'T36N', sourced from IGLT.L. The 30y gilt column 'T56' is consistent across both files and is likewise a label, sourced from GLTL.L.",
+  "splice_log": {
+    "T36N": {
+      "proxy_ticker": "IGLT.L",
+      "own_history_start": null,
+      "method": "no Yahoo ticker for the instrument itself -- proxy GBP TR used in full"
+    },
+    "T56": {
+      "proxy_ticker": "GLTL.L",
+      "own_history_start": null,
+      "method": "no Yahoo ticker for the instrument itself -- proxy GBP TR used in full"
+    },
+    "DBMG.L": {
+      "proxy_ticker": "DBMF",
+      "own_history_start": "2025-04-22",
+      "method": "proxy GBP TR chained before own_history_start, rescaled for continuity, rebased to 100"
+    }
+  },
+  "sanity_check": {
+    "VWRP.L": {
+      "first_date": "2019-07-25",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 222.78440203231278,
+      "return_1y": 0.1959091198349594,
+      "return_5y": 0.7133249389987475
+    },
+    "RR.L": {
+      "first_date": "2016-09-16",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 2487.36766063566,
+      "return_1y": 0.284802800516311,
+      "return_5y": 12.486045986294563
+    },
+    "SGLN.L": {
+      "first_date": "2016-09-16",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 213.33932322328928,
+      "return_1y": 0.19702176403207172,
+      "return_5y": 1.524154589371971
+    },
+    "PLTR": {
+      "first_date": "2020-09-30",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 1752.4918035633452,
+      "return_1y": 0.033783117386993355,
+      "return_5y": 5.259092351712435
+    },
+    "IHYU.L": {
+      "first_date": "2016-09-16",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 235.55496840804074,
+      "return_1y": 0.03605378010302984,
+      "return_5y": 0.2240564409817385
+    },
+    "DBMG.L": {
+      "first_date": "2019-05-08",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 142.32258876183747,
+      "return_1y": 0.26158106747230314,
+      "return_5y": 0.5892773847270993
+    },
+    "T36N": {
+      "first_date": "2016-09-16",
+      "last_date": "2026-09-16",
+      "last_gbp_level": 127.60660051010149,
+      "return_1y": 0.008299402799451183,
+      "return_5y": -0.20402174103995085
+    }
+  },
+  "patched_bars_2026-09-16": {
+    "BRNT.L": {
+      "open": 99.72000122070312,
+      "high": 100.80000305175781,
+      "low": 97.93000030517578,
+      "close": 98.87,
+      "volume": 77864.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "COPA.L": {
+      "open": 55.11000061035156,
+      "high": 55.45000076293945,
+      "low": 55.099998474121094,
+      "close": 55.32,
+      "volume": 22844.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "CSP1.L": {
+      "open": 60846.0,
+      "high": 61144.0,
+      "low": 60818.0,
+      "close": 61062.0,
+      "volume": 3154.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "DBMG.L": {
+      "open": 10180.0,
+      "high": 10180.0,
+      "low": 10003.7998046875,
+      "close": 10022.0,
+      "volume": 1469.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "EMIM.L": {
+      "open": 4033.0,
+      "high": 4055.0,
+      "low": 4023.0,
+      "close": 4048.0,
+      "volume": 169661.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "GHYS.L": {
+      "open": 87.3499984741211,
+      "high": 88.06999969482422,
+      "low": 87.22000122070312,
+      "close": 88.04,
+      "volume": 610.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "GLTL.L": {
+      "open": 32.060001373291016,
+      "high": 32.20000076293945,
+      "low": 31.860000610351562,
+      "close": 32.165000915527344,
+      "volume": 26804.0,
+      "close_source": "intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json)",
+      "intraday_bars_used": 8,
+      "intraday_fetch_ok": true
+    },
+    "IBTM.L": {
+      "open": 123.38999938964844,
+      "high": 123.95999908447266,
+      "low": 123.2699966430664,
+      "close": 123.92,
+      "volume": 61019.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "ICOM.L": {
+      "open": 10.949999809265137,
+      "high": 10.989999771118164,
+      "low": 10.864999771118164,
+      "close": 10.9,
+      "volume": 370941.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IEMB.L": {
+      "open": 89.86000061035156,
+      "high": 90.18000030517578,
+      "low": 89.86000061035156,
+      "close": 90.13,
+      "volume": 88354.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IGLT.L": {
+      "open": 9.492400169372559,
+      "high": 9.532999992370605,
+      "low": 9.470000267028809,
+      "close": 9.52750015258789,
+      "volume": 337808.0,
+      "close_source": "intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json)",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IHYG.L": {
+      "open": 90.20999908447266,
+      "high": 90.30000305175781,
+      "low": 90.16000366210938,
+      "close": 90.25,
+      "volume": 107662.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IHYU.L": {
+      "open": 92.62999725341797,
+      "high": 92.88999938964844,
+      "low": 92.55000305175781,
+      "close": 92.83,
+      "volume": 5861.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 7,
+      "intraday_fetch_ok": true
+    },
+    "IITU.L": {
+      "open": 3775.0,
+      "high": 3805.0,
+      "low": 3772.0,
+      "close": 3799.0,
+      "volume": 111220.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IJPA.L": {
+      "open": 83.93000030517578,
+      "high": 84.83999633789062,
+      "low": 83.70999908447266,
+      "close": 84.61,
+      "volume": 44912.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "ISF.L": {
+      "open": 1047.4000244140625,
+      "high": 1051.4000244140625,
+      "low": 1045.5999755859375,
+      "close": 1046.2,
+      "volume": 8254871.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "IWQU.L": {
+      "open": 88.48999786376953,
+      "high": 88.70999908447266,
+      "low": 88.37999725341797,
+      "close": 88.45,
+      "volume": 18353.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "SGLN.L": {
+      "open": 6232.0,
+      "high": 6283.59912109375,
+      "low": 6226.0,
+      "close": 6270.0,
+      "volume": 888781.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "SMEA.L": {
+      "open": 8855.0,
+      "high": 8893.0,
+      "low": 8837.0,
+      "close": 8875.0,
+      "volume": 36849.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "SMGB.L": {
+      "open": 76.16999816894531,
+      "high": 76.91950225830078,
+      "low": 76.12699890136719,
+      "close": 76.78,
+      "volume": 116477.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "SSLN.L": {
+      "open": 4573.0,
+      "high": 4589.0,
+      "low": 4538.34423828125,
+      "close": 4564.0,
+      "volume": 212622.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "VMID.L": {
+      "open": 36.60820007324219,
+      "high": 37.03499984741211,
+      "low": 36.55500030517578,
+      "close": 36.96,
+      "volume": 69299.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "VWRP.L": {
+      "open": 142.13999938964844,
+      "high": 142.82000732421875,
+      "low": 141.9600067138672,
+      "close": 142.66,
+      "volume": 289839.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "WLDS.L": {
+      "open": 7.672699928283691,
+      "high": 7.7230000495910645,
+      "low": 7.656000137329102,
+      "close": 7.717,
+      "volume": 87787.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    },
+    "XDWH.L": {
+      "open": 61.459999084472656,
+      "high": 61.81999969482422,
+      "low": 61.459999084472656,
+      "close": 61.7,
+      "volume": 21594.0,
+      "close_source": "universe/core_universe.json last_price",
+      "intraday_bars_used": 9,
+      "intraday_fetch_ok": true
+    }
+  },
+  "scale_glitch_repairs": {
+    "gbp_panel": {
+      "temporary_excursions": {
+        "DBMG.L": [
+          {
+            "date": "2025-04-23",
+            "log10_dev": -1.8884,
+            "factor": 100.0,
+            "before": 1.4198176912967493,
+            "after": 141.98176912967492
+          },
+          {
+            "date": "2025-05-16",
+            "log10_dev": -2.0004,
+            "factor": 100.0,
+            "before": 1.0752299228598745,
+            "after": 107.52299228598746
+          },
+          {
+            "date": "2025-06-10",
+            "log10_dev": -2.0059,
+            "factor": 100.0,
+            "before": 1.0618099664692802,
+            "after": 106.18099664692802
+          },
+          {
+            "date": "2025-06-11",
+            "log10_dev": -2.0064,
+            "factor": 100.0,
+            "before": 1.0604609608984537,
+            "after": 106.04609608984536
+          },
+          {
+            "date": "2025-06-12",
+            "log10_dev": -2.005,
+            "factor": 100.0,
+            "before": 1.0638691745553077,
+            "after": 106.38691745553078
+          },
+          {
+            "date": "2025-06-13",
+            "log10_dev": -2.005,
+            "factor": 100.0,
+            "before": 1.0638691745553077,
+            "after": 106.38691745553078
+          },
+          {
+            "date": "2025-06-16",
+            "log10_dev": -2.005,
+            "factor": 100.0,
+            "before": 1.0638691745553077,
+            "after": 106.38691745553078
+          },
+          {
+            "date": "2025-06-17",
+            "log10_dev": -1.9996,
+            "factor": 100.0,
+            "before": 1.0771470904428613,
+            "after": 107.71470904428612
+          },
+          {
+            "date": "2025-06-26",
+            "log10_dev": -2.0038,
+            "factor": 100.0,
+            "before": 1.0668513750482,
+            "after": 106.68513750482
+          },
+          {
+            "date": "2025-06-27",
+            "log10_dev": -2.0031,
+            "factor": 100.0,
+            "before": 1.0685555360492065,
+            "after": 106.85555360492064
+          },
+          {
+            "date": "2025-06-30",
+            "log10_dev": -2.0026,
+            "factor": 100.0,
+            "before": 1.0698335755410924,
+            "after": 106.98335755410923
+          },
+          {
+            "date": "2025-07-01",
+            "log10_dev": -2.0002,
+            "factor": 100.0,
+            "before": 1.0756560443689949,
+            "after": 107.56560443689949
+          },
+          {
+            "date": "2025-07-02",
+            "log10_dev": -1.9991,
+            "factor": 100.0,
+            "before": 1.0783541638558065,
+            "after": 107.83541638558066
+          },
+          {
+            "date": "2025-07-03",
+            "log10_dev": -1.9993,
+            "factor": 100.0,
+            "before": 1.0778571846129037,
+            "after": 107.78571846129037
+          },
+          {
+            "date": "2025-07-04",
+            "log10_dev": -1.9995,
+            "factor": 100.0,
+            "before": 1.0773600970248425,
+            "after": 107.73600970248425
+          },
+          {
+            "date": "2025-07-07",
+            "log10_dev": -1.9988,
+            "factor": 100.0,
+            "before": 1.0791352241047896,
+            "after": 107.91352241047896
+          },
+          {
+            "date": "2025-07-08",
+            "log10_dev": -1.997,
+            "factor": 100.0,
+            "before": 1.083608579016707,
+            "after": 108.3608579016707
+          },
+          {
+            "date": "2025-07-09",
+            "log10_dev": -1.9984,
+            "factor": 100.0,
+            "before": 1.080200365359853,
+            "after": 108.02003653598531
+          },
+          {
+            "date": "2025-07-10",
+            "log10_dev": -1.9979,
+            "factor": 100.0,
+            "before": 1.0814784048517387,
+            "after": 108.14784048517387
+          },
+          {
+            "date": "2025-07-11",
+            "log10_dev": -1.9953,
+            "factor": 100.0,
+            "before": 1.0878689273466435,
+            "after": 108.78689273466435
+          },
+          {
+            "date": "2025-07-24",
+            "log10_dev": -1.9937,
+            "factor": 100.0,
+            "before": 1.0956084554123753,
+            "after": 109.56084554123753
+          },
+          {
+            "date": "2025-07-25",
+            "log10_dev": -1.9913,
+            "factor": 100.0,
+            "before": 1.1017148969011994,
+            "after": 110.17148969011994
+          },
+          {
+            "date": "2025-07-28",
+            "log10_dev": -1.9927,
+            "factor": 100.0,
+            "before": 1.0991587095722692,
+            "after": 109.91587095722693
+          },
+          {
+            "date": "2025-07-29",
+            "log10_dev": -1.992,
+            "factor": 100.0,
+            "before": 1.1009338366522163,
+            "after": 110.09338366522164
+          },
+          {
+            "date": "2025-07-30",
+            "log10_dev": -1.9919,
+            "factor": 100.0,
+            "before": 1.1039160371451084,
+            "after": 110.39160371451085
+          },
+          {
+            "date": "2025-07-31",
+            "log10_dev": -1.9925,
+            "factor": 100.0,
+            "before": 1.1068982376380003,
+            "after": 110.68982376380004
+          },
+          {
+            "date": "2025-08-01",
+            "log10_dev": -1.9984,
+            "factor": 100.0,
+            "before": 1.0931943085864853,
+            "after": 109.31943085864853
+          },
+          {
+            "date": "2025-08-04",
+            "log10_dev": -1.9962,
+            "factor": 100.0,
+            "before": 1.09908763514817,
+            "after": 109.908763514817
+          },
+          {
+            "date": "2025-08-05",
+            "log10_dev": -1.997,
+            "factor": 100.0,
+            "before": 1.097454548571263,
+            "after": 109.7454548571263
+          },
+          {
+            "date": "2025-08-06",
+            "log10_dev": -1.9976,
+            "factor": 100.0,
+            "before": 1.097028535407301,
+            "after": 109.7028535407301
+          },
+          {
+            "date": "2025-08-07",
+            "log10_dev": -1.999,
+            "factor": 100.0,
+            "before": 1.0937622539083285,
+            "after": 109.37622539083284
+          },
+          {
+            "date": "2025-08-08",
+            "log10_dev": -1.999,
+            "factor": 100.0,
+            "before": 1.0941173009933496,
+            "after": 109.41173009933496
+          },
+          {
+            "date": "2025-08-11",
+            "log10_dev": -1.9988,
+            "factor": 100.0,
+            "before": 1.095395448830394,
+            "after": 109.53954488303941
+          }
+        ]
+      },
+      "permanent_breaks": {
+        "SMEA.L": [
+          {
+            "date": "2023-11-27",
+            "power_of_100": 1
+          }
+        ]
+      },
+      "overrides": {
+        "SMEA.L": {
+          "evidence": "SMEA.L's raw close jumps ~114x on 2023-11-27 with no recorded Stock Splits event (an unflagged ~1-for-100 consolidation); the mis-quoted stretch through 2024-04-24 is masked (set to NaN) rather than invented, matching the archived 2026-09-11 build. Separately, the refreshed common calendar recovered 2025-10-24 (a Friday the previous build's panel did not carry), on which SMEA.L's raw Yahoo bar is Open=High=Low=Close=9099.12 with Volume=0 against 7889 on 2025-10-23 and 7973 on 2025-10-27 -- a flat-OHLC, zero-volume placeholder print (+14.71% then -12.32% round trip; no MSCI Europe index moved 14.7% that day). Masked, matching analysis.py's data_overrides.SMEA.L.evidence_2025_10_24.",
+          "masked_bars": 27,
+          "panel": "GBP TR",
+          "mask_range": [
+            "2023-11-27",
+            "2024-04-24"
+          ]
+        },
+        "DBMG.L": {
+          "evidence": "DBMG.L's first two own-history bars print ~10,012 and ~9,998 (zero volume) against a settled level of ~7,650 from 2025-04-24 onward -- placeholder prints, not a genuine 23.5% two-day fall. Masked, with the DBMF proxy segment re-anchored to the first clean own bar (2025-04-24) along DBMF's own path, matching the archived 2026-09-11 build.",
+          "masked_bars": 2,
+          "panel": "GBP TR",
+          "reanchor": {
+            "proxy": "DBMF",
+            "anchor_date": "2025-04-24",
+            "last_proxy_date": "2025-04-17",
+            "factor": 0.7589469277969941
+          }
+        },
+        "WLDS.L": {
+          "evidence": "WLDS.L's raw Yahoo bar for 2025-10-24 is Open=High=Low=Close=8.9258 with Volume=0, against a settled 6.6480 close on 2025-10-23 and 6.7285 on 2025-10-27: +34.26% then -24.62%, a one-day round trip. Same flat-OHLC / zero-volume placeholder signature as DBMG.L above; surrounding bars carry real ranges and volume. Masked, matching analysis.py's data_overrides.WLDS.L.evidence.",
+          "masked_bars": 1,
+          "panel": "GBP TR"
+        }
+      }
+    },
+    "local_panel": {
+      "temporary_excursions": {
+        "DBMG.L": [
+          {
+            "date": "2025-04-23",
+            "log10_dev": -1.8743,
+            "factor": 100.0,
+            "before": 0.9998000335693359,
+            "after": 99.9800033569336
+          },
+          {
+            "date": "2025-05-16",
+            "log10_dev": -1.994,
+            "factor": 100.0,
+            "before": 0.7571499633789063,
+            "after": 75.71499633789062
+          },
+          {
+            "date": "2025-06-10",
+            "log10_dev": -2.0025,
+            "factor": 100.0,
+            "before": 0.747699966430664,
+            "after": 74.7699966430664
+          },
+          {
+            "date": "2025-06-11",
+            "log10_dev": -2.0031,
+            "factor": 100.0,
+            "before": 0.7467500305175782,
+            "after": 74.67500305175781
+          },
+          {
+            "date": "2025-06-12",
+            "log10_dev": -2.0019,
+            "factor": 100.0,
+            "before": 0.7491500091552734,
+            "after": 74.91500091552734
+          },
+          {
+            "date": "2025-06-13",
+            "log10_dev": -2.0021,
+            "factor": 100.0,
+            "before": 0.7491500091552734,
+            "after": 74.91500091552734
+          },
+          {
+            "date": "2025-06-16",
+            "log10_dev": -2.0022,
+            "factor": 100.0,
+            "before": 0.7491500091552734,
+            "after": 74.91500091552734
+          },
+          {
+            "date": "2025-06-17",
+            "log10_dev": -1.9969,
+            "factor": 100.0,
+            "before": 0.7584999847412109,
+            "after": 75.8499984741211
+          },
+          {
+            "date": "2025-06-26",
+            "log10_dev": -2.002,
+            "factor": 100.0,
+            "before": 0.75125,
+            "after": 75.125
+          },
+          {
+            "date": "2025-06-27",
+            "log10_dev": -2.0014,
+            "factor": 100.0,
+            "before": 0.7524500274658203,
+            "after": 75.24500274658203
+          },
+          {
+            "date": "2025-06-30",
+            "log10_dev": -2.0009,
+            "factor": 100.0,
+            "before": 0.7533499908447265,
+            "after": 75.33499908447266
+          },
+          {
+            "date": "2025-07-01",
+            "log10_dev": -1.9986,
+            "factor": 100.0,
+            "before": 0.7574500274658204,
+            "after": 75.74500274658203
+          },
+          {
+            "date": "2025-07-02",
+            "log10_dev": -1.9976,
+            "factor": 100.0,
+            "before": 0.7593499755859375,
+            "after": 75.93499755859375
+          },
+          {
+            "date": "2025-07-03",
+            "log10_dev": -1.9978,
+            "factor": 100.0,
+            "before": 0.759000015258789,
+            "after": 75.9000015258789
+          },
+          {
+            "date": "2025-07-04",
+            "log10_dev": -1.998,
+            "factor": 100.0,
+            "before": 0.7586499786376953,
+            "after": 75.86499786376953
+          },
+          {
+            "date": "2025-07-07",
+            "log10_dev": -1.9973,
+            "factor": 100.0,
+            "before": 0.7598999786376953,
+            "after": 75.98999786376953
+          },
+          {
+            "date": "2025-07-08",
+            "log10_dev": -1.9957,
+            "factor": 100.0,
+            "before": 0.7630500030517579,
+            "after": 76.30500030517578
+          },
+          {
+            "date": "2025-07-09",
+            "log10_dev": -1.9973,
+            "factor": 100.0,
+            "before": 0.7606500244140625,
+            "after": 76.06500244140625
+          },
+          {
+            "date": "2025-07-10",
+            "log10_dev": -1.997,
+            "factor": 100.0,
+            "before": 0.7615499877929688,
+            "after": 76.15499877929688
+          },
+          {
+            "date": "2025-07-11",
+            "log10_dev": -1.9948,
+            "factor": 100.0,
+            "before": 0.766050033569336,
+            "after": 76.6050033569336
+          },
+          {
+            "date": "2025-07-24",
+            "log10_dev": -1.9937,
+            "factor": 100.0,
+            "before": 0.7715000152587891,
+            "after": 77.1500015258789
+          },
+          {
+            "date": "2025-07-25",
+            "log10_dev": -1.9913,
+            "factor": 100.0,
+            "before": 0.7758000183105469,
+            "after": 77.58000183105469
+          },
+          {
+            "date": "2025-07-28",
+            "log10_dev": -1.9927,
+            "factor": 100.0,
+            "before": 0.774000015258789,
+            "after": 77.4000015258789
+          },
+          {
+            "date": "2025-07-29",
+            "log10_dev": -1.992,
+            "factor": 100.0,
+            "before": 0.7752500152587891,
+            "after": 77.5250015258789
+          },
+          {
+            "date": "2025-07-30",
+            "log10_dev": -1.9919,
+            "factor": 100.0,
+            "before": 0.7773500061035157,
+            "after": 77.73500061035156
+          },
+          {
+            "date": "2025-07-31",
+            "log10_dev": -1.9925,
+            "factor": 100.0,
+            "before": 0.7794499969482422,
+            "after": 77.94499969482422
+          },
+          {
+            "date": "2025-08-01",
+            "log10_dev": -1.9984,
+            "factor": 100.0,
+            "before": 0.7698000335693359,
+            "after": 76.9800033569336
+          },
+          {
+            "date": "2025-08-04",
+            "log10_dev": -1.9962,
+            "factor": 100.0,
+            "before": 0.773949966430664,
+            "after": 77.3949966430664
+          },
+          {
+            "date": "2025-08-05",
+            "log10_dev": -1.997,
+            "factor": 100.0,
+            "before": 0.7727999877929688,
+            "after": 77.27999877929688
+          },
+          {
+            "date": "2025-08-06",
+            "log10_dev": -1.9976,
+            "factor": 100.0,
+            "before": 0.7725,
+            "after": 77.25
+          },
+          {
+            "date": "2025-08-07",
+            "log10_dev": -1.999,
+            "factor": 100.0,
+            "before": 0.770199966430664,
+            "after": 77.0199966430664
+          },
+          {
+            "date": "2025-08-08",
+            "log10_dev": -1.999,
+            "factor": 100.0,
+            "before": 0.7704499816894531,
+            "after": 77.04499816894531
+          },
+          {
+            "date": "2025-08-11",
+            "log10_dev": -1.9988,
+            "factor": 100.0,
+            "before": 0.7713500213623047,
+            "after": 77.13500213623047
+          }
+        ]
+      },
+      "permanent_breaks": {
+        "SMEA.L": [
+          {
+            "date": "2023-11-27",
+            "power_of_100": 1
+          }
+        ]
+      },
+      "overrides": {
+        "SMEA.L": {
+          "evidence": "SMEA.L's raw close jumps ~114x on 2023-11-27 with no recorded Stock Splits event (an unflagged ~1-for-100 consolidation); the mis-quoted stretch through 2024-04-24 is masked (set to NaN) rather than invented, matching the archived 2026-09-11 build. Separately, the refreshed common calendar recovered 2025-10-24 (a Friday the previous build's panel did not carry), on which SMEA.L's raw Yahoo bar is Open=High=Low=Close=9099.12 with Volume=0 against 7889 on 2025-10-23 and 7973 on 2025-10-27 -- a flat-OHLC, zero-volume placeholder print (+14.71% then -12.32% round trip; no MSCI Europe index moved 14.7% that day). Masked, matching analysis.py's data_overrides.SMEA.L.evidence_2025_10_24.",
+          "masked_bars": 27,
+          "panel": "local price",
+          "mask_range": [
+            "2023-11-27",
+            "2024-04-24"
+          ]
+        },
+        "DBMG.L": {
+          "evidence": "DBMG.L's first two own-history bars print ~10,012 and ~9,998 (zero volume) against a settled level of ~7,650 from 2025-04-24 onward -- placeholder prints, not a genuine 23.5% two-day fall. Masked, with the DBMF proxy segment re-anchored to the first clean own bar (2025-04-24) along DBMF's own path, matching the archived 2026-09-11 build.",
+          "masked_bars": 2,
+          "panel": "local price"
+        },
+        "WLDS.L": {
+          "evidence": "WLDS.L's raw Yahoo bar for 2025-10-24 is Open=High=Low=Close=8.9258 with Volume=0, against a settled 6.6480 close on 2025-10-23 and 6.7285 on 2025-10-27: +34.26% then -24.62%, a one-day round trip. Same flat-OHLC / zero-volume placeholder signature as DBMG.L above; surrounding bars carry real ranges and volume. Masked, matching analysis.py's data_overrides.WLDS.L.evidence.",
+          "masked_bars": 1,
+          "panel": "local price"
+        }
+      }
+    }
+  },
+  "tickers": {
+    "2498.HK": {
+      "currency": "HKD",
+      "first_date": "2024-01-05",
+      "last_date": "2026-09-16",
+      "n_rows": 663,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 13772.01,
+      "issues": [
+        ".info was priced at 16.27 (a later/live session), not the AS_OF (2026-09-16) close of 16.09000015258789 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.988937 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ACWI": {
+      "currency": "USD",
+      "first_date": "2008-03-28",
+      "last_date": "2026-09-16",
+      "n_rows": 4647,
+      "n_dividends": 38,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 409602.63,
+      "issues": []
+    },
+    "AISP": {
+      "currency": "USD",
+      "first_date": "2021-05-10",
+      "last_date": "2026-09-16",
+      "n_rows": 1345,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 890.44,
+      "issues": [
+        ".info was priced at 1.955 (a later/live session), not the AS_OF (2026-09-16) close of 1.9049999713897705 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.974425 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "AL3.AX": {
+      "currency": "AUD",
+      "first_date": "2020-04-20",
+      "last_date": "2026-09-16",
+      "n_rows": 1625,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 220.46,
+      "issues": [
+        ".info was priced at 0.15 (a later/live session), not the AS_OF (2026-09-16) close of 0.135000005364418 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.900000 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ALCLS.PA": {
+      "currency": "EUR",
+      "first_date": "2007-02-07",
+      "last_date": "2026-09-16",
+      "n_rows": 5015,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 580.36,
+      "issues": [
+        ".info was priced at 1.222 (a later/live session), not the AS_OF (2026-09-16) close of 1.1510000228881836 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.941899 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ALMDT.PA": {
+      "currency": "EUR",
+      "first_date": "2011-05-20",
+      "last_date": "2026-09-16",
+      "n_rows": 3921,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 864.64,
+      "issues": [
+        ".info was priced at 4.095 (a later/live session), not the AS_OF (2026-09-16) close of 3.785000085830689 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.924298 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ALMU": {
+      "currency": "USD",
+      "first_date": "2023-02-28",
+      "last_date": "2026-09-16",
+      "n_rows": 891,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 8973.09,
+      "issues": [
+        ".info was priced at 11.545 (a later/live session), not the AS_OF (2026-09-16) close of 13.43000030517578 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.163274 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ARA.TO": {
+      "currency": "CAD",
+      "first_date": "2021-12-10",
+      "last_date": "2026-09-16",
+      "n_rows": 1195,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 261.11,
+      "issues": [
+        ".info was priced at 3.77 (a later/live session), not the AS_OF (2026-09-16) close of 3.660000085830689 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.970822 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ASML.AS": {
+      "currency": "EUR",
+      "first_date": "1998-07-20",
+      "last_date": "2026-09-16",
+      "n_rows": 7246,
+      "n_dividends": 36,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1130010.57,
+      "issues": [
+        ".info was priced at 1418.0 (a later/live session), not the AS_OF (2026-09-16) close of 1396.199951171875 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.984626 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "AXE.AX": {
+      "currency": "AUD",
+      "first_date": "2007-08-14",
+      "last_date": "2026-09-16",
+      "n_rows": 4831,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 113.29,
+      "issues": [
+        ".info was priced at 0.18 (a later/live session), not the AS_OF (2026-09-16) close of 0.1850000023841858 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.027778 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "AZN.L": {
+      "currency": "GBp",
+      "first_date": "1993-05-21",
+      "last_date": "2026-09-16",
+      "n_rows": 8523,
+      "n_dividends": 67,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 552317.07,
+      "issues": [
+        ".info was priced at 12428.0 (a later/live session), not the AS_OF (2026-09-16) close of 12136.0 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.976505 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "BGO.L": {
+      "currency": "GBp",
+      "first_date": "2005-06-30",
+      "last_date": "2026-09-16",
+      "n_rows": 5364,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 151.43,
+      "issues": []
+    },
+    "BIOA": {
+      "currency": "USD",
+      "first_date": "2024-09-26",
+      "last_date": "2026-09-16",
+      "n_rows": 494,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 12985.59,
+      "issues": [
+        ".info was priced at 8.09 (a later/live session), not the AS_OF (2026-09-16) close of 7.75 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.957973 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "BRK-B": {
+      "currency": "USD",
+      "first_date": "1996-05-09",
+      "last_date": "2026-09-16",
+      "n_rows": 7637,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2220845.71,
+      "issues": [
+        ".info was priced at 509.2 (a later/live session), not the AS_OF (2026-09-16) close of 519.7999877929688 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.020817 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "BRNT.L": {
+      "currency": "USD",
+      "first_date": "2012-02-22",
+      "last_date": "2026-09-16",
+      "n_rows": 3679,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 13573.41,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=98.87). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/BRNT.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "BTQ": {
+      "currency": "USD",
+      "first_date": "2025-09-26",
+      "last_date": "2026-09-16",
+      "n_rows": 244,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 11963.29,
+      "issues": [
+        ".info was priced at 2.7 (a later/live session), not the AS_OF (2026-09-16) close of 2.630000114440918 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.974074 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "CALENDAR": {
+      "currency": null,
+      "first_date": null,
+      "last_date": null,
+      "n_rows": null,
+      "n_dividends": null,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": [
+        "VWRP.L only starts 2019-07-25; ^FTSE (^FTAS unavailable in this run -- see fetch_log issue on ^FTAS) trading days used as fallback calendar for 2016-09-16 -> 2019-07-24",
+        "VWRP.L is missing 2 trading day(s) within its own operating range that ^FTSE (^FTAS unavailable in this run -- see fetch_log issue on ^FTAS) confirms as real LSE trading days -- ['2025-10-24', '2026-03-06'] -- most likely VWRP.L's usual EOD-NAV posting lag rather than a market holiday (individual LSE equities and the FX pairs both have bars on these dates). These day(s) are folded into COMMON_CALENDAR so tickers with genuine data for them are not truncated; VWRP.L's own column will be NaN (then forward-filled <=3 days, per the standard Yahoo-holiday rule) on these dates.",
+        "prices_gbp_monthly.csv: trailing partial-month bucket relabeled from the calendar month-end 2026-09-30 (after the data cutoff 2026-09-16) to the true last observation date 2026-09-16 -- this row is a partial month (the value is the last available daily observation, not a genuine month-end), not a full month."
+      ]
+    },
+    "COPA.L": {
+      "currency": "USD",
+      "first_date": "2008-01-02",
+      "last_date": "2026-09-16",
+      "n_rows": 4727,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 3766.73,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=55.32). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/COPA.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "CRBU": {
+      "currency": "USD",
+      "first_date": "2021-07-23",
+      "last_date": "2026-09-16",
+      "n_rows": 1293,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2734.77,
+      "issues": [
+        ".info was priced at 1.31 (a later/live session), not the AS_OF (2026-09-16) close of 1.25 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.954198 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "CSP1.L": {
+      "currency": "GBp",
+      "first_date": "2010-05-19",
+      "last_date": "2026-09-16",
+      "n_rows": 4123,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 6545.7,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=61062.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/CSP1.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "CU6.AX": {
+      "currency": "AUD",
+      "first_date": "2021-08-25",
+      "last_date": "2026-09-16",
+      "n_rows": 1281,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 4324.05,
+      "issues": [
+        ".info was priced at 2.1 (a later/live session), not the AS_OF (2026-09-16) close of 2.0899999141693115 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.995238 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "DBMF": {
+      "currency": "USD",
+      "first_date": "2019-05-08",
+      "last_date": "2026-09-16",
+      "n_rows": 1850,
+      "n_dividends": 18,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 66063.36,
+      "issues": []
+    },
+    "DBMG.L": {
+      "currency": "GBp",
+      "first_date": "2025-04-22",
+      "last_date": "2026-09-16",
+      "n_rows": 354,
+      "n_dividends": 0,
+      "proxy_used": "DBMF",
+      "avg_daily_value_usd_k_3m": 280.01,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=10022.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/DBMG.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "EDIT": {
+      "currency": "USD",
+      "first_date": "2016-02-03",
+      "last_date": "2026-09-16",
+      "n_rows": 2670,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 7144.89,
+      "issues": [
+        ".info was priced at 2.72 (a later/live session), not the AS_OF (2026-09-16) close of 2.7100000381469727 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.996324 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "EMIM.L": {
+      "currency": "GBp",
+      "first_date": "2014-06-09",
+      "last_date": "2026-09-16",
+      "n_rows": 3101,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 21198.8,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=4048.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/EMIM.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "EMV.AX": {
+      "currency": "AUD",
+      "first_date": "2018-12-13",
+      "last_date": "2026-09-16",
+      "n_rows": 1963,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 39.69,
+      "issues": [
+        ".info was priced at 1.645 (a later/live session), not the AS_OF (2026-09-16) close of 1.7350000143051147 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.054711 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "FTC.L": {
+      "currency": "GBp",
+      "first_date": "1994-11-07",
+      "last_date": "2026-09-16",
+      "n_rows": 8142,
+      "n_dividends": 27,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 6335.26,
+      "issues": [
+        ".info was priced at 235.0 (a later/live session), not the AS_OF (2026-09-16) close of 233.0 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.991489 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "GBPAUD=X": {
+      "currency": null,
+      "first_date": "2003-06-03",
+      "last_date": "2026-09-16",
+      "n_rows": 6060,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPCAD=X": {
+      "currency": null,
+      "first_date": "2003-12-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5931,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPCHF=X": {
+      "currency": null,
+      "first_date": "2003-10-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5972,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPEUR=X": {
+      "currency": null,
+      "first_date": "2003-09-17",
+      "last_date": "2026-09-16",
+      "n_rows": 5967,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPHKD=X": {
+      "currency": null,
+      "first_date": "2003-12-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5929,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPJPY=X": {
+      "currency": null,
+      "first_date": "2003-12-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5930,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPSEK=X": {
+      "currency": null,
+      "first_date": "2003-12-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5930,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GBPUSD=X": {
+      "currency": null,
+      "first_date": "2003-12-01",
+      "last_date": "2026-09-16",
+      "n_rows": 5926,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "GELN.L": {
+      "currency": "GBp",
+      "first_date": "2021-11-30",
+      "last_date": "2026-09-16",
+      "n_rows": 1209,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 34.84,
+      "issues": []
+    },
+    "GFUZ": {
+      "currency": "USD",
+      "first_date": "2025-09-30",
+      "last_date": "2026-09-16",
+      "n_rows": 242,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 5040.38,
+      "issues": [
+        ".info was priced at 7.82 (a later/live session), not the AS_OF (2026-09-16) close of 7.840000152587891 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.002558 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "GHYS.L": {
+      "currency": "GBP",
+      "first_date": "2013-06-25",
+      "last_date": "2026-09-16",
+      "n_rows": 3325,
+      "n_dividends": 28,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 226.26,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=88.04). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/GHYS.L.csv already has the AS_OF bar]",
+        "raw data gap: no rows in data/raw between 2025-12-24 and 2026-01-15 (22 calendar days, ~12 missing trading days on the common calendar). Re-checked with a fresh (non-cached) yf.Ticker('GHYS.L').history(period='max') call on 2026-09-14 and the gap is present there too -- this is a genuine hole in Yahoo's data for this ticker, not a caching/pagination artefact of this script. prices_gbp_daily.csv / prices_local_daily.csv correctly show NaN (not forward-filled beyond the 3-trading-day limit) across this range; no proxy is defined for this ticker (proxy_ticker is null in core_universe.json), so this sub-period should be excluded from any statistics computed over a window that contains it (e.g. the 5y core window).",
+        "raw data gap: no rows in data/raw between 2026-01-15 and 2026-01-26 (11 calendar days, ~6 missing trading days on the common calendar). Re-checked with a fresh (non-cached) yf.Ticker('GHYS.L').history(period='max') call on 2026-09-14 and the gap is present there too -- this is a genuine hole in Yahoo's data for this ticker, not a caching/pagination artefact of this script. prices_gbp_daily.csv / prices_local_daily.csv correctly show NaN (not forward-filled beyond the 3-trading-day limit) across this range; no proxy is defined for this ticker (proxy_ticker is null in core_universe.json), so this sub-period should be excluded from any statistics computed over a window that contains it (e.g. the 5y core window)."
+      ]
+    },
+    "GLTL.L": {
+      "currency": "GBP",
+      "first_date": "2012-05-17",
+      "last_date": "2026-09-16",
+      "n_rows": 3620,
+      "n_dividends": 28,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1909.39,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json) (=32.165000915527344). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/GLTL.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "GSIT": {
+      "currency": "USD",
+      "first_date": "2007-03-29",
+      "last_date": "2026-09-16",
+      "n_rows": 4898,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 4856.29,
+      "issues": [
+        ".info was priced at 5.22 (a later/live session), not the AS_OF (2026-09-16) close of 4.809999942779541 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.921456 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "GUTS": {
+      "currency": "USD",
+      "first_date": "2024-02-02",
+      "last_date": "2026-09-16",
+      "n_rows": 657,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1171.26,
+      "issues": [
+        ".info was priced at 0.5908 (a later/live session), not the AS_OF (2026-09-16) close of 0.5630000233650208 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.952945 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "HSBA.L": {
+      "currency": "GBp",
+      "first_date": "1988-07-05",
+      "last_date": "2026-09-16",
+      "n_rows": 9795,
+      "n_dividends": 106,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 458899.66,
+      "issues": [
+        ".info was priced at 1537.4 (a later/live session), not the AS_OF (2026-09-16) close of 1507.800048828125 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.980747 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "HYT.AX": {
+      "currency": "AUD",
+      "first_date": "2005-12-13",
+      "last_date": "2026-09-16",
+      "n_rows": 5250,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 19.52,
+      "issues": [
+        ".info was priced at 0.005 (a later/live session), not the AS_OF (2026-09-16) close of 0.006000000052154 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.200000 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "IBTM.L": {
+      "currency": "GBP",
+      "first_date": "2008-01-02",
+      "last_date": "2026-09-16",
+      "n_rows": 4725,
+      "n_dividends": 25,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 3817.72,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=123.92). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IBTM.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "ICOM.L": {
+      "currency": "USD",
+      "first_date": "2017-07-18",
+      "last_date": "2026-09-16",
+      "n_rows": 2316,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 5010.96,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=10.9). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/ICOM.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IDN": {
+      "currency": "USD",
+      "first_date": "1999-11-19",
+      "last_date": "2026-09-16",
+      "n_rows": 6745,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1262.42,
+      "issues": [
+        ".info was priced at 2.37 (a later/live session), not the AS_OF (2026-09-16) close of 2.380000114440918 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.004219 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "IEMB.L": {
+      "currency": "USD",
+      "first_date": "2008-02-15",
+      "last_date": "2026-09-16",
+      "n_rows": 4695,
+      "n_dividends": 163,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 13091.96,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=90.13). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IEMB.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IGLT.L": {
+      "currency": "GBP",
+      "first_date": "2008-01-02",
+      "last_date": "2026-09-16",
+      "n_rows": 4726,
+      "n_dividends": 28,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 6594.57,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json) (=9.52750015258789). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IGLT.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IHYG.L": {
+      "currency": "EUR",
+      "first_date": "2010-09-03",
+      "last_date": "2026-09-16",
+      "n_rows": 4051,
+      "n_dividends": 28,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 18688.5,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=90.25). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IHYG.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IHYU.L": {
+      "currency": "USD",
+      "first_date": "2011-09-13",
+      "last_date": "2026-09-16",
+      "n_rows": 3792,
+      "n_dividends": 29,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 4834.44,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=92.83). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IHYU.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IITU.L": {
+      "currency": "GBp",
+      "first_date": "2015-11-20",
+      "last_date": "2026-09-16",
+      "n_rows": 2731,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 9282.17,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=3799.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IITU.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IJPA.L": {
+      "currency": "USD",
+      "first_date": "2009-09-25",
+      "last_date": "2026-09-16",
+      "n_rows": 4288,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 8877.92,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=84.61). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IJPA.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IMSR": {
+      "currency": "USD",
+      "first_date": "2024-10-10",
+      "last_date": "2026-09-16",
+      "n_rows": 484,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 9836.1,
+      "issues": [
+        "Using bars from 2025-11-01 onward only (pre de-SPAC shell data excluded per SPEC Section 5)",
+        ".info was priced at 4.385 (a later/live session), not the AS_OF (2026-09-16) close of 4.25 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.969213 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "IPWR": {
+      "currency": "USD",
+      "first_date": "2013-11-22",
+      "last_date": "2026-09-16",
+      "n_rows": 3221,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1019.88,
+      "issues": [
+        ".info was priced at 3.95 (a later/live session), not the AS_OF (2026-09-16) close of 3.890000104904175 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.984810 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ISF.L": {
+      "currency": "GBp",
+      "first_date": "2009-01-02",
+      "last_date": "2026-09-16",
+      "n_rows": 4472,
+      "n_dividends": 54,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 84129.61,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=1046.2). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/ISF.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "IWQU.L": {
+      "currency": "USD",
+      "first_date": "2014-10-06",
+      "last_date": "2026-09-16",
+      "n_rows": 3019,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 4751.91,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=88.45). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/IWQU.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "LAES": {
+      "currency": "USD",
+      "first_date": "2023-05-23",
+      "last_date": "2026-09-16",
+      "n_rows": 832,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 34178.23,
+      "issues": [
+        ".info was priced at 2.3 (a later/live session), not the AS_OF (2026-09-16) close of 2.190000057220459 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.952174 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "LIS.AX": {
+      "currency": "AUD",
+      "first_date": "2021-09-28",
+      "last_date": "2026-09-16",
+      "n_rows": 1257,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 18.68,
+      "issues": [
+        ".info was priced at 0.15 (a later/live session), not the AS_OF (2026-09-16) close of 0.1500000059604644 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.000000 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "LTBR": {
+      "currency": "USD",
+      "first_date": "2005-01-03",
+      "last_date": "2026-09-16",
+      "n_rows": 5460,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 6656.88,
+      "issues": [
+        ".info was priced at 6.82 (a later/live session), not the AS_OF (2026-09-16) close of 6.46999979019165 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.948680 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "MOLN.SW": {
+      "currency": "CHF",
+      "first_date": "2015-03-03",
+      "last_date": "2026-09-16",
+      "n_rows": 2900,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 65.58,
+      "issues": [
+        ".info was priced at 3.25 (a later/live session), not the AS_OF (2026-09-16) close of 3.2100000381469727 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.987692 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "MSCL.TO": {
+      "currency": "CAD",
+      "first_date": "2008-01-07",
+      "last_date": "2026-09-16",
+      "n_rows": 4692,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 200.77,
+      "issues": [
+        ".info was priced at 13.27 (a later/live session), not the AS_OF (2026-09-16) close of 13.0 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.979653 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "MSFT": {
+      "currency": "USD",
+      "first_date": "1986-03-13",
+      "last_date": "2026-09-16",
+      "n_rows": 10206,
+      "n_dividends": 91,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 14892651.58,
+      "issues": [
+        ".info was priced at 497.75 (a later/live session), not the AS_OF (2026-09-16) close of 490.2999877929687 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.985033 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "NYXH": {
+      "currency": "USD",
+      "first_date": "2021-04-28",
+      "last_date": "2026-09-16",
+      "n_rows": 1353,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 498.53,
+      "issues": [
+        ".info was priced at 1.49 (a later/live session), not the AS_OF (2026-09-16) close of 1.5499999523162842 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.040268 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "ONWD.BR": {
+      "currency": "EUR",
+      "first_date": "2021-10-21",
+      "last_date": "2026-09-16",
+      "n_rows": 1255,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 361.28,
+      "issues": [
+        ".info was priced at 2.89 (a later/live session), not the AS_OF (2026-09-16) close of 2.799999952316284 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.968858 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "PLTR": {
+      "currency": "USD",
+      "first_date": "2020-09-30",
+      "last_date": "2026-09-16",
+      "n_rows": 1497,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 5848356.95,
+      "issues": [
+        ".info was priced at 176.24 (a later/live session), not the AS_OF (2026-09-16) close of 174.33999633789062 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.989219 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "PRME": {
+      "currency": "USD",
+      "first_date": "2022-10-20",
+      "last_date": "2026-09-16",
+      "n_rows": 979,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 11319.6,
+      "issues": [
+        ".info was priced at 3.14 (a later/live session), not the AS_OF (2026-09-16) close of 3.0 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.955414 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "PRQR": {
+      "currency": "USD",
+      "first_date": "2014-09-18",
+      "last_date": "2026-09-16",
+      "n_rows": 3016,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2083.02,
+      "issues": [
+        ".info was priced at 1.89 (a later/live session), not the AS_OF (2026-09-16) close of 1.8600000143051147 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.984127 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "QSI": {
+      "currency": "USD",
+      "first_date": "2020-11-13",
+      "last_date": "2026-09-16",
+      "n_rows": 1465,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2698.43,
+      "issues": [
+        ".info was priced at 0.77 (a later/live session), not the AS_OF (2026-09-16) close of 0.7300000190734863 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.948052 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "RR.L": {
+      "currency": "GBp",
+      "first_date": "1988-07-01",
+      "last_date": "2026-09-16",
+      "n_rows": 9797,
+      "n_dividends": 55,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 408219.97,
+      "issues": [
+        ".info was priced at 1479.8 (a later/live session), not the AS_OF (2026-09-16) close of 1440.5999755859375 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.973510 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SEYE.ST": {
+      "currency": "SEK",
+      "first_date": "2016-12-07",
+      "last_date": "2026-09-16",
+      "n_rows": 2455,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2834.83,
+      "issues": [
+        ".info was priced at 53.0 (a later/live session), not the AS_OF (2026-09-16) close of 53.04999923706055 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.000943 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SGLN.L": {
+      "currency": "GBp",
+      "first_date": "2011-04-08",
+      "last_date": "2026-09-16",
+      "n_rows": 3899,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 35880.59,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=6270.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/SGLN.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "SHEL.L": {
+      "currency": "GBp",
+      "first_date": "1996-08-29",
+      "last_date": "2026-09-16",
+      "n_rows": 7669,
+      "n_dividends": 85,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 423817.09,
+      "issues": [
+        ".info was priced at 3571.0 (a later/live session), not the AS_OF (2026-09-16) close of 3576.5 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.001540 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SIE.DE": {
+      "currency": "EUR",
+      "first_date": "1996-11-08",
+      "last_date": "2026-09-16",
+      "n_rows": 7645,
+      "n_dividends": 30,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 303242.51,
+      "issues": [
+        ".info was priced at 266.6 (a later/live session), not the AS_OF (2026-09-16) close of 260.5 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.977119 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SLDP": {
+      "currency": "USD",
+      "first_date": "2021-05-18",
+      "last_date": "2026-09-16",
+      "n_rows": 1339,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 8638.93,
+      "issues": [
+        ".info was priced at 2.545 (a later/live session), not the AS_OF (2026-09-16) close of 2.390000104904175 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.939096 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SLX.AX": {
+      "currency": "AUD",
+      "first_date": "1998-05-29",
+      "last_date": "2026-09-16",
+      "n_rows": 7210,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 3641.3,
+      "issues": [
+        ".info was priced at 4.32 (a later/live session), not the AS_OF (2026-09-16) close of 4.389999866485596 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.016204 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SMEA.L": {
+      "currency": "GBp",
+      "first_date": "2009-09-25",
+      "last_date": "2026-09-16",
+      "n_rows": 4207,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 13149.36,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=8875.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/SMEA.L.csv already has the AS_OF bar]",
+        "raw data gap: no rows in data/raw between 2023-12-22 and 2024-04-22 (122 calendar days, ~80 missing trading days on the common calendar). Re-checked with a fresh (non-cached) yf.Ticker('SMEA.L').history(period='max') call on 2026-09-14 and the gap is present there too -- this is a genuine hole in Yahoo's data for this ticker, not a caching/pagination artefact of this script. prices_gbp_daily.csv / prices_local_daily.csv correctly show NaN (not forward-filled beyond the 3-trading-day limit) across this range; no proxy is defined for this ticker (proxy_ticker is null in core_universe.json), so this sub-period should be excluded from any statistics computed over a window that contains it (e.g. the 5y core window).",
+        "permanent quote-convention break repaired in the GBP TR panel at 2023-11-27 (x100): every bar before the break date was rescaled onto the convention used from the break date onward (Stage B of repair_scale_glitches), matching analysis.py's independent data_repairs.permanent_breaks correction. Without this, prices before the break date are understated by the same factor.",
+        "permanent quote-convention break repaired in the local price panel at 2023-11-27 (x100): every bar before the break date was rescaled onto the convention used from the break date onward (Stage B of repair_scale_glitches), matching analysis.py's independent data_repairs.permanent_breaks correction. Without this, prices before the break date are understated by the same factor."
+      ]
+    },
+    "SMGB.L": {
+      "currency": "GBP",
+      "first_date": "2020-12-10",
+      "last_date": "2026-09-16",
+      "n_rows": 1452,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 32949.77,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=76.78). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/SMGB.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "SPCX": {
+      "currency": "USD",
+      "first_date": "2026-06-12",
+      "last_date": "2026-09-16",
+      "n_rows": 66,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 13926856.77,
+      "issues": [
+        ".info was priced at 154.81 (a later/live session), not the AS_OF (2026-09-16) close of 150.8800048828125 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.974614 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "SSLN.L": {
+      "currency": "GBp",
+      "first_date": "2011-04-08",
+      "last_date": "2026-09-16",
+      "n_rows": 3899,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 16195.01,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=4564.0). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/SSLN.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "T36N": {
+      "currency": "GBP",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": null,
+      "n_dividends": null,
+      "proxy_used": "IGLT.L",
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "T56": {
+      "currency": "GBP",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": null,
+      "n_dividends": null,
+      "proxy_used": "GLTL.L",
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    },
+    "ULVR.L": {
+      "currency": "GBp",
+      "first_date": "1988-07-01",
+      "last_date": "2026-09-16",
+      "n_rows": 9798,
+      "n_dividends": 103,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 231215.81,
+      "issues": [
+        ".info was priced at 4632.5 (a later/live session), not the AS_OF (2026-09-16) close of 4640.0 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.001619 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "VMID.L": {
+      "currency": "GBP",
+      "first_date": "2014-09-30",
+      "last_date": "2026-09-16",
+      "n_rows": 3022,
+      "n_dividends": 47,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 4636.14,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=36.96). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/VMID.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "VUL.AX": {
+      "currency": "AUD",
+      "first_date": "2018-05-30",
+      "last_date": "2026-09-16",
+      "n_rows": 2103,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 3811.95,
+      "issues": [
+        ".info was priced at 2.19 (a later/live session), not the AS_OF (2026-09-16) close of 2.240000009536743 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.022831 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "VWRP.L": {
+      "currency": "GBP",
+      "first_date": "2019-07-25",
+      "last_date": "2026-09-16",
+      "n_rows": 1803,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 76826.4,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=142.66). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/VWRP.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "VYGR": {
+      "currency": "USD",
+      "first_date": "2015-11-11",
+      "last_date": "2026-09-16",
+      "n_rows": 2726,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1973.27,
+      "issues": [
+        ".info was priced at 3.04 (a later/live session), not the AS_OF (2026-09-16) close of 3.049999952316284 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 1.003289 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "WBT.AX": {
+      "currency": "AUD",
+      "first_date": "2010-12-21",
+      "last_date": "2026-09-16",
+      "n_rows": 3979,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 6105.48,
+      "issues": [
+        ".info was priced at 3.26 (a later/live session), not the AS_OF (2026-09-16) close of 3.049999952316284 -- marketCap/enterpriseValue/PE/P-B/EV-EBITDA/dividendYield repriced by the ratio 0.935583 to freeze them at the binding 2026-09-16 as-of close (SPEC section 1 binding instruction; see verify_data_refresh.md Blocker C)."
+      ]
+    },
+    "WLDS.L": {
+      "currency": "GBP",
+      "first_date": "2018-03-27",
+      "last_date": "2026-09-16",
+      "n_rows": 2139,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 1883.12,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=7.717). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/WLDS.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "XDWH.L": {
+      "currency": "USD",
+      "first_date": "2010-11-22",
+      "last_date": "2026-09-16",
+      "n_rows": 3968,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 2049.29,
+      "issues": [
+        "AS_OF (2026-09-16) bar was missing from Yahoo daily history() (SPEC section 7 hole); rebuilt from 60m intraday data with Close pinned to universe/core_universe.json last_price (=61.7). [recorded from _as_of_patch_record_2026-09-16.json; not re-patched this run since data/raw/XDWH.L.csv already has the AS_OF bar]"
+      ]
+    },
+    "YCA.L": {
+      "currency": "GBp",
+      "first_date": "2018-07-05",
+      "last_date": "2026-09-16",
+      "n_rows": 2072,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 9174.16,
+      "issues": []
+    },
+    "^FTAS": {
+      "currency": "GBP",
+      "first_date": null,
+      "last_date": null,
+      "n_rows": 0,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": [
+        "has a row after 2026-09-16 but none before it -- too little history to patch the AS_OF bar (not an LSE-fund hole); skipped.",
+        "^FTAS returned only 1 row(s) from yfinance in this 2026-09-16 refresh run (fresh, non-cached re-checks with period='max', period='10y' and an explicit start/end range all failed or returned <=1 row; the explicit-range call raised 'possibly delisted; no price data found'). This is a genuine live Yahoo data gap for ^FTAS as of this run (it had full history, 2026- back to the 1990s, in the 2026-09-11 build's archived raw cache) -- not a bug in this script. ^FTSE (FTSE 100) is used instead as the common-calendar fallback for the pre-VWRP.L portion of the 10y window; PROJECT_BRIEF's ^FTAS beta reporting (a separate, analysis.py-level use) will need to fall back to ^FTSE or VWRP.L-only betas until Yahoo restores ^FTAS history.",
+        "could not build local TR index (no usable data)"
+      ]
+    },
+    "^FTSE": {
+      "currency": "GBP",
+      "first_date": "1984-01-03",
+      "last_date": "2026-09-16",
+      "n_rows": 10788,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 11434117624.67,
+      "issues": []
+    },
+    "^GSPC": {
+      "currency": "USD",
+      "first_date": "1927-12-30",
+      "last_date": "2026-09-16",
+      "n_rows": 24794,
+      "n_dividends": 0,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": 39184655906.45,
+      "issues": []
+    },
+    "patched_bars_2026-09-16": {
+      "currency": null,
+      "first_date": null,
+      "last_date": null,
+      "n_rows": null,
+      "n_dividends": null,
+      "proxy_used": null,
+      "avg_daily_value_usd_k_3m": null,
+      "issues": []
+    }
+  }
+}

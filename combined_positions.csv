@@ -1,0 +1,55 @@
+ticker,name,sleeve,bucket,region,currency,exchange,sector,weight_of_total,weight_of_sleeve,gbp,price_gbp,shares,ter_pct,invested_gbp
+IITU.L,iShares S&P 500 Information Technology Sector UCITS ETF USD (Acc),core,etf_equity,UK,GBp,LSE,S&P 500 Capped 35/20 Information Technology,0.043154694116193895,0.053943367645242365,8630.93882323878,37.99,227,0.15,8623.73
+ISF.L,iShares Core FTSE 100 UCITS ETF GBP (Dist),core,etf_equity,UK,GBp,LSE,FTSE 100,0.10828201682382654,0.13535252102978318,21656.403364765312,10.462,2070,0.07,21656.34
+SMGB.L,VanEck Semiconductor UCITS ETF,core,etf_equity,UK,GBP,LSE,MVIS US Listed Semiconductor 25,0.13284196292660622,0.16605245365825777,26568.392585321242,76.78,346,0.35,26565.88
+SGLN.L,iShares Physical Gold ETC,core,etc_commodity,UK,GBp,LSE,LBMA Gold Price,0.11863001753363765,0.14828752191704705,23726.00350672753,62.7,378,0.12,23700.600000000002
+BRNT.L,WisdomTree Brent Crude Oil,core,etc_commodity,UK,USD,LSE,Bloomberg Brent Crude Subindex,0.04136998246636232,0.0517124780829529,8273.996493272465,73.3813150409804,112,0.49,8218.707284589804
+RR.L,Rolls-Royce Holdings plc,core,stock,UK,GBp,LSE,Aerospace & Defence,0.03999999999999998,0.04999999999999997,7999.9999999999945,14.405999755859376,555,,7995.329864501954
+PLTR,Palantir Technologies Inc.,core,stock,US,USD,NasdaqGS,Software — Infrastructure,0.039999999999999945,0.049999999999999926,7999.999999999989,129.39514711756973,61,,7893.103974171754
+SPCX,Space Exploration Technologies Corp. (SpaceX),core,stock,US,USD,NasdaqGS,Aerospace & Defence / Satellite,0.020000000000000004,0.025,4000.0,111.98314121260569,35,,3919.409942441199
+AZN.L,AstraZeneca PLC,core,stock,UK,GBp,LSE,Pharmaceuticals,0.008621404047589926,0.010776755059487407,1724.2808095179853,121.36,14,,1699.04
+SHEL.L,Shell plc,core,stock,UK,GBp,LSE,Integrated Oil & Gas,0.03999999999999995,0.04999999999999994,7999.99999999999,35.765,223,,7975.595
+HSBA.L,HSBC Holdings plc,core,stock,UK,GBp,LSE,Banks — Diversified,0.039999999999999876,0.04999999999999984,7999.999999999975,15.07800048828125,530,,7991.340258789062
+BRK-B,Berkshire Hathaway Inc. Class B,core,stock,US,USD,NYSE,Diversified Holding / Insurance,0.01137859595241019,0.014223244940512738,2275.7191904820384,385.7955564128007,5,,1928.9777820640033
+IBTM.L,iShares $ Treasury Bond 7-10yr UCITS ETF USD (Dist),core,etf_bond,UK,GBP,LSE,ICE US Treasury 7-10 Year,0.07999999999999996,0.09999999999999994,15999.999999999989,123.92,129,0.07,15985.68
+DBMG.L,iMGP DBi Managed Futures UCITS ETF R USD (Acc),core,trend,UK,GBp,LSE,Managed futures / CTA replication,0.07572132613337257,0.09465165766671571,15144.265226674514,100.22,151,0.75,15133.22
+IPWR,Ideal Power Inc.,unicorn,unicorn,US,USD,NasdaqCM,"AI infrastructure (power, cooling, networking)",0.005,0.025,1000.0,2.8871581188168305,346,,998.9567091106234
+VYGR,"Voyager Therapeutics, Inc.",unicorn,unicorn,US,USD,NASDAQ,Gene editing & gene therapy,0.005,0.025,1000.0,2.263709996721922,441,,998.2961085543675
+AL3.AX,AML3D Limited,unicorn,unicorn,Other,AUD,ASX,Advanced materials,0.005,0.025,1000.0,0.07140779356536564,14004,,999.9947410893805
+ONWD.BR,ONWARD Medical N.V.,unicorn,unicorn,Europe,EUR,Euronext Brussels,"Longevity, neurotech & BCI",0.005,0.025,1000.0,2.398040533324839,417,,999.9829023964578
+LTBR,Lightbridge Corporation,unicorn,unicorn,US,USD,NASDAQ Capital Market,"Nuclear: SMR, fuel & enrichment",0.005,0.025,1000.0,4.802033912401442,208,,998.8230537795
+ARA.TO,Aclara Resources Inc.,unicorn,unicorn,Other,CAD,Toronto Stock Exchange,Critical minerals & rare earths,0.005,0.025,1000.0,1.9514275940628687,512,,999.1309281601888
+SLX.AX,Silex Systems Limited,unicorn,unicorn,Other,AUD,ASX,"Nuclear: SMR, fuel & enrichment",0.005,0.025,1000.0,2.3220754945289075,430,,998.4924626474302
+NYXH,Nyxoah SA,unicorn,unicorn,US,USD,"NASDAQ (also Euronext Brussels, NYXH.BR)",Digital health & medtech devices,0.005,0.025,1000.0,1.1504099809287534,869,,999.7062734270867
+ALMU,"Aeluma, Inc.",unicorn,unicorn,US,USD,NasdaqCM,"Photonic, neuromorphic & novel compute",0.005,0.025,1000.0,9.96774636790297,100,,996.774636790297
+WBT.AX,Weebit Nano Limited,unicorn,unicorn,Other,AUD,ASX,"Photonic, neuromorphic & novel compute",0.005,0.025,1000.0,1.613287098629851,619,,998.6247140518778
+VUL.AX,Vulcan Energy Resources Limited,unicorn,unicorn,Other,AUD,ASX,"Grid, geothermal & clean fuels",0.005,0.025,1000.0,1.1848403845291684,843,,998.820444158089
+IDN,"Intellicheck, Inc.",unicorn,unicorn,US,USD,NASDAQ,Fintech infrastructure,0.005,0.025,1000.0,1.7664361099965449,566,,999.8028382580444
+GELN.L,Gelion plc,unicorn,unicorn,UK,GBp,LSE (AIM),Next-gen batteries & storage,0.005,0.025,1000.0,0.145,6896,,999.92
+EDIT,"Editas Medicine, Inc.",unicorn,unicorn,US,USD,NASDAQ,Gene editing & gene therapy,0.005,0.025,1000.0,2.011362056845675,497,,999.6469422523004
+SEYE.ST,Smart Eye AB (publ),unicorn,unicorn,Europe,SEK,Nasdaq Stockholm,"Autonomy, lidar & machine vision",0.005,0.025,1000.0,4.026993262615664,248,,998.6943291286848
+QSI,Quantum-Si Incorporated,unicorn,unicorn,US,USD,NASDAQ,"Obesity, metabolic & diagnostics",0.005,0.025,1000.0,0.5418060218423505,1845,,999.6321102991367
+CRBU,"Caribou Biosciences, Inc.",unicorn,unicorn,US,USD,NASDAQ,"RNA, cell therapy & next-gen biologics",0.005,0.025,1000.0,0.9277500131609739,1077,,999.1867641743689
+ALCLS.PA,Cellectis S.A.,unicorn,unicorn,Europe,EUR,Euronext Paris,"RNA, cell therapy & next-gen biologics",0.005,0.025,1000.0,0.9857659841959523,1014,,999.5667079746956
+GUTS,"Fractyl Health, Inc.",unicorn,unicorn,US,USD,NASDAQ,"Obesity, metabolic & diagnostics",0.005,0.025,1000.0,0.4178586232692213,2393,,999.9356854832465
+PRME,"Prime Medicine, Inc.",unicorn,unicorn,US,USD,NasdaqGM,Gene editing & gene therapy,0.005,0.025,1000.0,2.2266000315863375,449,,999.7434141822655
+PRQR,ProQR Therapeutics N.V.,unicorn,unicorn,US,USD,NASDAQ,"RNA, cell therapy & next-gen biologics",0.005,0.025,1000.0,1.3804920302007855,724,,999.4762298653687
+ALMDT.PA,Median Technologies SA,unicorn,unicorn,Europe,EUR,Euronext Growth Paris,"Obesity, metabolic & diagnostics",0.005,0.025,1000.0,3.2416370639404595,308,,998.4242156936615
+CU6.AX,Clarity Pharmaceuticals Ltd,unicorn,unicorn,Other,AUD,ASX,Other frontier (radiopharmaceutical theranostics),0.005,0.025,1000.0,1.105498344387251,904,,999.370503326075
+LAES,SEALSQ Corp,unicorn,unicorn,US,USD,NasdaqGS,Post-quantum & cybersecurity,0.005,0.025,1000.0,1.6254180655270516,615,,999.6321102991367
+IMSR,Terrestrial Energy Inc.,unicorn,unicorn,US,USD,NASDAQ Global Select,"Nuclear: SMR, fuel & enrichment",0.005,0.025,1000.0,3.1543500447473116,317,,999.9289641848978
+EMV.AX,EMVision Medical Devices Ltd,unicorn,unicorn,Other,AUD,ASX,Digital health & medtech devices,0.005,0.025,1000.0,0.9177223550693314,1089,,999.399644670502
+SLDP,"Solid Power, Inc.",unicorn,unicorn,US,USD,NASDAQ Global Select,Next-gen batteries & storage,0.005,0.025,1000.0,1.7738581030236618,563,,998.6821120023216
+HYT.AX,HyTerra Ltd,unicorn,unicorn,Other,AUD,ASX,"Grid, geothermal & clean fuels",0.005,0.025,1000.0,0.0031736796154922357,315091,,999.9978837250641
+MSCL.TO,Satellos Bioscience Inc.,unicorn,unicorn,Other,CAD,Toronto Stock Exchange,Other frontier (muscle regeneration),0.005,0.025,1000.0,6.931300034945092,144,,998.1072050320934
+2498.HK,"Robosense Technology Co., Ltd",unicorn,unicorn,Other,HKD,HKEX,"Humanoids, robotics & automation components",0.005,0.025,1000.0,1.5226057698529512,656,,998.8293850235359
+GFUZ,General Fusion Group Ltd.,unicorn,unicorn,US,USD,NASDAQ Global Market,Fusion supply chain,0.005,0.025,1000.0,5.818848195796362,171,,995.023041481178
+AXE.AX,Archer Materials Limited,unicorn,unicorn,Other,AUD,ASX,Quantum computing & sensing,0.005,0.025,1000.0,0.09785512188819491,10219,,999.9814905754638
+MOLN.SW,Molecular Partners AG,unicorn,unicorn,Europe,CHF,SIX Swiss Exchange,"RNA, cell therapy & next-gen biologics",0.005,0.025,1000.0,2.9092951282216117,343,,997.8882289800129
+LIS.AX,Li-S Energy Limited,unicorn,unicorn,Other,AUD,ASX,Next-gen batteries & storage,0.005,0.025,1000.0,0.07934199285040623,12603,,999.9471358936697
+GSIT,"GSI Technology, Inc.",unicorn,unicorn,US,USD,NasdaqGS,"Photonic, neuromorphic & novel compute",0.005,0.025,1000.0,3.5699820081744025,280,,999.5949622888327
+BIOA,"BioAge Labs, Inc.",unicorn,unicorn,US,USD,NASDAQ,"Longevity, neurotech & BCI",0.005,0.025,1000.0,5.752050081598038,173,,995.1046641164606
+AISP,"Airship AI Holdings, Inc.",unicorn,unicorn,US,USD,NASDAQ,AI applications & agents,0.005,0.025,1000.0,1.4138909988228117,707,,999.6209361677278
+FTC.L,Filtronic plc,unicorn,unicorn,UK,GBp,LSE AIM,"Space: launch, in-orbit, satellites, EO",0.005,0.025,1000.0,2.33,429,,999.57
+BTQ,BTQ Technologies Corp.,unicorn,unicorn,US,USD,NasdaqGM,Quantum computing & sensing,0.005,0.025,1000.0,1.9519861126287397,512,,999.4168896659147
+BGO.L,Bango PLC,unicorn,unicorn,UK,GBp,LSE (AIM),Fintech infrastructure,0.005,0.025,1000.0,0.625,1600,,1000.0

@@ -1,0 +1,22 @@
+{
+ "what": "^FTAS (FTSE All-Share) column reinstated into the 2026-09-16 MOONSHOT-REBUILD panels (data/prices_gbp_daily.csv, data/prices_local_daily.csv) from the archived 2026-09-16 quality-sleeve fetch cache.",
+ "why": "Yahoo still does not serve ^FTAS history: the 2026-09-17 moonshot re-fetch again returned a single post-as-of row (data/fetch_log.json tickers['^FTAS']), so the freshly fetched panel had no ^FTAS column and analysis.py's secondary-benchmark step failed outright. ^FTAS is the SECONDARY benchmark (beta_ftas / alpha_ftas / r2_ftas only); it is not in the optimiser universe and enters no covariance, expected return or weight. The restored column is byte-identical, on every overlapping date, to the one the 2026-09-16 quality-sleeve build used and to the 2026-09-11 build's pristine fetch cache before it.",
+ "effect": "beta_ftas and friends are estimated on 2021-09-16 -> 2026-07-22 (the overlapping sample), exactly as in the previous two builds; analysis.py logs this automatically. Nothing else in either panel is touched.",
+ "applied": "2026-09-17 (moonshot rebuild), before scripts/analysis.py was run; the panels' date index is identical to the archived build's.",
+ "details": {
+  "data/prices_gbp_daily.csv": {
+   "n_non_nan": 2485,
+   "first": "2016-09-16",
+   "last": "2026-07-22",
+   "source": "archive/2026-09-16-quality-sleeve/data/prices_gbp_daily_raw.csv (identical to archive/2026-09-11/data/ on every overlapping date)",
+   "inserted_at_column_index": 79
+  },
+  "data/prices_local_daily.csv": {
+   "n_non_nan": 2485,
+   "first": "2016-09-16",
+   "last": "2026-07-22",
+   "source": "archive/2026-09-16-quality-sleeve/data/prices_local_daily_raw.csv (identical to archive/2026-09-11/data/ on every overlapping date)",
+   "inserted_at_column_index": 79
+  }
+ }
+}

@@ -1,0 +1,2978 @@
+{
+  "meta": {
+    "generated": "2026-09-17",
+    "as_of": "2026-09-16",
+    "script": "scripts/analysis_variants.py",
+    "reuses": "scripts/analysis.py (CONFIG, loading, repair, Ledoit-Wolf, CoreProblem, SLSQP optimisers, cross-seeding, backtest, statistics) -- analysis.py unchanged",
+    "headline_reference": "Moderate12 / MaxSharpe columns of data/weights.csv",
+    "disclaimer": "Educational analysis. Not personalised investment advice.",
+    "rf_annual": 0.0375,
+    "erp": 0.0417,
+    "target_vol": 0.12,
+    "spcx_policy_weight": 0.025,
+    "optimiser_universe": [
+      "IITU.L",
+      "VMID.L",
+      "IWQU.L",
+      "VWRP.L",
+      "CSP1.L",
+      "ISF.L",
+      "EMIM.L",
+      "WLDS.L",
+      "SMEA.L",
+      "IJPA.L",
+      "SMGB.L",
+      "XDWH.L",
+      "SGLN.L",
+      "SSLN.L",
+      "BRNT.L",
+      "COPA.L",
+      "ICOM.L",
+      "YCA.L",
+      "RR.L",
+      "PLTR",
+      "AZN.L",
+      "SHEL.L",
+      "HSBA.L",
+      "ULVR.L",
+      "MSFT",
+      "ASML.AS",
+      "SIE.DE",
+      "BRK-B",
+      "IHYU.L",
+      "IHYG.L",
+      "GHYS.L",
+      "IEMB.L",
+      "IBTM.L",
+      "T36N",
+      "T56",
+      "DBMG.L"
+    ],
+    "lw_delta": 0.03584030116978449,
+    "headline_reproducibility_check": {
+      "max_abs_weight_diff_vs_published": 8.326672684688674e-17,
+      "turnover_vs_published": 2.8275992658421956e-16,
+      "published_expected_return_blend_optimiser_part": 0.15007397298239833
+    }
+  },
+  "variants": {
+    "Moderate12_GiltsAtYield": {
+      "variant_id": "A",
+      "label": "Moderate12_GiltsAtYield",
+      "description": "Identical to the headline Moderate-12% problem except that the expected-return vector fed to the optimiser uses the redemption yield (yield to maturity) for both individual gilts in place of the 50/50 historical/yield blend.",
+      "rationale": "For a gilt held to maturity the forward return is its redemption yield. The 5-year sample mean is dominated by the 2021-2023 repricing from ~1% to ~5.3% yields, which has already happened and cannot repeat from today's level, so blending it into the forward estimate double-counts a past capital loss. See the gilt bullet in data/analysis_results.json -> limitations.",
+      "expected_return_input_note": "blend, with T36N and T56 at redemption yield",
+      "per_asset_caps_used": {
+        "etf_equity": 0.2,
+        "etf_bond": 0.2,
+        "etc_commodity": 0.2,
+        "gilt": 0.2,
+        "trend": 0.15,
+        "stock": 0.05
+      },
+      "group_constraints": {
+        "equity_etf": {
+          "buckets": [
+            "etf_equity"
+          ],
+          "min": 0.3,
+          "max": null
+        },
+        "commodity": {
+          "buckets": [
+            "etc_commodity"
+          ],
+          "min": 0.05,
+          "max": 0.2
+        },
+        "bonds": {
+          "buckets": [
+            "etf_bond",
+            "gilt"
+          ],
+          "min": 0.1,
+          "max": 0.4
+        },
+        "stocks": {
+          "buckets": [
+            "stock"
+          ],
+          "min": null,
+          "max": 0.25
+        },
+        "trend": {
+          "buckets": [
+            "trend"
+          ],
+          "min": null,
+          "max": 0.15
+        }
+      },
+      "Moderate12": {
+        "name": "Moderate12_GiltsAtYield",
+        "expected_return_estimate_used": "blend, with T36N and T56 at redemption yield",
+        "weights": {
+          "IITU.L": 0.05436104996855443,
+          "ISF.L": 0.06914206681704252,
+          "SMGB.L": 0.1764968832144028,
+          "SGLN.L": 0.13887594554786045,
+          "BRNT.L": 0.06112405445213926,
+          "RR.L": 0.04999999999999984,
+          "PLTR": 0.049999999999999954,
+          "SPCX": 0.025,
+          "AZN.L": 0.017231709909164176,
+          "SHEL.L": 0.049999999999999885,
+          "HSBA.L": 0.04999999999999977,
+          "BRK-B": 0.007768290090835902,
+          "T36N": 0.16418896733991936,
+          "DBMG.L": 0.08581103266008067
+        },
+        "weights_full": {
+          "IITU.L": 0.05436104996855443,
+          "VMID.L": 0.0,
+          "IWQU.L": 1.5672814735679835e-16,
+          "VWRP.L": 0.0,
+          "CSP1.L": 0.0,
+          "ISF.L": 0.06914206681704252,
+          "EMIM.L": 0.0,
+          "WLDS.L": 0.0,
+          "SMEA.L": 0.0,
+          "IJPA.L": 1.416802100021317e-16,
+          "SMGB.L": 0.1764968832144028,
+          "XDWH.L": 0.0,
+          "SGLN.L": 0.13887594554786045,
+          "SSLN.L": 1.80171451768176e-17,
+          "BRNT.L": 0.06112405445213926,
+          "COPA.L": 5.1880119509725605e-17,
+          "ICOM.L": 8.006308942169329e-17,
+          "YCA.L": 0.0,
+          "RR.L": 0.04999999999999984,
+          "PLTR": 0.049999999999999954,
+          "SPCX": 0.025,
+          "AZN.L": 0.017231709909164176,
+          "SHEL.L": 0.049999999999999885,
+          "HSBA.L": 0.04999999999999977,
+          "ULVR.L": 5.768278488934019e-17,
+          "MSFT": 4.9241267771893643e-17,
+          "ASML.AS": 3.188130104813717e-17,
+          "SIE.DE": 3.638349292103059e-17,
+          "BRK-B": 0.007768290090835902,
+          "IHYU.L": 1.088563333372679e-16,
+          "IHYG.L": 4.624654308220666e-17,
+          "GHYS.L": 3.1875914447988223e-17,
+          "IEMB.L": 0.0,
+          "IBTM.L": 7.88606070390576e-17,
+          "T36N": 0.16418896733991936,
+          "T56": 0.0,
+          "DBMG.L": 0.08581103266008067
+        },
+        "n_holdings": 14,
+        "expected_return_optimiser_part": {
+          "historical_5y": 0.22168333585830688,
+          "capm_or_yield": 0.06833443618294369,
+          "blend": 0.1450088860206253,
+          "optimiser_input": 0.1526738897055824
+        },
+        "expected_return_total_core": {
+          "historical_5y": 0.22569252926131025,
+          "capm_or_yield": 0.07234362958594706,
+          "blend": 0.14901807942362869,
+          "optimiser_input": 0.15668308310858578
+        },
+        "exp_return_blend": 0.14901807942362869,
+        "ex_ante_vol_lw_optimiser_part": 0.12000000000069008,
+        "ex_ante_vol_sample_optimiser_part": 0.1193282671581517,
+        "ex_ante_vol_full_core_incl_spcx": 0.12795427826751296,
+        "sharpe_ex_ante": 0.8715463127421089,
+        "sharpe_ex_ante_on_optimiser_input": 0.9314505518870629,
+        "beta_vwrp": 0.781109983828653,
+        "beta_up": 0.8344106038456075,
+        "beta_down": 0.7479927504325031,
+        "beta_asymmetry": 0.08641785341310437,
+        "beta_ftas": 0.5526604310581505,
+        "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+        "beta_vwrp_excl_spcx": 0.725587970796322,
+        "beta_up_excl_spcx": 0.6420618765613136,
+        "beta_down_excl_spcx": 0.7312379557604093,
+        "beta_asymmetry_excl_spcx": -0.08917607919909565,
+        "realised_daily_5y": {
+          "n_obs": 1261,
+          "start": "2021-09-17",
+          "end": "2026-09-16",
+          "mean_ann_arith": 0.22793682071946764,
+          "cagr": 0.24703498755757192,
+          "vol_ann": 0.12060250388439994,
+          "sharpe": 1.579045331446894,
+          "sortino": 2.3119236378869505,
+          "downside_dev_ann": 0.08237158771105557,
+          "skew": -0.4266357345758272,
+          "excess_kurtosis": 2.3245721552641694,
+          "max_drawdown": -0.13383012328683064,
+          "max_dd_peak": "2025-02-18",
+          "max_dd_trough": "2025-04-07",
+          "var95": 0.011331244171044278,
+          "cvar95": 0.01665973757825706,
+          "var99": 0.01806133609252632,
+          "cvar99": 0.026957801575122366,
+          "best_period": 0.0287700939200773,
+          "worst_period": -0.04210471045629607,
+          "total_return": 2.015279444069625,
+          "level_base_date": "2021-09-16",
+          "first_period_return": -0.0016627656954174253,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.7259873771770566,
+          "alpha_ann": 0.13355038450878723,
+          "r2": 0.6146989457753562,
+          "beta_up": 0.64359638117536,
+          "beta_down": 0.7312445000830735,
+          "beta_asymmetry": -0.08764811890771351,
+          "corr_benchmark": 0.7840273884089503,
+          "label": "Moderate12_GiltsAtYield"
+        },
+        "skew_daily_5y": -0.4266357345758272,
+        "sortino_daily_5y": 2.3119236378869505,
+        "backtest_5y": {
+          "n_obs": 59,
+          "start": "2021-10-31",
+          "end": "2026-08-31",
+          "mean_ann_arith": 0.22807561795355852,
+          "cagr": 0.24657081240318401,
+          "vol_ann": 0.10802779733219563,
+          "sharpe": 1.7641349972870461,
+          "sortino": 4.535351880518287,
+          "downside_dev_ann": 0.04202002909017504,
+          "skew": 0.11815296593787616,
+          "excess_kurtosis": -1.2000706690566931,
+          "max_drawdown": -0.07597799660274229,
+          "max_dd_peak": "2022-03-31",
+          "max_dd_trough": "2022-09-30",
+          "var95": 0.02680443695238812,
+          "cvar95": 0.03124679125685846,
+          "var99": 0.03235110635954411,
+          "cvar99": 0.03460440059655762,
+          "best_period": 0.07244696632770875,
+          "worst_period": -0.03460440059655762,
+          "total_return": 1.9556805453883142,
+          "level_base_date": "2021-09-30",
+          "first_period_return": 0.024107112359654976,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.7809487052226235,
+          "alpha_ann": 0.1263352030876821,
+          "r2": 0.6746090193437391,
+          "beta_up": 0.9552384810680279,
+          "beta_down": 0.7100530526253276,
+          "beta_asymmetry": 0.2451854284427003,
+          "corr_benchmark": 0.8213458585417834,
+          "label": "Moderate12_GiltsAtYield 5y monthly backtest"
+        },
+        "gbp": {
+          "IITU.L": 8697.76799496871,
+          "ISF.L": 11062.730690726805,
+          "SMGB.L": 28239.50131430445,
+          "SGLN.L": 22220.151287657674,
+          "BRNT.L": 9779.848712342282,
+          "RR.L": 7999.999999999975,
+          "PLTR": 7999.999999999993,
+          "SPCX": 4000.0,
+          "AZN.L": 2757.0735854662685,
+          "SHEL.L": 7999.999999999982,
+          "HSBA.L": 7999.999999999963,
+          "BRK-B": 1242.9264145337445,
+          "T36N": 26270.2347743871,
+          "DBMG.L": 13729.765225612908
+        },
+        "shares": {
+          "IITU.L": 228,
+          "ISF.L": 1057,
+          "SMGB.L": 367,
+          "SGLN.L": 354,
+          "BRNT.L": 133,
+          "RR.L": 555,
+          "PLTR": 61,
+          "SPCX": 35,
+          "AZN.L": 22,
+          "SHEL.L": 223,
+          "HSBA.L": 530,
+          "BRK-B": 3,
+          "T36N": 271,
+          "DBMG.L": 136
+        },
+        "invested_gbp": 159305.08460959277,
+        "residual_cash_gbp": 694.91539040723,
+        "weighted_ter": 0.001857421859398693,
+        "weight_by_bucket": {
+          "etc_commodity": 0.19999999999999987,
+          "etf_bond": 2.658393979065204e-16,
+          "etf_equity": 0.30000000000000004,
+          "gilt": 0.16418896733991936,
+          "stock": 0.2499999999999997,
+          "trend": 0.08581103266008067
+        },
+        "weight_by_listing_region": {
+          "Europe": 6.826479396916776e-17,
+          "UK": 0.9172317099091639,
+          "US": 0.0827682900908359
+        },
+        "weight_by_currency": {
+          "EUR": 1.1451133705137443e-16,
+          "GBP": 0.34068585055432227,
+          "GBp": 0.5154218049027018,
+          "USD": 0.1438923445429757
+        },
+        "risk_contribution": {
+          "IITU.L": {
+            "weight": 0.05436104996855443,
+            "mcr": 0.1706559014769202,
+            "risk_contribution": 0.009277033987615561,
+            "pct_of_risk": 0.07730861656301842
+          },
+          "VMID.L": {
+            "weight": 0.0,
+            "mcr": 0.09106879877492352,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IWQU.L": {
+            "weight": 1.5672814735679835e-16,
+            "mcr": 0.11756713469467793,
+            "risk_contribution": 1.8426079210744043e-17,
+            "pct_of_risk": 1.5355066008865066e-16
+          },
+          "VWRP.L": {
+            "weight": 0.0,
+            "mcr": 0.10343279261037835,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "CSP1.L": {
+            "weight": 0.0,
+            "mcr": 0.10566509677505775,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "ISF.L": {
+            "weight": 0.06914206681704252,
+            "mcr": 0.07704519176879886,
+            "risk_contribution": 0.005327063797210145,
+            "pct_of_risk": 0.04439219830982925
+          },
+          "EMIM.L": {
+            "weight": 0.0,
+            "mcr": 0.11105809203793836,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "WLDS.L": {
+            "weight": 0.0,
+            "mcr": 0.11234648462055202,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SMEA.L": {
+            "weight": 0.0,
+            "mcr": 0.08990749927333234,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IJPA.L": {
+            "weight": 1.416802100021317e-16,
+            "mcr": 0.10838430232895775,
+            "risk_contribution": 1.5355910714901268e-17,
+            "pct_of_risk": 1.2796592262344133e-16
+          },
+          "SMGB.L": {
+            "weight": 0.1764968832144028,
+            "mcr": 0.2637914002493446,
+            "risk_contribution": 0.04655835996277236,
+            "pct_of_risk": 0.38798633302087177
+          },
+          "XDWH.L": {
+            "weight": 0.0,
+            "mcr": 0.05494652527293567,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SGLN.L": {
+            "weight": 0.13887594554786045,
+            "mcr": 0.04705298756280542,
+            "risk_contribution": 0.006534528138636321,
+            "pct_of_risk": 0.054454401154989514
+          },
+          "SSLN.L": {
+            "weight": 1.80171451768176e-17,
+            "mcr": 0.09939028992306669,
+            "risk_contribution": 1.790729282709884e-18,
+            "pct_of_risk": 1.492274402249655e-17
+          },
+          "BRNT.L": {
+            "weight": 0.06112405445213926,
+            "mcr": 0.12208335837212998,
+            "risk_contribution": 0.007462229844838105,
+            "pct_of_risk": 0.06218524870662659
+          },
+          "COPA.L": {
+            "weight": 5.1880119509725605e-17,
+            "mcr": 0.10450523055368742,
+            "risk_contribution": 5.421743850516731e-18,
+            "pct_of_risk": 4.5181198754046266e-17
+          },
+          "ICOM.L": {
+            "weight": 8.006308942169329e-17,
+            "mcr": 0.06419132064408441,
+            "risk_contribution": 5.139355444823917e-18,
+            "pct_of_risk": 4.282796203995301e-17
+          },
+          "YCA.L": {
+            "weight": 0.0,
+            "mcr": 0.15174608763784025,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "RR.L": {
+            "weight": 0.04999999999999984,
+            "mcr": 0.20725766991427974,
+            "risk_contribution": 0.010362883495713954,
+            "pct_of_risk": 0.08635736246378632
+          },
+          "PLTR": {
+            "weight": 0.049999999999999954,
+            "mcr": 0.34125366656904144,
+            "risk_contribution": 0.017062683328452056,
+            "pct_of_risk": 0.14218902773628275
+          },
+          "AZN.L": {
+            "weight": 0.017231709909164176,
+            "mcr": 0.03895163820097919,
+            "risk_contribution": 0.0006712033299659909,
+            "pct_of_risk": 0.005593361083017758
+          },
+          "SHEL.L": {
+            "weight": 0.049999999999999885,
+            "mcr": 0.09964555783288863,
+            "risk_contribution": 0.00498227789164442,
+            "pct_of_risk": 0.0415189824301314
+          },
+          "HSBA.L": {
+            "weight": 0.04999999999999977,
+            "mcr": 0.11291248951188501,
+            "risk_contribution": 0.005645624475594224,
+            "pct_of_risk": 0.04704687062968131
+          },
+          "ULVR.L": {
+            "weight": 5.768278488934019e-17,
+            "mcr": -0.010824014582688097,
+            "risk_contribution": -6.243593048122789e-19,
+            "pct_of_risk": -5.202994206739069e-18
+          },
+          "MSFT": {
+            "weight": 4.9241267771893643e-17,
+            "mcr": 0.10768232636383959,
+            "risk_contribution": 5.302414266782268e-18,
+            "pct_of_risk": 4.418678555626479e-17
+          },
+          "ASML.AS": {
+            "weight": 3.188130104813717e-17,
+            "mcr": 0.2651629933666329,
+            "risk_contribution": 8.453741218346822e-18,
+            "pct_of_risk": 7.044784348581839e-17
+          },
+          "SIE.DE": {
+            "weight": 3.638349292103059e-17,
+            "mcr": 0.1657389191798408,
+            "risk_contribution": 6.030160792718998e-18,
+            "pct_of_risk": 5.0251339939036e-17
+          },
+          "BRK-B": {
+            "weight": 0.007768290090835902,
+            "mcr": 0.048847556563690275,
+            "risk_contribution": 0.00037946198961526136,
+            "pct_of_risk": 0.0031621832467756596
+          },
+          "IHYU.L": {
+            "weight": 1.088563333372679e-16,
+            "mcr": 0.044072320217253755,
+            "risk_contribution": 4.797551180516186e-18,
+            "pct_of_risk": 3.997959317073831e-17
+          },
+          "IHYG.L": {
+            "weight": 4.624654308220666e-17,
+            "mcr": 0.031171872097165317,
+            "risk_contribution": 1.4415913258945916e-18,
+            "pct_of_risk": 1.2013261049052511e-17
+          },
+          "GHYS.L": {
+            "weight": 3.1875914447988223e-17,
+            "mcr": 0.03099841837156686,
+            "risk_contribution": 9.881029320350116e-19,
+            "pct_of_risk": 8.23419110024441e-18
+          },
+          "IEMB.L": {
+            "weight": 0.0,
+            "mcr": 0.0448557682848366,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IBTM.L": {
+            "weight": 7.88606070390576e-17,
+            "mcr": -0.010766476642544287,
+            "risk_contribution": -8.490508837028773e-19,
+            "pct_of_risk": -7.075424030816621e-18
+          },
+          "T36N": {
+            "weight": 0.16418896733991936,
+            "mcr": 0.012960073397767932,
+            "risk_contribution": 0.0021279010678290767,
+            "pct_of_risk": 0.017732508898473665
+          },
+          "T56": {
+            "weight": 0.0,
+            "mcr": 0.02258058578144522,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "DBMG.L": {
+            "weight": 0.08581103266008067,
+            "mcr": 0.04205460042763636,
+            "risk_contribution": 0.003608748690802546,
+            "pct_of_risk": 0.03007290575651494
+          }
+        },
+        "top5_risk_contributors": {
+          "SMGB.L": 0.38798633302087177,
+          "PLTR": 0.14218902773628275,
+          "RR.L": 0.08635736246378632,
+          "IITU.L": 0.07730861656301842,
+          "BRNT.L": 0.06218524870662659
+        },
+        "constraint_violations": [],
+        "turnover_vs_headline": 0.19091761043824015,
+        "turnover_reference": "headline Moderate12 (data/weights.csv)",
+        "largest_weight_changes_vs_headline": {
+          "T36N": 0.16418896733991936,
+          "IBTM.L": -0.09999999999999981,
+          "ISF.L": -0.06621045421274058,
+          "SMGB.L": 0.010444429556145107,
+          "SGLN.L": -0.009411576369186547,
+          "BRNT.L": 0.00941157636918636,
+          "DBMG.L": -0.00884062500663503,
+          "BRK-B": -0.006454954849676798
+        }
+      },
+      "MaxSharpe": {
+        "name": "MaxSharpe_GiltsAtYield",
+        "expected_return_estimate_used": "blend, with T36N and T56 at redemption yield",
+        "weights": {
+          "IITU.L": 0.11187452739847796,
+          "ISF.L": 0.14639272954668955,
+          "SMGB.L": 0.041732743054827964,
+          "SGLN.L": 0.16065569293400442,
+          "BRNT.L": 0.039344307065994726,
+          "RR.L": 0.04999999999999961,
+          "PLTR": 0.03293143767352864,
+          "SPCX": 0.025,
+          "AZN.L": 0.005144380886000662,
+          "SHEL.L": 0.04999999999999961,
+          "HSBA.L": 0.04999999999999961,
+          "ULVR.L": 0.004345213010225718,
+          "BRK-B": 0.03257896843024824,
+          "T36N": 0.1855999530274414,
+          "DBMG.L": 0.06440004697255777
+        },
+        "weights_full": {
+          "IITU.L": 0.11187452739847796,
+          "VMID.L": 0.0,
+          "IWQU.L": 0.0,
+          "VWRP.L": 0.0,
+          "CSP1.L": 0.0,
+          "ISF.L": 0.14639272954668955,
+          "EMIM.L": 0.0,
+          "WLDS.L": 0.0,
+          "SMEA.L": 0.0,
+          "IJPA.L": 0.0,
+          "SMGB.L": 0.041732743054827964,
+          "XDWH.L": 0.0,
+          "SGLN.L": 0.16065569293400442,
+          "SSLN.L": 1.0502037919950356e-15,
+          "BRNT.L": 0.039344307065994726,
+          "COPA.L": 3.471563872577233e-16,
+          "ICOM.L": 3.284748770826828e-16,
+          "YCA.L": 0.0,
+          "RR.L": 0.04999999999999961,
+          "PLTR": 0.03293143767352864,
+          "SPCX": 0.025,
+          "AZN.L": 0.005144380886000662,
+          "SHEL.L": 0.04999999999999961,
+          "HSBA.L": 0.04999999999999961,
+          "ULVR.L": 0.004345213010225718,
+          "MSFT": 8.396918185795591e-17,
+          "ASML.AS": 0.0,
+          "SIE.DE": 9.567410516293638e-17,
+          "BRK-B": 0.03257896843024824,
+          "IHYU.L": 3.604519457934187e-16,
+          "IHYG.L": 2.555249585937948e-16,
+          "GHYS.L": 4.0377306206893533e-16,
+          "IEMB.L": 6.574056961190048e-17,
+          "IBTM.L": 5.1635154934401344e-17,
+          "T36N": 0.1855999530274414,
+          "T56": 1.1474614384877537e-15,
+          "DBMG.L": 0.06440004697255777
+        },
+        "n_holdings": 15,
+        "expected_return_optimiser_part": {
+          "historical_5y": 0.18644440680974805,
+          "capm_or_yield": 0.06256378553006844,
+          "blend": 0.12450409616990826,
+          "optimiser_input": 0.13316865108447795
+        },
+        "expected_return_total_core": {
+          "historical_5y": 0.19045360021275143,
+          "capm_or_yield": 0.06657297893307182,
+          "blend": 0.12851328957291164,
+          "optimiser_input": 0.13717784448748133
+        },
+        "exp_return_blend": 0.12851328957291164,
+        "ex_ante_vol_lw_optimiser_part": 0.0962716809163291,
+        "ex_ante_vol_sample_optimiser_part": 0.0955947939631261,
+        "ex_ante_vol_full_core_incl_spcx": 0.10313605870022675,
+        "sharpe_ex_ante": 0.8824584797975369,
+        "sharpe_ex_ante_on_optimiser_input": 0.9664693972571028,
+        "beta_vwrp": 0.6356221154571243,
+        "beta_up": 0.721298516058776,
+        "beta_down": 0.6212186097589355,
+        "beta_asymmetry": 0.10007990629984054,
+        "beta_ftas": 0.5103295505864661,
+        "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+        "beta_vwrp_excl_spcx": 0.5763696442614208,
+        "beta_up_excl_spcx": 0.52604947883123,
+        "beta_down_excl_spcx": 0.6012131960952118,
+        "beta_asymmetry_excl_spcx": -0.07516371726398186,
+        "realised_daily_5y": {
+          "n_obs": 1261,
+          "start": "2021-09-17",
+          "end": "2026-09-16",
+          "mean_ann_arith": 0.19153533704235243,
+          "cagr": 0.20564718347585442,
+          "vol_ann": 0.09613118594594815,
+          "sharpe": 1.6023451237662056,
+          "sortino": 2.3464573327657083,
+          "downside_dev_ann": 0.06564591432855715,
+          "skew": -0.5134509441027041,
+          "excess_kurtosis": 2.957635925713242,
+          "max_drawdown": -0.10196368694478541,
+          "max_dd_peak": "2025-02-18",
+          "max_dd_trough": "2025-04-07",
+          "var95": 0.008918302487907192,
+          "cvar95": 0.013516627851157299,
+          "var99": 0.015968387210651205,
+          "cvar99": 0.02236365104577752,
+          "best_period": 0.021760446234168004,
+          "worst_period": -0.03809025529347377,
+          "total_return": 1.5470976045005491,
+          "level_base_date": "2021-09-16",
+          "first_period_return": -0.001577244237698528,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.5765169948019705,
+          "alpha_ann": 0.1090016911051319,
+          "r2": 0.6101162692924269,
+          "beta_up": 0.5267765048114399,
+          "beta_down": 0.6012250144288924,
+          "beta_asymmetry": -0.07444850961745253,
+          "corr_benchmark": 0.7810993978313058,
+          "label": "MaxSharpe_GiltsAtYield"
+        },
+        "skew_daily_5y": -0.5134509441027041,
+        "sortino_daily_5y": 2.3464573327657083,
+        "backtest_5y": {
+          "n_obs": 59,
+          "start": "2021-10-31",
+          "end": "2026-08-31",
+          "mean_ann_arith": 0.19017998335952532,
+          "cagr": 0.2037395501691197,
+          "vol_ann": 0.08235492898955678,
+          "sharpe": 1.8539264769311656,
+          "sortino": 4.407911343429509,
+          "downside_dev_ann": 0.034637716474745374,
+          "skew": -0.08327845850009363,
+          "excess_kurtosis": -0.9230176892286428,
+          "max_drawdown": -0.06820676125602854,
+          "max_dd_peak": "2022-03-31",
+          "max_dd_trough": "2022-09-30",
+          "var95": 0.023387771467270516,
+          "cvar95": 0.028163251954129845,
+          "var99": 0.02977004168992746,
+          "cvar99": 0.034440960454612354,
+          "best_period": 0.05613778172028495,
+          "worst_period": -0.034440960454612354,
+          "total_return": 1.4888168984333277,
+          "level_base_date": "2021-09-30",
+          "first_period_return": 0.023135320148962628,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.5897625839663375,
+          "alpha_ann": 0.10432054408468144,
+          "r2": 0.661993012615163,
+          "beta_up": 0.7083021239698928,
+          "beta_down": 0.5778769242023517,
+          "beta_asymmetry": 0.13042519976754108,
+          "corr_benchmark": 0.8136295303239446,
+          "label": "MaxSharpe_GiltsAtYield 5y monthly backtest"
+        },
+        "gbp": {
+          "IITU.L": 17899.924383756475,
+          "ISF.L": 23422.83672747033,
+          "SMGB.L": 6677.238888772474,
+          "SGLN.L": 25704.910869440708,
+          "BRNT.L": 6295.089130559157,
+          "RR.L": 7999.999999999938,
+          "PLTR": 5269.030027764582,
+          "SPCX": 4000.0,
+          "AZN.L": 823.1009417601059,
+          "SHEL.L": 7999.999999999938,
+          "HSBA.L": 7999.999999999938,
+          "ULVR.L": 695.234081636115,
+          "BRK-B": 5212.634948839718,
+          "T36N": 29695.992484390626,
+          "DBMG.L": 10304.007515609244
+        },
+        "shares": {
+          "IITU.L": 471,
+          "ISF.L": 2238,
+          "SMGB.L": 86,
+          "SGLN.L": 409,
+          "BRNT.L": 85,
+          "RR.L": 555,
+          "PLTR": 40,
+          "SPCX": 35,
+          "AZN.L": 6,
+          "SHEL.L": 223,
+          "HSBA.L": 530,
+          "ULVR.L": 14,
+          "BRK-B": 13,
+          "T36N": 306,
+          "DBMG.L": 102
+        },
+        "invested_gbp": 159070.56096228474,
+        "residual_cash_gbp": 929.4390377152595,
+        "weighted_ter": 0.0012849255909106704,
+        "weight_by_bucket": {
+          "etc_commodity": 0.20000000000000087,
+          "etf_bond": 1.1371256910024507e-15,
+          "etf_equity": 0.2999999999999955,
+          "gilt": 0.18559995302744253,
+          "stock": 0.2500000000000023,
+          "trend": 0.06440004697255777
+        },
+        "weight_by_listing_region": {
+          "Europe": 9.567410516293638e-17,
+          "UK": 0.909489593896223,
+          "US": 0.09051040610377696
+        },
+        "weight_by_currency": {
+          "EUR": 3.511990637567312e-16,
+          "GBP": 0.22733269608227097,
+          "GBp": 0.6428125907479559,
+          "USD": 0.1298547131697728
+        },
+        "risk_contribution": {
+          "IITU.L": {
+            "weight": 0.11187452739847796,
+            "mcr": 0.1552970908218214,
+            "risk_contribution": 0.017373788642049776,
+            "pct_of_risk": 0.18046624382874912
+          },
+          "VMID.L": {
+            "weight": 0.0,
+            "mcr": 0.09951139447105213,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IWQU.L": {
+            "weight": 0.0,
+            "mcr": 0.11793610040442734,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "VWRP.L": {
+            "weight": 0.0,
+            "mcr": 0.10316609682994349,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "CSP1.L": {
+            "weight": 0.0,
+            "mcr": 0.10371531654061283,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "ISF.L": {
+            "weight": 0.14639272954668955,
+            "mcr": 0.09084023220111032,
+            "risk_contribution": 0.013298349544575622,
+            "pct_of_risk": 0.1381335551431099
+          },
+          "EMIM.L": {
+            "weight": 0.0,
+            "mcr": 0.10716477673295313,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "WLDS.L": {
+            "weight": 0.0,
+            "mcr": 0.11321507654409257,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SMEA.L": {
+            "weight": 0.0,
+            "mcr": 0.09779847027763491,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IJPA.L": {
+            "weight": 0.0,
+            "mcr": 0.10991903308182656,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SMGB.L": {
+            "weight": 0.041732743054827964,
+            "mcr": 0.2194267423944108,
+            "risk_contribution": 0.009157279859703871,
+            "pct_of_risk": 0.09511914378707668
+          },
+          "XDWH.L": {
+            "weight": 0.0,
+            "mcr": 0.06401359957069454,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SGLN.L": {
+            "weight": 0.16065569293400442,
+            "mcr": 0.060523133057792576,
+            "risk_contribution": 0.009723385879936616,
+            "pct_of_risk": 0.10099944020284982
+          },
+          "SSLN.L": {
+            "weight": 1.0502037919950356e-15,
+            "mcr": 0.11083319324271032,
+            "risk_contribution": 1.1639743982241294e-16,
+            "pct_of_risk": 1.2090517036217059e-15
+          },
+          "BRNT.L": {
+            "weight": 0.039344307065994726,
+            "mcr": 0.11218621366224656,
+            "risk_contribution": 0.004413888838898721,
+            "pct_of_risk": 0.045848257731522186
+          },
+          "COPA.L": {
+            "weight": 3.471563872577233e-16,
+            "mcr": 0.1063548332417261,
+            "risk_contribution": 3.6921759675595246e-17,
+            "pct_of_risk": 3.8351630847377034e-16
+          },
+          "ICOM.L": {
+            "weight": 3.284748770826828e-16,
+            "mcr": 0.06383426846284154,
+            "risk_contribution": 2.0967953486994853e-17,
+            "pct_of_risk": 2.1779980662452924e-16
+          },
+          "YCA.L": {
+            "weight": 0.0,
+            "mcr": 0.15569341557835062,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "RR.L": {
+            "weight": 0.04999999999999961,
+            "mcr": 0.23416535935061839,
+            "risk_contribution": 0.011708267967530828,
+            "pct_of_risk": 0.12161694753939771
+          },
+          "PLTR": {
+            "weight": 0.03293143767352864,
+            "mcr": 0.30240117964941043,
+            "risk_contribution": 0.009958505600026096,
+            "pct_of_risk": 0.10344169235687449
+          },
+          "AZN.L": {
+            "weight": 0.005144380886000662,
+            "mcr": 0.054593211615494915,
+            "risk_contribution": 0.00028084827434014136,
+            "pct_of_risk": 0.0029172470207955562
+          },
+          "SHEL.L": {
+            "weight": 0.04999999999999961,
+            "mcr": 0.11140574729982763,
+            "risk_contribution": 0.005570287364991338,
+            "pct_of_risk": 0.05786008213394077
+          },
+          "HSBA.L": {
+            "weight": 0.04999999999999961,
+            "mcr": 0.12933585711426668,
+            "risk_contribution": 0.006466792855713283,
+            "pct_of_risk": 0.06717232725305435
+          },
+          "ULVR.L": {
+            "weight": 0.004345213010225718,
+            "mcr": 0.008292893146498583,
+            "risk_contribution": 3.603438719257734e-05,
+            "pct_of_risk": 0.0003742989303769951
+          },
+          "MSFT": {
+            "weight": 8.396918185795591e-17,
+            "mcr": 0.10512004162115064,
+            "risk_contribution": 8.826843891802293e-18,
+            "pct_of_risk": 9.168681597523797e-17
+          },
+          "ASML.AS": {
+            "weight": 0.0,
+            "mcr": 0.2287260920889006,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SIE.DE": {
+            "weight": 9.567410516293638e-17,
+            "mcr": 0.1653644689980147,
+            "risk_contribution": 1.5821097597129192e-17,
+            "pct_of_risk": 1.6433802179978045e-16
+          },
+          "BRK-B": {
+            "weight": 0.03257896843024824,
+            "mcr": 0.0614072019388617,
+            "risk_contribution": 0.0020005832933560536,
+            "pct_of_risk": 0.020780600009412797
+          },
+          "IHYU.L": {
+            "weight": 3.604519457934187e-16,
+            "mcr": 0.044820626157516204,
+            "risk_contribution": 1.6155681910156114e-17,
+            "pct_of_risk": 1.6781343959494404e-16
+          },
+          "IHYG.L": {
+            "weight": 2.555249585937948e-16,
+            "mcr": 0.032659922446118206,
+            "risk_contribution": 8.345425330720903e-18,
+            "pct_of_risk": 8.668619111339728e-17
+          },
+          "GHYS.L": {
+            "weight": 4.0377306206893533e-16,
+            "mcr": 0.032182074038379214,
+            "risk_contribution": 1.2994254578205563e-17,
+            "pct_of_risk": 1.3497483844183663e-16
+          },
+          "IEMB.L": {
+            "weight": 6.574056961190048e-17,
+            "mcr": 0.04815038153484344,
+            "risk_contribution": 3.165433509130943e-18,
+            "pct_of_risk": 3.28802143995186e-17
+          },
+          "IBTM.L": {
+            "weight": 5.1635154934401344e-17,
+            "mcr": -0.008651265170195327,
+            "risk_contribution": -4.467094174416257e-19,
+            "pct_of_risk": -4.640091594846739e-18
+          },
+          "T36N": {
+            "weight": 0.1855999530274414,
+            "mcr": 0.019974056002618035,
+            "risk_contribution": 0.003707183855853391,
+            "pct_of_risk": 0.038507521844096095
+          },
+          "T56": {
+            "weight": 1.1474614384877537e-15,
+            "mcr": 0.0354315570775806,
+            "risk_contribution": 4.065634545210158e-17,
+            "pct_of_risk": 4.2230846148242207e-16
+          },
+          "DBMG.L": {
+            "weight": 0.06440004697255777,
+            "mcr": 0.040007494920902616,
+            "risk_contribution": 0.002576484552160495,
+            "pct_of_risk": 0.026762642218740838
+          }
+        },
+        "top5_risk_contributors": {
+          "IITU.L": 0.18046624382874912,
+          "ISF.L": 0.1381335551431099,
+          "RR.L": 0.12161694753939771,
+          "PLTR": 0.10344169235687449,
+          "SGLN.L": 0.10099944020284982
+        },
+        "constraint_violations": [],
+        "turnover_vs_headline": 0.22973832632324642,
+        "turnover_reference": "headline MaxSharpe (data/weights.csv)",
+        "largest_weight_changes_vs_headline": {
+          "T36N": 0.1855999530274414,
+          "IBTM.L": -0.16344757873626145,
+          "IITU.L": 0.034676579801254354,
+          "SMGB.L": -0.02229114829676493,
+          "DBMG.L": -0.022152374291181526,
+          "ISF.L": -0.012385431504491146,
+          "ULVR.L": 0.004345213010225191,
+          "PLTR": -0.0037456958042179633
+        }
+      },
+      "optimiser_cross_seed_audit": {
+        "MinVariance": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": -0.003073790900167876,
+          "best_rival_portfolio": "MaxSharpe",
+          "best_rival_objective": -0.009268236546455484,
+          "dominated_by_another_portfolio": 0
+        },
+        "MaxSharpe": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 1.0034742321414285,
+          "best_rival_portfolio": "Moderate12",
+          "best_rival_objective": 0.9675949142076224,
+          "dominated_by_another_portfolio": 0
+        },
+        "Moderate12": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 0.1526738897055824,
+          "best_rival_portfolio": "MaxSharpe",
+          "best_rival_objective": 0.13316865108447795,
+          "dominated_by_another_portfolio": 0
+        },
+        "MaxSortino": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 2.5641588303163463,
+          "best_rival_portfolio": "MaxSharpe",
+          "best_rival_objective": 2.3464573327657083,
+          "dominated_by_another_portfolio": 0
+        }
+      },
+      "expected_return_changes": {
+        "T36N": {
+          "blend_used_in_headline": 0.006315963860785406,
+          "ytm_used_here": 0.053,
+          "historical_5y": -0.04036807227842919,
+          "ytm_pct_source": "universe/core_universe.json ytm_pct"
+        },
+        "T56": {
+          "blend_used_in_headline": -0.02591948935686751,
+          "ytm_used_here": 0.0587,
+          "historical_5y": -0.11053897871373503,
+          "ytm_pct_source": "universe/core_universe.json ytm_pct"
+        }
+      }
+    },
+    "Moderate12_Diversified": {
+      "variant_id": "B",
+      "label": "Moderate12_Diversified",
+      "description": "The headline problem with the per-asset concentration caps tightened: single fund line (equity ETF, bond ETF, commodity ETC, gilt, trend fund) 20% -> 10%, single stock 5% -> 4%. Group constraints and all three expected-return estimates unchanged.",
+      "rationale": "The headline core holds 17.1% in one line (SMGB.L, VanEck Semiconductor UCITS ETF) which contributes about 37% of its ex-ante Ledoit-Wolf variance. This variant prices the cost, in expected return, of forcing that concentration down.",
+      "expected_return_input_note": "blend (unchanged)",
+      "per_asset_caps_used": {
+        "etf_equity": 0.1,
+        "etf_bond": 0.1,
+        "etc_commodity": 0.1,
+        "gilt": 0.1,
+        "trend": 0.1,
+        "stock": 0.04
+      },
+      "group_constraints": {
+        "equity_etf": {
+          "buckets": [
+            "etf_equity"
+          ],
+          "min": 0.3,
+          "max": null
+        },
+        "commodity": {
+          "buckets": [
+            "etc_commodity"
+          ],
+          "min": 0.05,
+          "max": 0.2
+        },
+        "bonds": {
+          "buckets": [
+            "etf_bond",
+            "gilt"
+          ],
+          "min": 0.1,
+          "max": 0.4
+        },
+        "stocks": {
+          "buckets": [
+            "stock"
+          ],
+          "min": null,
+          "max": 0.25
+        },
+        "trend": {
+          "buckets": [
+            "trend"
+          ],
+          "min": null,
+          "max": 0.15
+        }
+      },
+      "Moderate12": {
+        "name": "Moderate12_Diversified",
+        "expected_return_estimate_used": "blend (unchanged)",
+        "weights": {
+          "IITU.L": 0.09999999999999998,
+          "CSP1.L": 0.08621545760596153,
+          "ISF.L": 0.09999999999999995,
+          "SMGB.L": 0.09999999999999998,
+          "SGLN.L": 0.09999999999999983,
+          "SSLN.L": 0.014612190721817063,
+          "BRNT.L": 0.08538780927818301,
+          "RR.L": 0.03999999999999986,
+          "PLTR": 0.03999999999999999,
+          "SPCX": 0.025,
+          "AZN.L": 0.03085070715252425,
+          "SHEL.L": 0.039999999999999925,
+          "HSBA.L": 0.03999999999999993,
+          "BRK-B": 0.03414929284747542,
+          "IHYU.L": 0.055621014089922136,
+          "GHYS.L": 0.044378985910078037,
+          "DBMG.L": 0.06378454239403804
+        },
+        "weights_full": {
+          "IITU.L": 0.09999999999999998,
+          "VMID.L": 1.55304197398508e-16,
+          "IWQU.L": 0.0,
+          "VWRP.L": 6.209230896866565e-17,
+          "CSP1.L": 0.08621545760596153,
+          "ISF.L": 0.09999999999999995,
+          "EMIM.L": 7.418490455184038e-17,
+          "WLDS.L": 9.676528438269619e-17,
+          "SMEA.L": 1.491018954800964e-16,
+          "IJPA.L": 9.891305318157326e-18,
+          "SMGB.L": 0.09999999999999998,
+          "XDWH.L": 3.338911101019946e-17,
+          "SGLN.L": 0.09999999999999983,
+          "SSLN.L": 0.014612190721817063,
+          "BRNT.L": 0.08538780927818301,
+          "COPA.L": 1.7913303772443282e-17,
+          "ICOM.L": 0.0,
+          "YCA.L": 6.116134857497673e-17,
+          "RR.L": 0.03999999999999986,
+          "PLTR": 0.03999999999999999,
+          "SPCX": 0.025,
+          "AZN.L": 0.03085070715252425,
+          "SHEL.L": 0.039999999999999925,
+          "HSBA.L": 0.03999999999999993,
+          "ULVR.L": 0.0,
+          "MSFT": 0.0,
+          "ASML.AS": 0.0,
+          "SIE.DE": 0.0,
+          "BRK-B": 0.03414929284747542,
+          "IHYU.L": 0.055621014089922136,
+          "IHYG.L": 2.59105848492901e-17,
+          "GHYS.L": 0.044378985910078037,
+          "IEMB.L": 1.326971725670369e-16,
+          "IBTM.L": 0.0,
+          "T36N": 1.7489554651096089e-16,
+          "T56": 5.719293263552839e-17,
+          "DBMG.L": 0.06378454239403804
+        },
+        "n_holdings": 17,
+        "expected_return_optimiser_part": {
+          "historical_5y": 0.2205141150763595,
+          "capm_or_yield": 0.06908085872277375,
+          "blend": 0.14479748689956665,
+          "optimiser_input": 0.14479748689956662
+        },
+        "expected_return_total_core": {
+          "historical_5y": 0.2245233084793629,
+          "capm_or_yield": 0.07309005212577713,
+          "blend": 0.14880668030257002,
+          "optimiser_input": 0.14880668030257
+        },
+        "exp_return_blend": 0.14880668030257002,
+        "ex_ante_vol_lw_optimiser_part": 0.12000000000082203,
+        "ex_ante_vol_sample_optimiser_part": 0.11976407737141315,
+        "ex_ante_vol_full_core_incl_spcx": 0.1262644305373124,
+        "sharpe_ex_ante": 0.8815363109698402,
+        "sharpe_ex_ante_on_optimiser_input": 0.88153631096984,
+        "beta_vwrp": 0.8134529296972026,
+        "beta_up": 0.8720880536684069,
+        "beta_down": 0.8104768313042466,
+        "beta_asymmetry": 0.06161122236416028,
+        "beta_ftas": 0.596431005309929,
+        "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+        "beta_vwrp_excl_spcx": 0.7587602229691934,
+        "beta_up_excl_spcx": 0.680705414841108,
+        "beta_down_excl_spcx": 0.7953241925519412,
+        "beta_asymmetry_excl_spcx": -0.11461877771083318,
+        "realised_daily_5y": {
+          "n_obs": 1261,
+          "start": "2021-09-17",
+          "end": "2026-09-16",
+          "mean_ann_arith": 0.2268804624777254,
+          "cagr": 0.24575081096994578,
+          "vol_ann": 0.12032824962178873,
+          "sharpe": 1.5738653481038658,
+          "sortino": 2.2762196968136013,
+          "downside_dev_ann": 0.08319955351534492,
+          "skew": -0.6115013802787961,
+          "excess_kurtosis": 3.3938632059690788,
+          "max_drawdown": -0.14448688547199462,
+          "max_dd_peak": "2025-02-18",
+          "max_dd_trough": "2025-04-07",
+          "var95": 0.011376104086881582,
+          "cvar95": 0.017213212403707875,
+          "var99": 0.019744864095923517,
+          "cvar99": 0.02921889185932464,
+          "best_period": 0.025471414992125015,
+          "worst_period": -0.04700220352310332,
+          "total_return": 1.99978807077659,
+          "level_base_date": "2021-09-16",
+          "first_period_return": -0.0013359227289641365,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.7592663054413242,
+          "alpha_ann": 0.1298550542448015,
+          "r2": 0.6754139621876507,
+          "beta_up": 0.6820973663241565,
+          "beta_down": 0.7953626559459167,
+          "beta_asymmetry": -0.11326528962176019,
+          "corr_benchmark": 0.8218357270085378,
+          "label": "Moderate12_Diversified"
+        },
+        "skew_daily_5y": -0.6115013802787961,
+        "sortino_daily_5y": 2.2762196968136013,
+        "backtest_5y": {
+          "n_obs": 59,
+          "start": "2021-10-31",
+          "end": "2026-08-31",
+          "mean_ann_arith": 0.22289936384704487,
+          "cagr": 0.2414476233333751,
+          "vol_ann": 0.09803559049608564,
+          "sharpe": 1.8911434399372287,
+          "sortino": 4.905940000683338,
+          "downside_dev_ann": 0.03779079316526924,
+          "skew": 0.0331482074928484,
+          "excess_kurtosis": -1.1796340044725522,
+          "max_drawdown": -0.05574113176674933,
+          "max_dd_peak": "2025-01-31",
+          "max_dd_trough": "2025-04-30",
+          "var95": 0.026266307269780447,
+          "cvar95": 0.029445138516753303,
+          "var99": 0.030909331803034387,
+          "cvar99": 0.03138600495021727,
+          "best_period": 0.06901573018759881,
+          "worst_period": -0.03138600495021727,
+          "total_return": 1.896428806139126,
+          "level_base_date": "2021-09-30",
+          "first_period_return": 0.024914495874547107,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.7251231184117872,
+          "alpha_ann": 0.12579613067444378,
+          "r2": 0.7062104373013156,
+          "beta_up": 0.9490971571593134,
+          "beta_down": 0.6463781407793661,
+          "beta_asymmetry": 0.30271901637994736,
+          "corr_benchmark": 0.8403632769828271,
+          "label": "Moderate12_Diversified 5y monthly backtest"
+        },
+        "gbp": {
+          "IITU.L": 15999.999999999998,
+          "CSP1.L": 13794.473216953846,
+          "ISF.L": 15999.999999999993,
+          "SMGB.L": 15999.999999999998,
+          "SGLN.L": 15999.99999999997,
+          "SSLN.L": 2337.95051549073,
+          "BRNT.L": 13662.049484509284,
+          "RR.L": 6399.999999999978,
+          "PLTR": 6399.999999999998,
+          "SPCX": 4000.0,
+          "AZN.L": 4936.11314440388,
+          "SHEL.L": 6399.999999999988,
+          "HSBA.L": 6399.999999999989,
+          "BRK-B": 5463.886855596068,
+          "IHYU.L": 8899.362254387543,
+          "GHYS.L": 7100.6377456124865,
+          "DBMG.L": 10205.526783046087
+        },
+        "shares": {
+          "IITU.L": 421,
+          "CSP1.L": 22,
+          "ISF.L": 1529,
+          "SMGB.L": 208,
+          "SGLN.L": 255,
+          "SSLN.L": 51,
+          "BRNT.L": 186,
+          "RR.L": 444,
+          "PLTR": 49,
+          "SPCX": 35,
+          "AZN.L": 40,
+          "SHEL.L": 178,
+          "HSBA.L": 424,
+          "BRK-B": 14,
+          "IHYU.L": 129,
+          "GHYS.L": 80,
+          "DBMG.L": 101
+        },
+        "invested_gbp": 159083.26571731936,
+        "residual_cash_gbp": 916.7342826806416,
+        "weighted_ter": 0.002198549028141231,
+        "weight_by_bucket": {
+          "etc_commodity": 0.19999999999999998,
+          "etf_bond": 0.10000000000000034,
+          "etf_equity": 0.38621545760596204,
+          "gilt": 2.3208847914648925e-16,
+          "stock": 0.2499999999999994,
+          "trend": 0.06378454239403804
+        },
+        "weight_by_listing_region": {
+          "Europe": 0.0,
+          "UK": 0.9008507071525246,
+          "US": 0.09914929284747541
+        },
+        "weight_by_currency": {
+          "EUR": 2.59105848492901e-17,
+          "GBP": 0.14437898591007856,
+          "GBp": 0.6154628978743406,
+          "USD": 0.24015811621558075
+        },
+        "risk_contribution": {
+          "IITU.L": {
+            "weight": 0.09999999999999998,
+            "mcr": 0.17387842756324684,
+            "risk_contribution": 0.01738784275632468,
+            "pct_of_risk": 0.14489868963504643
+          },
+          "VMID.L": {
+            "weight": 1.55304197398508e-16,
+            "mcr": 0.09252646794436781,
+            "risk_contribution": 1.4369748842218822e-17,
+            "pct_of_risk": 1.1974790701766991e-16
+          },
+          "IWQU.L": {
+            "weight": 0.0,
+            "mcr": 0.1269901684922233,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "VWRP.L": {
+            "weight": 6.209230896866565e-17,
+            "mcr": 0.10831965982249049,
+            "risk_contribution": 6.725817785078839e-18,
+            "pct_of_risk": 5.604848154193973e-17
+          },
+          "CSP1.L": {
+            "weight": 0.08621545760596153,
+            "mcr": 0.11382297809935239,
+            "risk_contribution": 0.009813300142909003,
+            "pct_of_risk": 0.08177750119034818
+          },
+          "ISF.L": {
+            "weight": 0.09999999999999995,
+            "mcr": 0.08351192252379881,
+            "risk_contribution": 0.008351192252379878,
+            "pct_of_risk": 0.06959326876935559
+          },
+          "EMIM.L": {
+            "weight": 7.418490455184038e-17,
+            "mcr": 0.10781182924287945,
+            "risk_contribution": 7.998010261942325e-18,
+            "pct_of_risk": 6.665008551572948e-17
+          },
+          "WLDS.L": {
+            "weight": 9.676528438269619e-17,
+            "mcr": 0.11722107575713585,
+            "risk_contribution": 1.1342930731284825e-17,
+            "pct_of_risk": 9.452442276005938e-17
+          },
+          "SMEA.L": {
+            "weight": 1.491018954800964e-16,
+            "mcr": 0.09353513822449869,
+            "risk_contribution": 1.3946266403265574e-17,
+            "pct_of_risk": 1.1621888669308367e-16
+          },
+          "IJPA.L": {
+            "weight": 9.891305318157326e-18,
+            "mcr": 0.10989443760811506,
+            "risk_contribution": 1.086999435149057e-18,
+            "pct_of_risk": 9.058328626180092e-18
+          },
+          "SMGB.L": {
+            "weight": 0.09999999999999998,
+            "mcr": 0.2474671703776841,
+            "risk_contribution": 0.024746717037768404,
+            "pct_of_risk": 0.20622264197999074
+          },
+          "XDWH.L": {
+            "weight": 3.338911101019946e-17,
+            "mcr": 0.06704566242356456,
+            "risk_contribution": 2.2385950654127556e-18,
+            "pct_of_risk": 1.8654958878311843e-17
+          },
+          "SGLN.L": {
+            "weight": 0.09999999999999983,
+            "mcr": 0.03590179534931016,
+            "risk_contribution": 0.0035901795349310094,
+            "pct_of_risk": 0.029918162790886806
+          },
+          "SSLN.L": {
+            "weight": 0.014612190721817063,
+            "mcr": 0.09381252912029782,
+            "risk_contribution": 0.0013708065676018089,
+            "pct_of_risk": 0.011423388063270156
+          },
+          "BRNT.L": {
+            "weight": 0.08538780927818301,
+            "mcr": 0.15803428863962407,
+            "risk_contribution": 0.013494201697773545,
+            "pct_of_risk": 0.11245168081400923
+          },
+          "COPA.L": {
+            "weight": 1.7913303772443282e-17,
+            "mcr": 0.10635772502518219,
+            "risk_contribution": 1.9052182369220814e-18,
+            "pct_of_risk": 1.5876818640908587e-17
+          },
+          "ICOM.L": {
+            "weight": 0.0,
+            "mcr": 0.07728678493808364,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "YCA.L": {
+            "weight": 6.116134857497673e-17,
+            "mcr": 0.15447631664762512,
+            "risk_contribution": 9.447979849063881e-18,
+            "pct_of_risk": 7.873316540832634e-17
+          },
+          "RR.L": {
+            "weight": 0.03999999999999986,
+            "mcr": 0.20218052455455715,
+            "risk_contribution": 0.008087220982182258,
+            "pct_of_risk": 0.06739350818439051
+          },
+          "PLTR": {
+            "weight": 0.03999999999999999,
+            "mcr": 0.31895151195380916,
+            "risk_contribution": 0.012758060478152363,
+            "pct_of_risk": 0.10631717065054141
+          },
+          "AZN.L": {
+            "weight": 0.03085070715252425,
+            "mcr": 0.05070267856715194,
+            "risk_contribution": 0.0015642134883237723,
+            "pct_of_risk": 0.013035112402608812
+          },
+          "SHEL.L": {
+            "weight": 0.039999999999999925,
+            "mcr": 0.11824309513131931,
+            "risk_contribution": 0.004729723805252764,
+            "pct_of_risk": 0.03941436504350304
+          },
+          "HSBA.L": {
+            "weight": 0.03999999999999993,
+            "mcr": 0.11676444496340967,
+            "risk_contribution": 0.004670577798536379,
+            "pct_of_risk": 0.03892148165420321
+          },
+          "ULVR.L": {
+            "weight": 0.0,
+            "mcr": -0.00522833793315908,
+            "risk_contribution": -0.0,
+            "pct_of_risk": -0.0
+          },
+          "MSFT": {
+            "weight": 0.0,
+            "mcr": 0.11490502705139669,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "ASML.AS": {
+            "weight": 0.0,
+            "mcr": 0.2520294269609174,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SIE.DE": {
+            "weight": 0.0,
+            "mcr": 0.1681035820642592,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "BRK-B": {
+            "weight": 0.03414929284747542,
+            "mcr": 0.06350680410254719,
+            "risk_contribution": 0.0021687124511051378,
+            "pct_of_risk": 0.018072603759085683
+          },
+          "IHYU.L": {
+            "weight": 0.055621014089922136,
+            "mcr": 0.0496617243599423,
+            "risk_contribution": 0.00276223547035418,
+            "pct_of_risk": 0.02301862891946049
+          },
+          "IHYG.L": {
+            "weight": 2.59105848492901e-17,
+            "mcr": 0.0326855485841154,
+            "risk_contribution": 8.469016799343159e-19,
+            "pct_of_risk": 7.057513999404289e-18
+          },
+          "GHYS.L": {
+            "weight": 0.044378985910078037,
+            "mcr": 0.03185792964054214,
+            "risk_contribution": 0.001413822610641877,
+            "pct_of_risk": 0.011781855088601603
+          },
+          "IEMB.L": {
+            "weight": 1.326971725670369e-16,
+            "mcr": 0.047638747327452324,
+            "risk_contribution": 6.321527074988409e-18,
+            "pct_of_risk": 5.267939229120922e-17
+          },
+          "IBTM.L": {
+            "weight": 0.0,
+            "mcr": -0.016232002413049777,
+            "risk_contribution": -0.0,
+            "pct_of_risk": -0.0
+          },
+          "T36N": {
+            "weight": 1.7489554651096089e-16,
+            "mcr": -0.0013312121040070979,
+            "risk_contribution": -2.328230684523275e-19,
+            "pct_of_risk": -1.9401922370894387e-18
+          },
+          "T56": {
+            "weight": 5.719293263552839e-17,
+            "mcr": -0.00288767640538216,
+            "risk_contribution": -1.6515468212622664e-19,
+            "pct_of_risk": -1.3762890177091276e-18
+          },
+          "DBMG.L": {
+            "weight": 0.06378454239403804,
+            "mcr": 0.048463041523267636,
+            "risk_contribution": 0.0030911929265848904,
+            "pct_of_risk": 0.02575994105469763
+          }
+        },
+        "top5_risk_contributors": {
+          "SMGB.L": 0.20622264197999074,
+          "IITU.L": 0.14489868963504643,
+          "BRNT.L": 0.11245168081400923,
+          "PLTR": 0.10631717065054141,
+          "CSP1.L": 0.08177750119034818
+        },
+        "constraint_violations": [],
+        "turnover_vs_headline": 0.32055961187776605,
+        "turnover_reference": "headline Moderate12 (data/weights.csv)",
+        "largest_weight_changes_vs_headline": {
+          "IBTM.L": -0.0999999999999999,
+          "CSP1.L": 0.08621545760596104,
+          "SMGB.L": -0.06605245365825771,
+          "IHYU.L": 0.055621014089922094,
+          "SGLN.L": -0.048287521917047174,
+          "IITU.L": 0.046056632354757675,
+          "GHYS.L": 0.044378985910078037,
+          "ISF.L": -0.035352521029783146
+        }
+      },
+      "MaxSharpe": {
+        "name": "MaxSharpe_Diversified",
+        "expected_return_estimate_used": "blend (unchanged)",
+        "weights": {
+          "IITU.L": 0.08913167456495179,
+          "CSP1.L": 0.033661492573942145,
+          "ISF.L": 0.09999999999999971,
+          "SMGB.L": 0.07720683286110323,
+          "SGLN.L": 0.09999999999999985,
+          "SSLN.L": 0.02754793677492941,
+          "BRNT.L": 0.07245206322507104,
+          "RR.L": 0.03999999999999994,
+          "PLTR": 0.03810006635429652,
+          "SPCX": 0.025,
+          "AZN.L": 0.0245738724076109,
+          "SHEL.L": 0.0318706243590532,
+          "HSBA.L": 0.03999999999999994,
+          "ULVR.L": 0.01735378267308018,
+          "BRK-B": 0.033101654205961166,
+          "GHYS.L": 0.04999999999999919,
+          "IBTM.L": 0.09999999999999985,
+          "DBMG.L": 0.09999999999999985
+        },
+        "weights_full": {
+          "IITU.L": 0.08913167456495179,
+          "VMID.L": 0.0,
+          "IWQU.L": 0.0,
+          "VWRP.L": 0.0,
+          "CSP1.L": 0.033661492573942145,
+          "ISF.L": 0.09999999999999971,
+          "EMIM.L": 0.0,
+          "WLDS.L": 0.0,
+          "SMEA.L": 0.0,
+          "IJPA.L": 0.0,
+          "SMGB.L": 0.07720683286110323,
+          "XDWH.L": 0.0,
+          "SGLN.L": 0.09999999999999985,
+          "SSLN.L": 0.02754793677492941,
+          "BRNT.L": 0.07245206322507104,
+          "COPA.L": 1.4363930911439556e-16,
+          "ICOM.L": 0.0,
+          "YCA.L": 0.0,
+          "RR.L": 0.03999999999999994,
+          "PLTR": 0.03810006635429652,
+          "SPCX": 0.025,
+          "AZN.L": 0.0245738724076109,
+          "SHEL.L": 0.0318706243590532,
+          "HSBA.L": 0.03999999999999994,
+          "ULVR.L": 0.01735378267308018,
+          "MSFT": 2.486289337387251e-16,
+          "ASML.AS": 3.8553271419794176e-17,
+          "SIE.DE": 2.7458273130920117e-16,
+          "BRK-B": 0.033101654205961166,
+          "IHYU.L": 4.516452729283672e-16,
+          "IHYG.L": 3.424785415138049e-16,
+          "GHYS.L": 0.04999999999999919,
+          "IEMB.L": 2.8488470542368407e-16,
+          "IBTM.L": 0.09999999999999985,
+          "T36N": 3.408250957708418e-16,
+          "T56": 0.0,
+          "DBMG.L": 0.09999999999999985
+        },
+        "n_holdings": 18,
+        "expected_return_optimiser_part": {
+          "historical_5y": 0.1997378256682878,
+          "capm_or_yield": 0.06386292310106952,
+          "blend": 0.13180037438467865,
+          "optimiser_input": 0.13180037438467862
+        },
+        "expected_return_total_core": {
+          "historical_5y": 0.20374701907129117,
+          "capm_or_yield": 0.06787211650407289,
+          "blend": 0.13580956778768202,
+          "optimiser_input": 0.135809567787682
+        },
+        "exp_return_blend": 0.13580956778768202,
+        "ex_ante_vol_lw_optimiser_part": 0.10226505602399052,
+        "ex_ante_vol_sample_optimiser_part": 0.1015404149170479,
+        "ex_ante_vol_full_core_incl_spcx": 0.10916290970764199,
+        "sharpe_ex_ante": 0.9005766523718799,
+        "sharpe_ex_ante_on_optimiser_input": 0.9005766523718797,
+        "beta_vwrp": 0.6815337363634896,
+        "beta_up": 0.7445328408750942,
+        "beta_down": 0.6713276939803997,
+        "beta_asymmetry": 0.07320514689469448,
+        "beta_ftas": 0.49357444845666065,
+        "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+        "beta_vwrp_excl_spcx": 0.623458486216667,
+        "beta_up_excl_spcx": 0.5498795555659154,
+        "beta_down_excl_spcx": 0.6526071286300469,
+        "beta_asymmetry_excl_spcx": -0.1027275730641315,
+        "realised_daily_5y": {
+          "n_obs": 1261,
+          "start": "2021-09-17",
+          "end": "2026-09-16",
+          "mean_ann_arith": 0.2057976619854235,
+          "cagr": 0.22222902603865924,
+          "vol_ann": 0.10219757500611697,
+          "sharpe": 1.64678723517021,
+          "sortino": 2.39120063513213,
+          "downside_dev_ann": 0.07038207480909435,
+          "skew": -0.6181142329988231,
+          "excess_kurtosis": 3.385179899525119,
+          "max_drawdown": -0.11889662334613937,
+          "max_dd_peak": "2025-02-11",
+          "max_dd_trough": "2025-04-07",
+          "var95": 0.009281198278930555,
+          "cvar95": 0.014434751385840598,
+          "var99": 0.017631786883111004,
+          "cvar99": 0.025022328737952366,
+          "best_period": 0.02145524525234338,
+          "worst_period": -0.03951352752159025,
+          "total_return": 1.727114132107106,
+          "level_base_date": "2021-09-16",
+          "first_period_return": -0.002142343333263092,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.6240307289405022,
+          "alpha_ann": 0.11949624401936243,
+          "r2": 0.6324813857229243,
+          "beta_up": 0.5516734896870628,
+          "beta_down": 0.6526638683403502,
+          "beta_asymmetry": -0.10099037865328742,
+          "corr_benchmark": 0.7952869832475111,
+          "label": "MaxSharpe_Diversified"
+        },
+        "skew_daily_5y": -0.6181142329988231,
+        "sortino_daily_5y": 2.39120063513213,
+        "backtest_5y": {
+          "n_obs": 59,
+          "start": "2021-10-31",
+          "end": "2026-08-31",
+          "mean_ann_arith": 0.2028199943170056,
+          "cagr": 0.2186093271421219,
+          "vol_ann": 0.08458411742439989,
+          "sharpe": 1.9545039819652466,
+          "sortino": 5.564778327523785,
+          "downside_dev_ann": 0.029708280292014735,
+          "skew": 0.15713825742954407,
+          "excess_kurtosis": -1.2324884520324393,
+          "max_drawdown": -0.03886992002027989,
+          "max_dd_peak": "2025-01-31",
+          "max_dd_trough": "2025-04-30",
+          "var95": 0.01788852091772667,
+          "cvar95": 0.02045139349731555,
+          "var99": 0.020853377743656733,
+          "cvar99": 0.022720116072205924,
+          "best_period": 0.06189029806759568,
+          "worst_period": -0.022720116072205924,
+          "total_return": 1.6436940448637136,
+          "level_base_date": "2021-09-30",
+          "first_period_return": 0.022065205916255107,
+          "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+          "beta": 0.6051647615497552,
+          "alpha_ann": 0.11568116507052713,
+          "r2": 0.6607661479407361,
+          "beta_up": 0.7778893523596927,
+          "beta_down": 0.5777839038459756,
+          "beta_asymmetry": 0.20010544851371714,
+          "corr_benchmark": 0.8128752351626516,
+          "label": "MaxSharpe_Diversified 5y monthly backtest"
+        },
+        "gbp": {
+          "IITU.L": 14261.067930392288,
+          "CSP1.L": 5385.838811830744,
+          "ISF.L": 15999.999999999955,
+          "SMGB.L": 12353.093257776518,
+          "SGLN.L": 15999.999999999978,
+          "SSLN.L": 4407.669883988706,
+          "BRNT.L": 11592.330116011368,
+          "RR.L": 6399.99999999999,
+          "PLTR": 6096.010616687443,
+          "SPCX": 4000.0,
+          "AZN.L": 3931.8195852177446,
+          "SHEL.L": 5099.299897448512,
+          "HSBA.L": 6399.99999999999,
+          "ULVR.L": 2776.605227692829,
+          "BRK-B": 5296.264672953787,
+          "GHYS.L": 7999.999999999871,
+          "IBTM.L": 15999.999999999978,
+          "DBMG.L": 15999.999999999978
+        },
+        "shares": {
+          "IITU.L": 375,
+          "CSP1.L": 8,
+          "ISF.L": 1529,
+          "SMGB.L": 160,
+          "SGLN.L": 255,
+          "SSLN.L": 96,
+          "BRNT.L": 157,
+          "RR.L": 444,
+          "PLTR": 47,
+          "SPCX": 35,
+          "AZN.L": 32,
+          "SHEL.L": 142,
+          "HSBA.L": 424,
+          "ULVR.L": 59,
+          "BRK-B": 13,
+          "GHYS.L": 90,
+          "IBTM.L": 129,
+          "DBMG.L": 159
+        },
+        "invested_gbp": 158652.8846504001,
+        "residual_cash_gbp": 1347.1153495998878,
+        "weighted_ter": 0.0021225954550157552,
+        "weight_by_bucket": {
+          "etc_commodity": 0.20000000000000046,
+          "etf_bond": 0.15000000000000013,
+          "etf_equity": 0.2999999999999969,
+          "gilt": 3.408250957708418e-16,
+          "stock": 0.2500000000000024,
+          "trend": 0.09999999999999985
+        },
+        "weight_by_listing_region": {
+          "Europe": 3.1313600272899535e-16,
+          "UK": 0.9037982794397418,
+          "US": 0.09620172056025794
+        },
+        "weight_by_currency": {
+          "EUR": 6.556145442428002e-16,
+          "GBP": 0.2272068328611026,
+          "GBp": 0.6041393833535669,
+          "USD": 0.16865378378532986
+        },
+        "risk_contribution": {
+          "IITU.L": {
+            "weight": 0.08913167456495179,
+            "mcr": 0.16468169349354875,
+            "risk_contribution": 0.014678355111272126,
+            "pct_of_risk": 0.14353246047045343
+          },
+          "VMID.L": {
+            "weight": 0.0,
+            "mcr": 0.08860313910395823,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IWQU.L": {
+            "weight": 0.0,
+            "mcr": 0.11794266769976561,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "VWRP.L": {
+            "weight": 0.0,
+            "mcr": 0.10478176447068292,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "CSP1.L": {
+            "weight": 0.033661492573942145,
+            "mcr": 0.10875053894039953,
+            "risk_contribution": 0.003660705458954465,
+            "pct_of_risk": 0.03579624948423921
+          },
+          "ISF.L": {
+            "weight": 0.09999999999999971,
+            "mcr": 0.08279208544555755,
+            "risk_contribution": 0.008279208544555732,
+            "pct_of_risk": 0.080958333828258
+          },
+          "EMIM.L": {
+            "weight": 0.0,
+            "mcr": 0.106707255661659,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "WLDS.L": {
+            "weight": 0.0,
+            "mcr": 0.11294087572357643,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SMEA.L": {
+            "weight": 0.0,
+            "mcr": 0.09121429693171955,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "IJPA.L": {
+            "weight": 0.0,
+            "mcr": 0.10440046581614938,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SMGB.L": {
+            "weight": 0.07720683286110323,
+            "mcr": 0.2337824280027711,
+            "risk_contribution": 0.018049600844672848,
+            "pct_of_risk": 0.17649822477424315
+          },
+          "XDWH.L": {
+            "weight": 0.0,
+            "mcr": 0.06249693955183916,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "SGLN.L": {
+            "weight": 0.09999999999999985,
+            "mcr": 0.049304012900015924,
+            "risk_contribution": 0.004930401290001585,
+            "pct_of_risk": 0.04821198444212414
+          },
+          "SSLN.L": {
+            "weight": 0.02754793677492941,
+            "mcr": 0.11651154221249893,
+            "risk_contribution": 0.0032096525984194398,
+            "pct_of_risk": 0.031385624016736294
+          },
+          "BRNT.L": {
+            "weight": 0.07245206322507104,
+            "mcr": 0.15333794067912715,
+            "risk_contribution": 0.011109650172886313,
+            "pct_of_risk": 0.10863583911086973
+          },
+          "COPA.L": {
+            "weight": 1.4363930911439556e-16,
+            "mcr": 0.10377975590577466,
+            "risk_contribution": 1.4906852438366086e-17,
+            "pct_of_risk": 1.457668241522213e-16
+          },
+          "ICOM.L": {
+            "weight": 0.0,
+            "mcr": 0.0766648593358223,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "YCA.L": {
+            "weight": 0.0,
+            "mcr": 0.15181595351772775,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "RR.L": {
+            "weight": 0.03999999999999994,
+            "mcr": 0.20280192329955296,
+            "risk_contribution": 0.008112076931982105,
+            "pct_of_risk": 0.07932403547580398
+          },
+          "PLTR": {
+            "weight": 0.03810006635429652,
+            "mcr": 0.3205030998831789,
+            "risk_contribution": 0.012211189372306839,
+            "pct_of_risk": 0.11940725255596786
+          },
+          "AZN.L": {
+            "weight": 0.0245738724076109,
+            "mcr": 0.05348601118715349,
+            "risk_contribution": 0.001314358414505159,
+            "pct_of_risk": 0.012852468532328595
+          },
+          "SHEL.L": {
+            "weight": 0.0318706243590532,
+            "mcr": 0.11660641291171762,
+            "risk_contribution": 0.003716319183766003,
+            "pct_of_risk": 0.0363400689175214
+          },
+          "HSBA.L": {
+            "weight": 0.03999999999999994,
+            "mcr": 0.11690289237485682,
+            "risk_contribution": 0.004676115694994266,
+            "pct_of_risk": 0.04572544989265237
+          },
+          "ULVR.L": {
+            "weight": 0.01735378267308018,
+            "mcr": 0.0035966693500928144,
+            "risk_contribution": 6.241581824843924e-05,
+            "pct_of_risk": 0.0006103337804244395
+          },
+          "MSFT": {
+            "weight": 2.486289337387251e-16,
+            "mcr": 0.10891263670769047,
+            "risk_contribution": 2.7078832735306215e-17,
+            "pct_of_risk": 2.647906703239252e-16
+          },
+          "ASML.AS": {
+            "weight": 3.8553271419794176e-17,
+            "mcr": 0.23561761822873978,
+            "risk_contribution": 9.083829986858049e-18,
+            "pct_of_risk": 8.882633364740991e-17
+          },
+          "SIE.DE": {
+            "weight": 2.7458273130920117e-16,
+            "mcr": 0.15696179691257656,
+            "risk_contribution": 4.309899890745541e-17,
+            "pct_of_risk": 4.2144404533787915e-16
+          },
+          "BRK-B": {
+            "weight": 0.033101654205961166,
+            "mcr": 0.06082819641499931,
+            "risk_contribution": 0.0020135139237015937,
+            "pct_of_risk": 0.019689168538950787
+          },
+          "IHYU.L": {
+            "weight": 4.516452729283672e-16,
+            "mcr": 0.046452987037124346,
+            "risk_contribution": 2.0980272008719927e-17,
+            "pct_of_risk": 2.0515582569864463e-16
+          },
+          "IHYG.L": {
+            "weight": 3.424785415138049e-16,
+            "mcr": 0.030906189710527665,
+            "risk_contribution": 1.058470677581048e-17,
+            "pct_of_risk": 1.0350267420112101e-16
+          },
+          "GHYS.L": {
+            "weight": 0.04999999999999919,
+            "mcr": 0.029500026712184612,
+            "risk_contribution": 0.0014750013356092067,
+            "pct_of_risk": 0.014423317142301119
+          },
+          "IEMB.L": {
+            "weight": 2.8488470542368407e-16,
+            "mcr": 0.045695503051989404,
+            "risk_contribution": 1.3017949926153058e-17,
+            "pct_of_risk": 1.2729616970139982e-16
+          },
+          "IBTM.L": {
+            "weight": 0.09999999999999985,
+            "mcr": -0.008561724490871211,
+            "risk_contribution": -0.0008561724490871199,
+            "pct_of_risk": -0.008372091918536367
+          },
+          "T36N": {
+            "weight": 3.408250957708418e-16,
+            "mcr": 0.0009611675781581145,
+            "risk_contribution": 3.2759003187756745e-19,
+            "pct_of_risk": 3.203342809500027e-18
+          },
+          "T56": {
+            "weight": 0.0,
+            "mcr": 0.0015198870002882184,
+            "risk_contribution": 0.0,
+            "pct_of_risk": 0.0
+          },
+          "DBMG.L": {
+            "weight": 0.09999999999999985,
+            "mcr": 0.05622663777201397,
+            "risk_contribution": 0.005622663777201388,
+            "pct_of_risk": 0.05498128095566054
+          }
+        },
+        "top5_risk_contributors": {
+          "SMGB.L": 0.17649822477424315,
+          "IITU.L": 0.14353246047045343,
+          "PLTR": 0.11940725255596786,
+          "BRNT.L": 0.10863583911086973,
+          "ISF.L": 0.080958333828258
+        },
+        "constraint_violations": [],
+        "turnover_vs_headline": 0.2242897345133582,
+        "turnover_reference": "headline MaxSharpe (data/weights.csv)",
+        "largest_weight_changes_vs_headline": {
+          "SGLN.L": -0.06410926682234953,
+          "IBTM.L": -0.06344757873626165,
+          "ISF.L": -0.058778161051180985,
+          "GHYS.L": 0.04999999999999847,
+          "BRNT.L": 0.03656133004742014,
+          "CSP1.L": 0.033661492573942145,
+          "SSLN.L": 0.02754793677492941,
+          "AZN.L": 0.019178012353938602
+        }
+      },
+      "optimiser_cross_seed_audit": {
+        "MinVariance": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": -0.0033249180775449146,
+          "best_rival_portfolio": "MaxSortino",
+          "best_rival_objective": -0.010043565533190928,
+          "dominated_by_another_portfolio": 0
+        },
+        "MaxSharpe": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 0.9312846253400244,
+          "best_rival_portfolio": "MaxSortino",
+          "best_rival_objective": 0.9271690724783779,
+          "dominated_by_another_portfolio": 0
+        },
+        "Moderate12": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 0.14479748689956662,
+          "best_rival_portfolio": "MaxSharpe",
+          "best_rival_objective": 0.13180037438467862,
+          "dominated_by_another_portfolio": 0
+        },
+        "MaxSortino": {
+          "improvements": [],
+          "rounds_run": 1,
+          "objective_final": 2.40118860039068,
+          "best_rival_portfolio": "MaxSharpe",
+          "best_rival_objective": 2.3912006351321304,
+          "dominated_by_another_portfolio": 0
+        }
+      },
+      "asset_caps_headline": {
+        "etf_equity": 0.2,
+        "etf_bond": 0.2,
+        "etc_commodity": 0.2,
+        "gilt": 0.2,
+        "trend": 0.15,
+        "stock": 0.05
+      },
+      "asset_caps_variant": {
+        "etf_equity": 0.1,
+        "etf_bond": 0.1,
+        "etc_commodity": 0.1,
+        "gilt": 0.1,
+        "trend": 0.1,
+        "stock": 0.04
+      }
+    }
+  },
+  "comparison_vs_headline": {
+    "note": "Headline figures are recomputed here from the published weights in data/weights.csv using the same estimates, so the rows are directly comparable.",
+    "Moderate12": {
+      "name": "Headline_Moderate12",
+      "expected_return_estimate_used": "blend",
+      "weights": {
+        "IITU.L": 0.0539433676452423,
+        "ISF.L": 0.1353525210297831,
+        "SMGB.L": 0.1660524536582577,
+        "SGLN.L": 0.148287521917047,
+        "BRNT.L": 0.0517124780829529,
+        "RR.L": 0.0499999999999999,
+        "PLTR": 0.0499999999999999,
+        "SPCX": 0.025,
+        "AZN.L": 0.0107767550594874,
+        "SHEL.L": 0.0499999999999999,
+        "HSBA.L": 0.0499999999999998,
+        "BRK-B": 0.0142232449405127,
+        "IBTM.L": 0.0999999999999999,
+        "DBMG.L": 0.0946516576667157
+      },
+      "weights_full": {
+        "IITU.L": 0.0539433676452423,
+        "VMID.L": 2.859941101350731e-16,
+        "IWQU.L": 0.0,
+        "VWRP.L": 0.0,
+        "CSP1.L": 4.916302045641308e-16,
+        "ISF.L": 0.1353525210297831,
+        "EMIM.L": 0.0,
+        "WLDS.L": 0.0,
+        "SMEA.L": 0.0,
+        "IJPA.L": 0.0,
+        "SMGB.L": 0.1660524536582577,
+        "XDWH.L": 9.642538368248223e-17,
+        "SGLN.L": 0.148287521917047,
+        "SSLN.L": 0.0,
+        "BRNT.L": 0.0517124780829529,
+        "COPA.L": 3.9119263756874175e-17,
+        "ICOM.L": 1.546893919923165e-17,
+        "YCA.L": 7.006180083654737e-17,
+        "RR.L": 0.0499999999999999,
+        "PLTR": 0.0499999999999999,
+        "SPCX": 0.025,
+        "AZN.L": 0.0107767550594874,
+        "SHEL.L": 0.0499999999999999,
+        "HSBA.L": 0.0499999999999998,
+        "ULVR.L": 0.0,
+        "MSFT": 3.1302949598729905e-17,
+        "ASML.AS": 0.0,
+        "SIE.DE": 1.1432424864914966e-16,
+        "BRK-B": 0.0142232449405127,
+        "IHYU.L": 4.501990702568444e-17,
+        "IHYG.L": 3.900745540783661e-17,
+        "GHYS.L": 0.0,
+        "IEMB.L": 5.685571015590559e-17,
+        "IBTM.L": 0.0999999999999999,
+        "T36N": 0.0,
+        "T56": 0.0,
+        "DBMG.L": 0.0946516576667157
+      },
+      "n_holdings": 14,
+      "expected_return_optimiser_part": {
+        "historical_5y": 0.2322735854194087,
+        "capm_or_yield": 0.06787436054538795,
+        "blend": 0.15007397298239833,
+        "optimiser_input": 0.1500739729823983
+      },
+      "expected_return_total_core": {
+        "historical_5y": 0.23628277882241208,
+        "capm_or_yield": 0.07188355394839133,
+        "blend": 0.1540831663854017,
+        "optimiser_input": 0.15408316638540168
+      },
+      "exp_return_blend": 0.1540831663854017,
+      "ex_ante_vol_lw_optimiser_part": 0.12000000000303217,
+      "ex_ante_vol_sample_optimiser_part": 0.11944056003223355,
+      "ex_ante_vol_full_core_incl_spcx": 0.12779715636931127,
+      "sharpe_ex_ante": 0.9122516470436703,
+      "sharpe_ex_ante_on_optimiser_input": 0.9122516470436701,
+      "beta_vwrp": 0.7938894239186,
+      "beta_up": 0.8516512766936245,
+      "beta_down": 0.7683467785049328,
+      "beta_asymmetry": 0.08330449818869168,
+      "beta_ftas": 0.5703772761270103,
+      "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+      "beta_vwrp_excl_spcx": 0.7386950888372932,
+      "beta_up_excl_spcx": 0.6597446179438954,
+      "beta_down_excl_spcx": 0.7521138819885423,
+      "beta_asymmetry_excl_spcx": -0.09236926404464696,
+      "realised_daily_5y": {
+        "n_obs": 1261,
+        "start": "2021-09-17",
+        "end": "2026-09-16",
+        "mean_ann_arith": 0.23883539207027327,
+        "cagr": 0.2606992834098827,
+        "vol_ann": 0.12059487420297987,
+        "sharpe": 1.669518654096314,
+        "sortino": 2.450825331426571,
+        "downside_dev_ann": 0.08215003716853228,
+        "skew": -0.48819320546134554,
+        "excess_kurtosis": 2.7141637321977523,
+        "max_drawdown": -0.13375013321916163,
+        "max_dd_peak": "2025-02-18",
+        "max_dd_trough": "2025-04-07",
+        "var95": 0.011252188163083472,
+        "cvar95": 0.01678126277224629,
+        "var99": 0.019560145520011157,
+        "cvar99": 0.028239676976820706,
+        "best_period": 0.02838573968640214,
+        "worst_period": -0.04354299072340761,
+        "total_return": 2.1841144163753627,
+        "level_base_date": "2021-09-16",
+        "first_period_return": -0.0018172951907199073,
+        "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+        "beta": 0.7391717942012086,
+        "alpha_ann": 0.1434034502056838,
+        "r2": 0.6373090023945218,
+        "beta_up": 0.6615784519611652,
+        "beta_down": 0.7521170435609472,
+        "beta_asymmetry": -0.09053859159978206,
+        "corr_benchmark": 0.798316354833423,
+        "label": "Headline_Moderate12"
+      },
+      "skew_daily_5y": -0.48819320546134554,
+      "sortino_daily_5y": 2.450825331426571,
+      "backtest_5y": {
+        "n_obs": 59,
+        "start": "2021-10-31",
+        "end": "2026-08-31",
+        "mean_ann_arith": 0.23844328640001705,
+        "cagr": 0.2599329559224526,
+        "vol_ann": 0.10328660090545227,
+        "sharpe": 1.9454922965657366,
+        "sortino": 5.81945036943656,
+        "downside_dev_ann": 0.0345295987839952,
+        "skew": 0.23582134494695786,
+        "excess_kurtosis": -1.2509506498217597,
+        "max_drawdown": -0.038104452763221275,
+        "max_dd_peak": "2022-03-31",
+        "max_dd_trough": "2022-12-31",
+        "var95": 0.022526572324779892,
+        "cvar95": 0.024320971248746725,
+        "var99": 0.025101085328669816,
+        "cvar99": 0.02530498696297885,
+        "best_period": 0.07335586598645047,
+        "worst_period": -0.02530498696297885,
+        "total_return": 2.1147730336080217,
+        "level_base_date": "2021-09-30",
+        "first_period_return": 0.019592054108817616,
+        "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+        "beta": 0.7414581765537522,
+        "alpha_ann": 0.1399831730421493,
+        "r2": 0.665217267304279,
+        "beta_up": 0.9399372097957077,
+        "beta_down": 0.6983667939909229,
+        "beta_asymmetry": 0.24157041580478478,
+        "corr_benchmark": 0.8156085257672817,
+        "label": "Headline_Moderate12 5y monthly backtest"
+      },
+      "gbp": {
+        "IITU.L": 8630.93882323877,
+        "ISF.L": 21656.403364765298,
+        "SMGB.L": 26568.39258532123,
+        "SGLN.L": 23726.00350672752,
+        "BRNT.L": 8273.996493272465,
+        "RR.L": 7999.9999999999845,
+        "PLTR": 7999.9999999999845,
+        "SPCX": 4000.0,
+        "AZN.L": 1724.2808095179842,
+        "SHEL.L": 7999.9999999999845,
+        "HSBA.L": 7999.999999999968,
+        "BRK-B": 2275.719190482032,
+        "IBTM.L": 15999.999999999984,
+        "DBMG.L": 15144.265226674512
+      },
+      "shares": {
+        "IITU.L": 227,
+        "ISF.L": 2070,
+        "SMGB.L": 346,
+        "SGLN.L": 378,
+        "BRNT.L": 112,
+        "RR.L": 555,
+        "PLTR": 61,
+        "SPCX": 35,
+        "AZN.L": 14,
+        "SHEL.L": 223,
+        "HSBA.L": 530,
+        "BRK-B": 5,
+        "IBTM.L": 129,
+        "DBMG.L": 151
+      },
+      "invested_gbp": 159286.9541065578,
+      "residual_cash_gbp": 713.0458934422059,
+      "weighted_ter": 0.0019680690053999086,
+      "weight_by_bucket": {
+        "etc_commodity": 0.2,
+        "etf_bond": 0.10000000000000003,
+        "etf_equity": 0.35534834233328394,
+        "gilt": 0.0,
+        "stock": 0.24999999999999975,
+        "trend": 0.0946516576667157
+      },
+      "weight_by_listing_region": {
+        "Europe": 1.1432424864914966e-16,
+        "UK": 0.9107767550594867,
+        "US": 0.08922324494051263
+      },
+      "weight_by_currency": {
+        "EUR": 1.5333170405698626e-16,
+        "GBP": 0.26605245365825786,
+        "GBp": 0.5930118233182756,
+        "USD": 0.1409357230234658
+      },
+      "risk_contribution": {
+        "IITU.L": {
+          "weight": 0.0539433676452423,
+          "mcr": 0.16951077343536713,
+          "risk_contribution": 0.009143981971253382,
+          "pct_of_risk": 0.07619984975851941
+        },
+        "VMID.L": {
+          "weight": 2.859941101350731e-16,
+          "mcr": 0.08972565107403487,
+          "risk_contribution": 2.5661007735208667e-17,
+          "pct_of_risk": 2.138417311213355e-16
+        },
+        "IWQU.L": {
+          "weight": 0.0,
+          "mcr": 0.11573527582588602,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "VWRP.L": {
+          "weight": 0.0,
+          "mcr": 0.10523629236088022,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "CSP1.L": {
+          "weight": 4.916302045641308e-16,
+          "mcr": 0.10761232436744075,
+          "risk_contribution": 5.2905469042386496e-17,
+          "pct_of_risk": 4.408789086754139e-16
+        },
+        "ISF.L": {
+          "weight": 0.1353525210297831,
+          "mcr": 0.08018955198138848,
+          "risk_contribution": 0.01085385802092977,
+          "pct_of_risk": 0.09044881683879594
+        },
+        "EMIM.L": {
+          "weight": 0.0,
+          "mcr": 0.11288773693687469,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "WLDS.L": {
+          "weight": 0.0,
+          "mcr": 0.11389080873843653,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SMEA.L": {
+          "weight": 0.0,
+          "mcr": 0.09197208109157586,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "IJPA.L": {
+          "weight": 0.0,
+          "mcr": 0.10643495129809305,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SMGB.L": {
+          "weight": 0.1660524536582577,
+          "mcr": 0.25837857614185844,
+          "risk_contribution": 0.04290439654108255,
+          "pct_of_risk": 0.3575366378333203
+        },
+        "XDWH.L": {
+          "weight": 9.642538368248223e-17,
+          "mcr": 0.05491511589413927,
+          "risk_contribution": 5.2952111200603575e-18,
+          "pct_of_risk": 4.412675933272131e-17
+        },
+        "SGLN.L": {
+          "weight": 0.148287521917047,
+          "mcr": 0.049180246568982205,
+          "risk_contribution": 0.007292816890983724,
+          "pct_of_risk": 0.0607734740899954
+        },
+        "SSLN.L": {
+          "weight": 0.0,
+          "mcr": 0.09409006979364776,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "BRNT.L": {
+          "weight": 0.0517124780829529,
+          "mcr": 0.1207722764901341,
+          "risk_contribution": 0.006245433701024388,
+          "pct_of_risk": 0.052045280840554806
+        },
+        "COPA.L": {
+          "weight": 3.9119263756874175e-17,
+          "mcr": 0.10215209647303038,
+          "risk_contribution": 3.996114805246132e-18,
+          "pct_of_risk": 3.3300956709542977e-17
+        },
+        "ICOM.L": {
+          "weight": 1.546893919923165e-17,
+          "mcr": 0.06411605573693001,
+          "risk_contribution": 9.91807367889118e-19,
+          "pct_of_risk": 8.26506139886714e-18
+        },
+        "YCA.L": {
+          "weight": 7.006180083654737e-17,
+          "mcr": 0.1512103925430591,
+          "risk_contribution": 1.0594072406767953e-17,
+          "pct_of_risk": 8.82839367208355e-17
+        },
+        "RR.L": {
+          "weight": 0.0499999999999999,
+          "mcr": 0.21160338217232438,
+          "risk_contribution": 0.010580169108616198,
+          "pct_of_risk": 0.08816807590290714
+        },
+        "PLTR": {
+          "weight": 0.0499999999999999,
+          "mcr": 0.3349780387826518,
+          "risk_contribution": 0.016748901939132557,
+          "pct_of_risk": 0.13957418282257786
+        },
+        "AZN.L": {
+          "weight": 0.0107767550594874,
+          "mcr": 0.041927161134456284,
+          "risk_contribution": 0.00045183874588569526,
+          "pct_of_risk": 0.003765322882285651
+        },
+        "SHEL.L": {
+          "weight": 0.0499999999999999,
+          "mcr": 0.10550896999900636,
+          "risk_contribution": 0.005275448499950307,
+          "pct_of_risk": 0.043962070831808385
+        },
+        "HSBA.L": {
+          "weight": 0.0499999999999998,
+          "mcr": 0.11990203585554879,
+          "risk_contribution": 0.005995101792777416,
+          "pct_of_risk": 0.04995918160521609
+        },
+        "ULVR.L": {
+          "weight": 0.0,
+          "mcr": -0.00549505585732562,
+          "risk_contribution": -0.0,
+          "pct_of_risk": -0.0
+        },
+        "MSFT": {
+          "weight": 3.1302949598729905e-17,
+          "mcr": 0.10562241611764497,
+          "risk_contribution": 3.306293168226718e-18,
+          "pct_of_risk": 2.755244306785978e-17
+        },
+        "ASML.AS": {
+          "weight": 0.0,
+          "mcr": 0.2572919354019231,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SIE.DE": {
+          "weight": 1.1432424864914966e-16,
+          "mcr": 0.16525906543836294,
+          "risk_contribution": 1.8893118488701498e-17,
+          "pct_of_risk": 1.5744265406853419e-16
+        },
+        "BRK-B": {
+          "weight": 0.0142232449405127,
+          "mcr": 0.05136962041527607,
+          "risk_contribution": 0.0007306426936676332,
+          "pct_of_risk": 0.0060886891137430935
+        },
+        "IHYU.L": {
+          "weight": 4.501990702568444e-17,
+          "mcr": 0.04377363948475877,
+          "risk_contribution": 1.970685179779669e-18,
+          "pct_of_risk": 1.6422376497748945e-17
+        },
+        "IHYG.L": {
+          "weight": 3.900745540783661e-17,
+          "mcr": 0.03047948206217194,
+          "risk_contribution": 1.1889270373941277e-18,
+          "pct_of_risk": 9.90772531136738e-18
+        },
+        "GHYS.L": {
+          "weight": 0.0,
+          "mcr": 0.029055268875503644,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "IEMB.L": {
+          "weight": 5.685571015590559e-17,
+          "mcr": 0.04354432224694669,
+          "risk_contribution": 2.475743364607752e-18,
+          "pct_of_risk": 2.063119470454329e-17
+        },
+        "IBTM.L": {
+          "weight": 0.0999999999999999,
+          "mcr": -0.008964784678739828,
+          "risk_contribution": -0.0008964784678739819,
+          "pct_of_risk": -0.007470653898761079
+        },
+        "T36N": {
+          "weight": 0.0,
+          "mcr": 0.001625723982219953,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "T56": {
+          "weight": 0.0,
+          "mcr": 0.0029209637179897128,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "DBMG.L": {
+          "weight": 0.0946516576667157,
+          "mcr": 0.049379891285791885,
+          "risk_contribution": 0.0046738885656024114,
+          "pct_of_risk": 0.03894907137903592
+        }
+      },
+      "top5_risk_contributors": {
+        "SMGB.L": 0.3575366378333203,
+        "PLTR": 0.13957418282257786,
+        "ISF.L": 0.09044881683879594,
+        "RR.L": 0.08816807590290714,
+        "IITU.L": 0.07619984975851941
+      },
+      "constraint_violations": []
+    },
+    "MaxSharpe": {
+      "name": "Headline_MaxSharpe",
+      "expected_return_estimate_used": "blend",
+      "weights": {
+        "IITU.L": 0.0771979475972236,
+        "ISF.L": 0.1587781610511807,
+        "SMGB.L": 0.0640238913515929,
+        "SGLN.L": 0.1641092668223494,
+        "BRNT.L": 0.0358907331776509,
+        "RR.L": 0.0499999999999995,
+        "PLTR": 0.0366771334777466,
+        "SPCX": 0.025,
+        "AZN.L": 0.0053958600536723,
+        "SHEL.L": 0.0483369934040203,
+        "HSBA.L": 0.0499999999999995,
+        "BRK-B": 0.0345900130645599,
+        "IBTM.L": 0.1634475787362615,
+        "DBMG.L": 0.0865524212637393
+      },
+      "weights_full": {
+        "IITU.L": 0.0771979475972236,
+        "VMID.L": 0.0,
+        "IWQU.L": 8.839241768701974e-17,
+        "VWRP.L": 0.0,
+        "CSP1.L": 0.0,
+        "ISF.L": 0.1587781610511807,
+        "EMIM.L": 0.0,
+        "WLDS.L": 0.0,
+        "SMEA.L": 0.0,
+        "IJPA.L": 0.0,
+        "SMGB.L": 0.0640238913515929,
+        "XDWH.L": 0.0,
+        "SGLN.L": 0.1641092668223494,
+        "SSLN.L": 0.0,
+        "BRNT.L": 0.0358907331776509,
+        "COPA.L": 3.1865623021193796e-16,
+        "ICOM.L": 2.9606797968306494e-16,
+        "YCA.L": 0.0,
+        "RR.L": 0.0499999999999995,
+        "PLTR": 0.0366771334777466,
+        "SPCX": 0.025,
+        "AZN.L": 0.0053958600536723,
+        "SHEL.L": 0.0483369934040203,
+        "HSBA.L": 0.0499999999999995,
+        "ULVR.L": 5.277778136985975e-16,
+        "MSFT": 0.0,
+        "ASML.AS": 0.0,
+        "SIE.DE": 2.205061093698653e-16,
+        "BRK-B": 0.0345900130645599,
+        "IHYU.L": 2.318371404205269e-16,
+        "IHYG.L": 4.745079786474048e-16,
+        "GHYS.L": 7.183356446773694e-16,
+        "IEMB.L": 0.0,
+        "IBTM.L": 0.1634475787362615,
+        "T36N": 0.0,
+        "T56": 0.0,
+        "DBMG.L": 0.0865524212637393
+      },
+      "n_holdings": 14,
+      "expected_return_optimiser_part": {
+        "historical_5y": 0.1975925903369834,
+        "capm_or_yield": 0.06183328207068829,
+        "blend": 0.1297129362038358,
+        "optimiser_input": 0.1297129362038358
+      },
+      "expected_return_total_core": {
+        "historical_5y": 0.20160178373998677,
+        "capm_or_yield": 0.06584247547369167,
+        "blend": 0.13372212960683919,
+        "optimiser_input": 0.13372212960683919
+      },
+      "exp_return_blend": 0.13372212960683919,
+      "ex_ante_vol_lw_optimiser_part": 0.09575717166500167,
+      "ex_ante_vol_sample_optimiser_part": 0.0950241252597382,
+      "ex_ante_vol_full_core_incl_spcx": 0.10311124593335919,
+      "sharpe_ex_ante": 0.9331875367797181,
+      "sharpe_ex_ante_on_optimiser_input": 0.9331875367797181,
+      "beta_vwrp": 0.6295687981103838,
+      "beta_up": 0.7082595055756893,
+      "beta_down": 0.6135154604657721,
+      "beta_asymmetry": 0.09474404510991719,
+      "beta_ftas": 0.4764940545162689,
+      "beta_convention": "sum over all 37 core lines of w_i x beta_i, i.e. the core sleeve AS HELD including the 2.5% SPCX policy weight at SPCX's own 67-bar betas (not estimates); the _excl_spcx fields give the optimised 97.5% alone, renormalised to 1.",
+      "beta_vwrp_excl_spcx": 0.5701611136493789,
+      "beta_up_excl_spcx": 0.5126761347460128,
+      "beta_down_excl_spcx": 0.5933125301535057,
+      "beta_asymmetry_excl_spcx": -0.0806363954074929,
+      "realised_daily_5y": {
+        "n_obs": 1261,
+        "start": "2021-09-17",
+        "end": "2026-09-16",
+        "mean_ann_arith": 0.20306018443604548,
+        "cagr": 0.21967620966271517,
+        "vol_ann": 0.09568525104822503,
+        "sharpe": 1.7302581392884022,
+        "sortino": 2.5468057754036844,
+        "downside_dev_ann": 0.0650069926945266,
+        "skew": -0.5615252935575623,
+        "excess_kurtosis": 3.2046506402358492,
+        "max_drawdown": -0.09967058983133803,
+        "max_dd_peak": "2025-02-18",
+        "max_dd_trough": "2025-04-07",
+        "var95": 0.00880399031562707,
+        "cvar95": 0.01329432231802356,
+        "var99": 0.015776874815354284,
+        "cvar99": 0.023108336136168632,
+        "best_period": 0.019778787954998104,
+        "worst_period": -0.0369018652912375,
+        "total_return": 1.6987566952294766,
+        "level_base_date": "2021-09-16",
+        "first_period_return": -0.0014667914596268794,
+        "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+        "beta": 0.5704324874162736,
+        "alpha_ann": 0.12100903134332044,
+        "r2": 0.6028863899587528,
+        "beta_up": 0.5138776405626505,
+        "beta_down": 0.5933185414678787,
+        "beta_asymmetry": -0.07944090090522815,
+        "corr_benchmark": 0.7764575905732067,
+        "label": "Headline_MaxSharpe"
+      },
+      "skew_daily_5y": -0.5615252935575623,
+      "sortino_daily_5y": 2.5468057754036844,
+      "backtest_5y": {
+        "n_obs": 59,
+        "start": "2021-10-31",
+        "end": "2026-08-31",
+        "mean_ann_arith": 0.20098372870188747,
+        "cagr": 0.2169048125933435,
+        "vol_ann": 0.07941943129657925,
+        "sharpe": 2.0584852602555594,
+        "sortino": 6.482107745227986,
+        "downside_dev_ann": 0.02522076693684108,
+        "skew": 0.2825516416801371,
+        "excess_kurtosis": -1.0650854818890303,
+        "max_drawdown": -0.024197048858232595,
+        "max_dd_peak": "2022-07-31",
+        "max_dd_trough": "2022-10-31",
+        "var95": 0.015539986352378117,
+        "cvar95": 0.01938104040649392,
+        "var99": 0.019811939203498576,
+        "cvar99": 0.022455897035841058,
+        "best_period": 0.060263354045256456,
+        "worst_period": -0.022455897035841058,
+        "total_return": 1.6255608749473702,
+        "level_base_date": "2021-09-30",
+        "first_period_return": 0.015811938308584825,
+        "cagr_convention": "(1 + total_return) ^ (365.25 / days from level_base_date to end) - 1, the same calendar-day convention as every per-asset CAGR in this file",
+        "beta": 0.5475473126066355,
+        "alpha_ann": 0.11863092311795645,
+        "r2": 0.6135753795099195,
+        "beta_up": 0.7094616948199062,
+        "beta_down": 0.5328463025793492,
+        "beta_asymmetry": 0.176615392240557,
+        "corr_benchmark": 0.7833105255962793,
+        "label": "Headline_MaxSharpe 5y monthly backtest"
+      },
+      "gbp": {
+        "IITU.L": 12351.671615555779,
+        "ISF.L": 25404.505768188916,
+        "SMGB.L": 10243.822616254864,
+        "SGLN.L": 26257.482691575904,
+        "BRNT.L": 5742.517308424144,
+        "RR.L": 7999.99999999992,
+        "PLTR": 5868.341356439457,
+        "SPCX": 4000.0,
+        "AZN.L": 863.337608587568,
+        "SHEL.L": 7733.918944643247,
+        "HSBA.L": 7999.99999999992,
+        "BRK-B": 5534.402090329585,
+        "IBTM.L": 26151.612597801843,
+        "DBMG.L": 13848.38740219829
+      },
+      "shares": {
+        "IITU.L": 325,
+        "ISF.L": 2428,
+        "SMGB.L": 133,
+        "SGLN.L": 418,
+        "BRNT.L": 78,
+        "RR.L": 555,
+        "PLTR": 45,
+        "SPCX": 35,
+        "AZN.L": 7,
+        "SHEL.L": 216,
+        "HSBA.L": 530,
+        "BRK-B": 14,
+        "IBTM.L": 211,
+        "DBMG.L": 138
+      },
+      "invested_gbp": 159574.80804899853,
+      "residual_cash_gbp": 425.19195100147044,
+      "weighted_ter": 0.0015873774312129833,
+      "weight_by_bucket": {
+        "etc_commodity": 0.2000000000000009,
+        "etf_bond": 0.16344757873626292,
+        "etf_equity": 0.29999999999999727,
+        "gilt": 0.0,
+        "stock": 0.24999999999999886,
+        "trend": 0.0865524212637393
+      },
+      "weight_by_listing_region": {
+        "Europe": 2.205061093698653e-16,
+        "UK": 0.9037328534576925,
+        "US": 0.0962671465423065
+      },
+      "weight_by_currency": {
+        "EUR": 6.950140880172701e-16,
+        "GBP": 0.22747147008785512,
+        "GBp": 0.6403706501921851,
+        "USD": 0.13215787971995835
+      },
+      "risk_contribution": {
+        "IITU.L": {
+          "weight": 0.0771979475972236,
+          "mcr": 0.15283883643226118,
+          "risk_contribution": 0.01179884448571833,
+          "pct_of_risk": 0.12321630098887615
+        },
+        "VMID.L": {
+          "weight": 0.0,
+          "mcr": 0.08967863085078213,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "IWQU.L": {
+          "weight": 8.839241768701974e-17,
+          "mcr": 0.11019721400870108,
+          "risk_contribution": 9.74059816860301e-18,
+          "pct_of_risk": 1.0172186583245862e-16
+        },
+        "VWRP.L": {
+          "weight": 0.0,
+          "mcr": 0.10238230470638,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "CSP1.L": {
+          "weight": 0.0,
+          "mcr": 0.10367161833426154,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "ISF.L": {
+          "weight": 0.1587781610511807,
+          "mcr": 0.08634801082463063,
+          "risk_contribution": 0.013710178369162296,
+          "pct_of_risk": 0.1431765175471785
+        },
+        "EMIM.L": {
+          "weight": 0.0,
+          "mcr": 0.10785577136192885,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "WLDS.L": {
+          "weight": 0.0,
+          "mcr": 0.11123848811675001,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SMEA.L": {
+          "weight": 0.0,
+          "mcr": 0.09332671585145626,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "IJPA.L": {
+          "weight": 0.0,
+          "mcr": 0.10322076686259117,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SMGB.L": {
+          "weight": 0.0640238913515929,
+          "mcr": 0.21899213712943763,
+          "risk_contribution": 0.014020728794428247,
+          "pct_of_risk": 0.14641962111703313
+        },
+        "XDWH.L": {
+          "weight": 0.0,
+          "mcr": 0.05856326051434619,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SGLN.L": {
+          "weight": 0.1641092668223494,
+          "mcr": 0.06478875888508732,
+          "risk_contribution": 0.010632435718961655,
+          "pct_of_risk": 0.1110353985407832
+        },
+        "SSLN.L": {
+          "weight": 0.0,
+          "mcr": 0.09819852969481341,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "BRNT.L": {
+          "weight": 0.0358907331776509,
+          "mcr": 0.11808208582428534,
+          "risk_contribution": 0.004238052635379899,
+          "pct_of_risk": 0.04425833137810675
+        },
+        "COPA.L": {
+          "weight": 3.1865623021193796e-16,
+          "mcr": 0.09955704378415184,
+          "risk_contribution": 3.1724472263302676e-17,
+          "pct_of_risk": 3.31301266648602e-16
+        },
+        "ICOM.L": {
+          "weight": 2.9606797968306494e-16,
+          "mcr": 0.06566373613694146,
+          "risk_contribution": 1.944092969650612e-17,
+          "pct_of_risk": 2.0302322383245152e-16
+        },
+        "YCA.L": {
+          "weight": 0.0,
+          "mcr": 0.14905199094538618,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "RR.L": {
+          "weight": 0.0499999999999995,
+          "mcr": 0.22490513459388028,
+          "risk_contribution": 0.011245256729693903,
+          "pct_of_risk": 0.11743513863415345
+        },
+        "PLTR": {
+          "weight": 0.0366771334777466,
+          "mcr": 0.30902814366245407,
+          "risk_contribution": 0.01133426647348808,
+          "pct_of_risk": 0.11836467469131239
+        },
+        "AZN.L": {
+          "weight": 0.0053958600536723,
+          "mcr": 0.053400448075109935,
+          "risk_contribution": 0.00028814134461668757,
+          "pct_of_risk": 0.003009083702103541
+        },
+        "SHEL.L": {
+          "weight": 0.0483369934040203,
+          "mcr": 0.11382849420672839,
+          "risk_contribution": 0.005502127173660193,
+          "pct_of_risk": 0.05745916549111242
+        },
+        "HSBA.L": {
+          "weight": 0.0499999999999995,
+          "mcr": 0.1276582098140093,
+          "risk_contribution": 0.006382910490700402,
+          "pct_of_risk": 0.06665725793395894
+        },
+        "ULVR.L": {
+          "weight": 5.277778136985975e-16,
+          "mcr": 0.007756041684095304,
+          "risk_contribution": 4.093466722987008e-18,
+          "pct_of_risk": 4.274840883257969e-17
+        },
+        "MSFT": {
+          "weight": 0.0,
+          "mcr": 0.10103001352131,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "ASML.AS": {
+          "weight": 0.0,
+          "mcr": 0.219716974150883,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "SIE.DE": {
+          "weight": 2.205061093698653e-16,
+          "mcr": 0.1546752628206713,
+          "risk_contribution": 3.4106840420347606e-17,
+          "pct_of_risk": 3.5618053277166003e-16
+        },
+        "BRK-B": {
+          "weight": 0.0345900130645599,
+          "mcr": 0.060429452028794,
+          "risk_contribution": 0.0020902555351601806,
+          "pct_of_risk": 0.02182871004662462
+        },
+        "IHYU.L": {
+          "weight": 2.318371404205269e-16,
+          "mcr": 0.04456443885911865,
+          "risk_contribution": 1.0331692069543476e-17,
+          "pct_of_risk": 1.0789470793569407e-16
+        },
+        "IHYG.L": {
+          "weight": 4.745079786474048e-16,
+          "mcr": 0.030255052665395833,
+          "risk_contribution": 1.4356263884127753e-17,
+          "pct_of_risk": 1.4992364158740946e-16
+        },
+        "GHYS.L": {
+          "weight": 7.183356446773694e-16,
+          "mcr": 0.027691694432662894,
+          "risk_contribution": 1.9891931172495623e-17,
+          "pct_of_risk": 2.0773306924817968e-16
+        },
+        "IEMB.L": {
+          "weight": 0.0,
+          "mcr": 0.04596873197913245,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "IBTM.L": {
+          "weight": 0.1634475787362615,
+          "mcr": -0.0008671941203530901,
+          "risk_contribution": -0.00014174077926603474,
+          "pct_of_risk": -0.0014802105868571681
+        },
+        "T36N": {
+          "weight": 0.0,
+          "mcr": 0.004687159744624411,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "T56": {
+          "weight": 0.0,
+          "mcr": 0.00896339521796158,
+          "risk_contribution": 0.0,
+          "pct_of_risk": 0.0
+        },
+        "DBMG.L": {
+          "weight": 0.0865524212637393,
+          "mcr": 0.053790692684505974,
+          "risk_contribution": 0.0046557146932977005,
+          "pct_of_risk": 0.04862001051561258
+        }
+      },
+      "top5_risk_contributors": {
+        "SMGB.L": 0.14641962111703313,
+        "ISF.L": 0.1431765175471785,
+        "IITU.L": 0.12321630098887615,
+        "PLTR": 0.11836467469131239,
+        "RR.L": 0.11743513863415345
+      },
+      "constraint_violations": []
+    }
+  },
+  "limitations": [
+    "Educational analysis, not personalised advice; every figure is a model output.",
+    "Both variants are single-change sensitivities on one already noisy problem. A mean-variance optimiser maximises estimation error (Michaud 1989), so the weight differences below are larger than the confidence one should attach to them.",
+    "Variant A replaces the two gilts' blended mu with their redemption yield but leaves every other line (including the HY/EM credit ETFs and IBTM.L, which already use a yield-based estimate #2) on the 50/50 blend, so it is a sensitivity, not a coherent all-forward-looking expected-return vector.",
+    "A gilt's redemption yield is the forward return only if it is HELD TO MATURITY and coupons are reinvested at that yield; the covariance matrix still uses the ETF-proxy history (IGLT.L for T36N, GLTL.L for T56), whose duration and volatility are those of a rolling fund, not of a single bond pulling to par.",
+    "Variant B's 10% single-fund cap is applied to every fund bucket including the trend fund DBMG.L, whose separate 15% group limit is left in place but is no longer binding.",
+    "The 12% target is the ex-ante Ledoit-Wolf volatility of the optimised 97.5%; adding the 2.5% SPCX policy weight at its 67-bar pairwise covariance raises the full-core figure (reported alongside as ex_ante_vol_full_core_incl_spcx).",
+    "Backtests are 5 years of monthly rebalancing with no dealing costs, no stamp duty, no FX charge and no spread; they apply the variant weights to past returns and are not a track record.",
+    "Beta/beta+/beta- are as-held sums including SPCX at its own 67-bar betas, which are not estimates; the _excl_spcx fields are given for every portfolio.",
+    "Turnover is one-way (0.5 x sum of absolute weight changes) against the PUBLISHED headline weights in data/weights.csv."
+  ]
+}

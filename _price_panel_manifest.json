@@ -1,0 +1,18 @@
+{
+ "prices_gbp_daily.csv": {
+  "repaired_sha256": "29d68ea2690130b7be2ec3863961aff545a0d8cb27e92e31e59e1aa5976f2a52",
+  "as_of": "2026-09-16"
+ },
+ "prices_gbp_monthly.csv": {
+  "repaired_sha256": "11a90ff76b6c9c8a12e7bf349939f2711887bb02053b71200842cece5d02536a",
+  "as_of": "2026-09-16"
+ },
+ "prices_gbp_weekly.csv": {
+  "repaired_sha256": "bc9c5d6d823c3c34db469ba0e8e3d1c443130e04e19216b7900660234b1f2f29",
+  "as_of": "2026-09-16"
+ },
+ "prices_local_daily.csv": {
+  "repaired_sha256": "bc6749b11b6c6d6e8ef9fdba77e899b79225632bda58facb2435b67c4e5e62d6",
+  "as_of": "2026-09-16"
+ }
+}

@@ -1,0 +1,252 @@
+{
+  "BRNT.L": {
+    "open": 99.72000122070312,
+    "high": 100.80000305175781,
+    "low": 97.93000030517578,
+    "close": 98.87,
+    "volume": 77864.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "COPA.L": {
+    "open": 55.11000061035156,
+    "high": 55.45000076293945,
+    "low": 55.099998474121094,
+    "close": 55.32,
+    "volume": 22844.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "CSP1.L": {
+    "open": 60846.0,
+    "high": 61144.0,
+    "low": 60818.0,
+    "close": 61062.0,
+    "volume": 3154.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "DBMG.L": {
+    "open": 10180.0,
+    "high": 10180.0,
+    "low": 10003.7998046875,
+    "close": 10022.0,
+    "volume": 1469.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "EMIM.L": {
+    "open": 4033.0,
+    "high": 4055.0,
+    "low": 4023.0,
+    "close": 4048.0,
+    "volume": 169661.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "GHYS.L": {
+    "open": 87.3499984741211,
+    "high": 88.06999969482422,
+    "low": 87.22000122070312,
+    "close": 88.04,
+    "volume": 610.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "GLTL.L": {
+    "open": 32.060001373291016,
+    "high": 32.20000076293945,
+    "low": 31.860000610351562,
+    "close": 32.165000915527344,
+    "volume": 26804.0,
+    "close_source": "intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json)",
+    "intraday_bars_used": 8,
+    "intraday_fetch_ok": true
+  },
+  "IBTM.L": {
+    "open": 123.38999938964844,
+    "high": 123.95999908447266,
+    "low": 123.2699966430664,
+    "close": 123.92,
+    "volume": 61019.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "ICOM.L": {
+    "open": 10.949999809265137,
+    "high": 10.989999771118164,
+    "low": 10.864999771118164,
+    "close": 10.9,
+    "volume": 370941.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IEMB.L": {
+    "open": 89.86000061035156,
+    "high": 90.18000030517578,
+    "low": 89.86000061035156,
+    "close": 90.13,
+    "volume": 88354.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IGLT.L": {
+    "open": 9.492400169372559,
+    "high": 9.532999992370605,
+    "low": 9.470000267028809,
+    "close": 9.52750015258789,
+    "volume": 337808.0,
+    "close_source": "intraday 60m last-bar close (fallback: no recorded official close in universe/core_universe.json or unicorn_final.json)",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IHYG.L": {
+    "open": 90.20999908447266,
+    "high": 90.30000305175781,
+    "low": 90.16000366210938,
+    "close": 90.25,
+    "volume": 107662.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IHYU.L": {
+    "open": 92.62999725341797,
+    "high": 92.88999938964844,
+    "low": 92.55000305175781,
+    "close": 92.83,
+    "volume": 5861.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 7,
+    "intraday_fetch_ok": true
+  },
+  "IITU.L": {
+    "open": 3775.0,
+    "high": 3805.0,
+    "low": 3772.0,
+    "close": 3799.0,
+    "volume": 111220.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IJPA.L": {
+    "open": 83.93000030517578,
+    "high": 84.83999633789062,
+    "low": 83.70999908447266,
+    "close": 84.61,
+    "volume": 44912.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "ISF.L": {
+    "open": 1047.4000244140625,
+    "high": 1051.4000244140625,
+    "low": 1045.5999755859375,
+    "close": 1046.2,
+    "volume": 8254871.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "IWQU.L": {
+    "open": 88.48999786376953,
+    "high": 88.70999908447266,
+    "low": 88.37999725341797,
+    "close": 88.45,
+    "volume": 18353.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "SGLN.L": {
+    "open": 6232.0,
+    "high": 6283.59912109375,
+    "low": 6226.0,
+    "close": 6270.0,
+    "volume": 888781.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "SMEA.L": {
+    "open": 8855.0,
+    "high": 8893.0,
+    "low": 8837.0,
+    "close": 8875.0,
+    "volume": 36849.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "SMGB.L": {
+    "open": 76.16999816894531,
+    "high": 76.91950225830078,
+    "low": 76.12699890136719,
+    "close": 76.78,
+    "volume": 116477.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "SSLN.L": {
+    "open": 4573.0,
+    "high": 4589.0,
+    "low": 4538.34423828125,
+    "close": 4564.0,
+    "volume": 212622.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "VMID.L": {
+    "open": 36.60820007324219,
+    "high": 37.03499984741211,
+    "low": 36.55500030517578,
+    "close": 36.96,
+    "volume": 69299.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "VWRP.L": {
+    "open": 142.13999938964844,
+    "high": 142.82000732421875,
+    "low": 141.9600067138672,
+    "close": 142.66,
+    "volume": 289839.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "WLDS.L": {
+    "open": 7.672699928283691,
+    "high": 7.7230000495910645,
+    "low": 7.656000137329102,
+    "close": 7.717,
+    "volume": 87787.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  },
+  "XDWH.L": {
+    "open": 61.459999084472656,
+    "high": 61.81999969482422,
+    "low": 61.459999084472656,
+    "close": 61.7,
+    "volume": 21594.0,
+    "close_source": "universe/core_universe.json last_price",
+    "intraday_bars_used": 9,
+    "intraday_fetch_ok": true
+  }
+}
