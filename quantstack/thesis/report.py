@@ -271,7 +271,7 @@ def _data_section(summary: dict) -> list[str]:
                      f"{rc['max_abs_return_diff_unrounded']:.1e}).")
     else:
         lines.append("- Levels are passed to the engine unrescaled (`--no-rescale`).")
-    applied = [r for r in reps if r.get("applied")]
+    applied = [r for r in reps if r.get("applied") and r["ticker"] in summary["universe"]["included"]]
     if reps and not applied:
         lines.append("- No repair applies to the names in this run.")
     elif not reps:
@@ -295,6 +295,9 @@ def comparison_markdown(summary: dict) -> str:
     exact = bool(preset.get("matches_preset")) and not cfg.get("tickers_subset")
     title = preset["label"] if preset and exact else "custom window" + (
         f" (from preset `{preset['name']}`)" if preset else "")
+    user_exc = cfg.get("exclude") or []
+    if user_exc:
+        title = f"SENSITIVITY, {title}, without {', '.join(user_exc)}"
     lines = [
         f"# Thesis portfolio: {title}",
         "",
@@ -303,6 +306,9 @@ def comparison_markdown(summary: dict) -> str:
         + "; every number comes from `thesis_summary.json` in this folder.",
         "",
     ]
+    if user_exc:
+        lines += [f"**Sensitivity run.** {', '.join(user_exc)} excluded by user (`--exclude`); every other "
+                  "setting is as below. Compare with the run without `--exclude`, not with the thesis.", ""]
     if preset and exact:
         lines += [preset["description"], ""]
     elif preset:

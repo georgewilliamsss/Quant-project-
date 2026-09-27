@@ -727,6 +727,28 @@ def test_resolve_applies_the_preset_then_the_overrides(thesis_inputs):
     assert kw["schemes"] == ("equal_weight",) and not kw["rescale"] and str(kw["results_dir"]) == "x"
 
 
+def test_exclude_drops_names_records_them_and_labels_the_run(thesis_inputs, tmp_path):
+    """``--exclude``: a sensitivity run leaves named holdings out, records why, and never overwrites the preset."""
+    base = ["--prices", str(thesis_inputs / "prices.csv"), "--holdings", str(thesis_inputs / "holdings.csv")]
+    assert resolve(build_parser().parse_args(base))["exclude"] == ()
+    kw = resolve(build_parser().parse_args(base + ["--exclude", " CCC.AX, LATE "]))
+    assert kw["exclude"] == ("CCC.AX", "LATE") and kw["results_dir"] == run_mod.RESULTS_ROOT / "thesis5y_ex_cccax_late"
+    p, h = thesis_inputs / "prices.csv", thesis_inputs / "holdings.csv"
+    s = run_thesis(p, h, tmp_path, schemes=("equal_weight",), exclude=["BBB"], **E2E)
+    u = s["universe"]
+    assert (u["n_universe"], u["included"], u["excluded"]) == (5, ["AAA.L", "CCC.AX", "DDD"], ["BBB", "LATE"])
+    assert u["excluded_weight_total"] == pytest.approx(0.35) and s["config"]["exclude"] == ["BBB"]
+    assert {k: s["exclusions"][0][k] for k in ("ticker", "reason", "detail", "weight_total")} == {
+        "ticker": "BBB", "reason": "excluded_by_user", "detail": "excluded by user", "weight_total": 0.25}
+    assert s["schemes"]["equal_weight"]["n_names_held_at_end"] == 3
+    avail = pd.read_csv(tmp_path / "data_availability.csv", index_col=0)
+    assert not avail.loc["BBB", "included"] and avail.loc["BBB", "exclusion_reason"] == "excluded_by_user"
+    md = (tmp_path / "thesis_comparison.md").read_text()
+    assert md.startswith("# Thesis portfolio: SENSITIVITY") and "| BBB | core | 25.000% |" in md
+    with pytest.raises(ValueError, match=r"exclude: tickers not in holdings.csv: \['ZZZ'\]"):
+        run_thesis(p, h, tmp_path / "bad", exclude=["ZZZ"], **E2E)
+
+
 def test_cli_bad_scheme_exits_2(thesis_inputs, tmp_path, capsys):
     with pytest.raises(SystemExit) as exc:
         run_mod.main(["--prices", str(thesis_inputs / "prices.csv"), "--holdings", str(thesis_inputs / "holdings.csv"),

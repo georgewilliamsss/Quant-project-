@@ -1,0 +1,771 @@
+{
+  "module": "thesis",
+  "scheme": "equal_weight",
+  "universe": [
+    "IITU.L",
+    "ISF.L",
+    "SMGB.L",
+    "SGLN.L",
+    "BRNT.L",
+    "RR.L",
+    "PLTR",
+    "AZN.L",
+    "SHEL.L",
+    "HSBA.L",
+    "BRK-B",
+    "IBTM.L",
+    "DBMG.L",
+    "IPWR",
+    "VYGR",
+    "AL3.AX",
+    "LTBR",
+    "SLX.AX",
+    "WBT.AX",
+    "VUL.AX",
+    "IDN",
+    "EDIT",
+    "SEYE.ST",
+    "QSI",
+    "ALCLS.PA",
+    "PRQR",
+    "ALMDT.PA",
+    "EMV.AX",
+    "AXE.AX",
+    "MOLN.SW",
+    "GSIT",
+    "FTC.L",
+    "BGO.L"
+  ],
+  "window": {
+    "first_bar": "2020-12-10",
+    "last_bar": "2026-09-16",
+    "trading_days": 1454
+  },
+  "data_source": "prices_gbp_daily.csv (GBP total return; engine_prices in thesis_summary.json says how it was rescaled)",
+  "config": {
+    "starting_cash": 100000000.0,
+    "currency": "GBP",
+    "engine_currency_label": "USD",
+    "equity_scale_to_thesis_book": 0.002,
+    "lookback_bars": 193,
+    "rebalance_every": 21,
+    "investment_cap": 0.99,
+    "allocator": "equal",
+    "order_mode": "two_phase",
+    "oms": "NETTING",
+    "account": "CASH",
+    "fill_model": "default",
+    "fees": "none"
+  },
+  "fills": 2013,
+  "orders": 2013,
+  "rejections": 0,
+  "denied": 0,
+  "first_fill_date": "2021-09-16",
+  "equal": {
+    "metrics": {
+      "start_date": "2021-09-16",
+      "end_date": "2026-09-16",
+      "start_equity": 100000000.0,
+      "final_equity": 216197219.16,
+      "years": 4.99931554,
+      "total_return": 1.16197219,
+      "cagr": 0.16675371,
+      "max_drawdown": 0.28954118,
+      "max_drawdown_peak": "2021-11-08",
+      "max_drawdown_trough": "2022-06-16",
+      "ann_vol": 0.20889627,
+      "sharpe": 0.84198087,
+      "traded_notional": 1079610491.1100001,
+      "initial_buy_in_notional": 98992595.57,
+      "turnover_annual_oneway": 0.79285637,
+      "turnover_annual_oneway_ex_initial": 0.72015708
+    },
+    "stats": {
+      "allocator": "equal",
+      "order_mode": "two_phase",
+      "risk_checks": true,
+      "n_orders": 2013,
+      "n_fills": 2013,
+      "n_rejected": 0,
+      "n_denied": 0,
+      "n_canceled": 0,
+      "rejections_sample": [],
+      "n_rebalances": 61,
+      "first_rebalance": "2021-09-16",
+      "first_fill_date": "2021-09-16",
+      "hrp_fit_seconds_total": 0.00673472,
+      "hrp_fit_seconds_mean": 0.00011041,
+      "engine_run_seconds": 3.33441941,
+      "days_published": 1454,
+      "halted_early": false,
+      "last_published_day": "2026-09-16",
+      "final_cash": 2177073.91,
+      "final_cash_engine_account": 2177073.91,
+      "fills_report_rows": 2013,
+      "order_fills_report_rows": 2013,
+      "positions_report_rows": 33,
+      "account_report_rows": 2014,
+      "max_equity_check_diff_vs_portfolio": 3e-08,
+      "n_equity_checks": 1454,
+      "price_precision": {
+        "IITU.L": 2,
+        "ISF.L": 2,
+        "SMGB.L": 2,
+        "SGLN.L": 2,
+        "BRNT.L": 2,
+        "RR.L": 2,
+        "PLTR": 2,
+        "AZN.L": 2,
+        "SHEL.L": 2,
+        "HSBA.L": 2,
+        "BRK-B": 2,
+        "IBTM.L": 2,
+        "DBMG.L": 2,
+        "IPWR": 2,
+        "VYGR": 2,
+        "AL3.AX": 2,
+        "LTBR": 2,
+        "SLX.AX": 2,
+        "WBT.AX": 2,
+        "VUL.AX": 2,
+        "IDN": 2,
+        "EDIT": 2,
+        "SEYE.ST": 2,
+        "QSI": 2,
+        "ALCLS.PA": 2,
+        "PRQR": 2,
+        "ALMDT.PA": 2,
+        "EMV.AX": 2,
+        "AXE.AX": 2,
+        "MOLN.SW": 2,
+        "GSIT": 2,
+        "FTC.L": 2,
+        "BGO.L": 2
+      },
+      "close_rounding_max_rel_error": {
+        "IITU.L": 4.582e-05,
+        "ISF.L": 4.791e-05,
+        "SMGB.L": 4.763e-05,
+        "SGLN.L": 4.927e-05,
+        "BRNT.L": 4.735e-05,
+        "RR.L": 4.457e-05,
+        "PLTR": 4.583e-05,
+        "AZN.L": 4.73e-05,
+        "SHEL.L": 4.652e-05,
+        "HSBA.L": 4.821e-05,
+        "BRK-B": 4.796e-05,
+        "IBTM.L": 4.884e-05,
+        "DBMG.L": 4.765e-05,
+        "IPWR": 4.287e-05,
+        "VYGR": 4.24e-05,
+        "AL3.AX": 4.101e-05,
+        "LTBR": 4.877e-05,
+        "SLX.AX": 3.814e-05,
+        "WBT.AX": 4.133e-05,
+        "VUL.AX": 4.805e-05,
+        "IDN": 4.148e-05,
+        "EDIT": 3.801e-05,
+        "SEYE.ST": 4.281e-05,
+        "QSI": 4.423e-05,
+        "ALCLS.PA": 3.844e-05,
+        "PRQR": 3.992e-05,
+        "ALMDT.PA": 4.181e-05,
+        "EMV.AX": 4.787e-05,
+        "AXE.AX": 4.765e-05,
+        "MOLN.SW": 4.668e-05,
+        "GSIT": 4.797e-05,
+        "FTC.L": 4.452e-05,
+        "BGO.L": 4.39e-05
+      },
+      "fixed_weights_normalised": null,
+      "weight_tracking": {
+        "basis": "gap = investment_cap * target - achieved, in fractions of equity, per symbol and rebalance; achieved = qty * close / equity right after that rebalance's fills (same close); > 0 means under target (whole-share flooring, e.g. a high-priced name with a small weight)",
+        "investment_cap": 0.99,
+        "n_rebalances": 61,
+        "mean_abs_gap": 1.36e-06,
+        "max_abs_gap": 3.094e-05,
+        "max_abs_gap_symbol": "EDIT",
+        "max_abs_gap_date": "2021-11-15",
+        "mean_invested_fraction": 0.98995521,
+        "per_symbol": {
+          "IITU.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999934,
+            "mean_abs_gap": 6.6e-07,
+            "max_abs_gap": 1.46e-06
+          },
+          "ISF.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999945,
+            "mean_abs_gap": 5.5e-07,
+            "max_abs_gap": 1.27e-06
+          },
+          "SMGB.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.0299993,
+            "mean_abs_gap": 7e-07,
+            "max_abs_gap": 2.01e-06
+          },
+          "SGLN.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999938,
+            "mean_abs_gap": 6.2e-07,
+            "max_abs_gap": 1.23e-06
+          },
+          "BRNT.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999868,
+            "mean_abs_gap": 1.32e-06,
+            "max_abs_gap": 3.03e-06
+          },
+          "RR.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999753,
+            "mean_abs_gap": 2.47e-06,
+            "max_abs_gap": 8.21e-06
+          },
+          "PLTR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999715,
+            "mean_abs_gap": 2.85e-06,
+            "max_abs_gap": 1.363e-05
+          },
+          "AZN.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999923,
+            "mean_abs_gap": 7.7e-07,
+            "max_abs_gap": 1.66e-06
+          },
+          "SHEL.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.0299992,
+            "mean_abs_gap": 8e-07,
+            "max_abs_gap": 2.16e-06
+          },
+          "HSBA.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999913,
+            "mean_abs_gap": 8.7e-07,
+            "max_abs_gap": 2.2e-06
+          },
+          "BRK-B": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999931,
+            "mean_abs_gap": 6.9e-07,
+            "max_abs_gap": 1.7e-06
+          },
+          "IBTM.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999956,
+            "mean_abs_gap": 4.4e-07,
+            "max_abs_gap": 1.25e-06
+          },
+          "DBMG.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999942,
+            "mean_abs_gap": 5.8e-07,
+            "max_abs_gap": 1.6e-06
+          },
+          "IPWR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999832,
+            "mean_abs_gap": 1.68e-06,
+            "max_abs_gap": 6.04e-06
+          },
+          "VYGR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999889,
+            "mean_abs_gap": 1.11e-06,
+            "max_abs_gap": 4.44e-06
+          },
+          "AL3.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999899,
+            "mean_abs_gap": 1.01e-06,
+            "max_abs_gap": 2.63e-06
+          },
+          "LTBR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999884,
+            "mean_abs_gap": 1.16e-06,
+            "max_abs_gap": 3.81e-06
+          },
+          "SLX.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999776,
+            "mean_abs_gap": 2.24e-06,
+            "max_abs_gap": 6.07e-06
+          },
+          "WBT.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999883,
+            "mean_abs_gap": 1.17e-06,
+            "max_abs_gap": 5.09e-06
+          },
+          "VUL.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999874,
+            "mean_abs_gap": 1.26e-06,
+            "max_abs_gap": 5.06e-06
+          },
+          "IDN": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999906,
+            "mean_abs_gap": 9.4e-07,
+            "max_abs_gap": 5.17e-06
+          },
+          "EDIT": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999552,
+            "mean_abs_gap": 4.48e-06,
+            "max_abs_gap": 3.094e-05
+          },
+          "SEYE.ST": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999908,
+            "mean_abs_gap": 9.2e-07,
+            "max_abs_gap": 4.66e-06
+          },
+          "QSI": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999834,
+            "mean_abs_gap": 1.66e-06,
+            "max_abs_gap": 1.029e-05
+          },
+          "ALCLS.PA": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999868,
+            "mean_abs_gap": 1.32e-06,
+            "max_abs_gap": 6.24e-06
+          },
+          "PRQR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999821,
+            "mean_abs_gap": 1.79e-06,
+            "max_abs_gap": 1.123e-05
+          },
+          "ALMDT.PA": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999794,
+            "mean_abs_gap": 2.06e-06,
+            "max_abs_gap": 1.244e-05
+          },
+          "EMV.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999924,
+            "mean_abs_gap": 7.6e-07,
+            "max_abs_gap": 2.17e-06
+          },
+          "AXE.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999862,
+            "mean_abs_gap": 1.38e-06,
+            "max_abs_gap": 7.96e-06
+          },
+          "MOLN.SW": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999905,
+            "mean_abs_gap": 9.5e-07,
+            "max_abs_gap": 7.03e-06
+          },
+          "GSIT": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999894,
+            "mean_abs_gap": 1.06e-06,
+            "max_abs_gap": 3.31e-06
+          },
+          "FTC.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999666,
+            "mean_abs_gap": 3.34e-06,
+            "max_abs_gap": 1.821e-05
+          },
+          "BGO.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999884,
+            "mean_abs_gap": 1.16e-06,
+            "max_abs_gap": 3.65e-06
+          }
+        }
+      }
+    }
+  },
+  "equal_engine": {
+    "metrics": {
+      "start_date": "2021-09-16",
+      "end_date": "2026-09-16",
+      "start_equity": 100000000.0,
+      "final_equity": 216197219.16,
+      "years": 4.99931554,
+      "total_return": 1.16197219,
+      "cagr": 0.16675371,
+      "max_drawdown": 0.28954118,
+      "max_drawdown_peak": "2021-11-08",
+      "max_drawdown_trough": "2022-06-16",
+      "ann_vol": 0.20889627,
+      "sharpe": 0.84198087,
+      "traded_notional": 1079610491.1100001,
+      "initial_buy_in_notional": 98992595.57,
+      "turnover_annual_oneway": 0.79285637,
+      "turnover_annual_oneway_ex_initial": 0.72015708
+    },
+    "stats": {
+      "allocator": "equal",
+      "order_mode": "two_phase",
+      "risk_checks": true,
+      "n_orders": 2013,
+      "n_fills": 2013,
+      "n_rejected": 0,
+      "n_denied": 0,
+      "n_canceled": 0,
+      "rejections_sample": [],
+      "n_rebalances": 61,
+      "first_rebalance": "2021-09-16",
+      "first_fill_date": "2021-09-16",
+      "hrp_fit_seconds_total": 0.00673472,
+      "hrp_fit_seconds_mean": 0.00011041,
+      "engine_run_seconds": 3.33441941,
+      "days_published": 1454,
+      "halted_early": false,
+      "last_published_day": "2026-09-16",
+      "final_cash": 2177073.91,
+      "final_cash_engine_account": 2177073.91,
+      "fills_report_rows": 2013,
+      "order_fills_report_rows": 2013,
+      "positions_report_rows": 33,
+      "account_report_rows": 2014,
+      "max_equity_check_diff_vs_portfolio": 3e-08,
+      "n_equity_checks": 1454,
+      "price_precision": {
+        "IITU.L": 2,
+        "ISF.L": 2,
+        "SMGB.L": 2,
+        "SGLN.L": 2,
+        "BRNT.L": 2,
+        "RR.L": 2,
+        "PLTR": 2,
+        "AZN.L": 2,
+        "SHEL.L": 2,
+        "HSBA.L": 2,
+        "BRK-B": 2,
+        "IBTM.L": 2,
+        "DBMG.L": 2,
+        "IPWR": 2,
+        "VYGR": 2,
+        "AL3.AX": 2,
+        "LTBR": 2,
+        "SLX.AX": 2,
+        "WBT.AX": 2,
+        "VUL.AX": 2,
+        "IDN": 2,
+        "EDIT": 2,
+        "SEYE.ST": 2,
+        "QSI": 2,
+        "ALCLS.PA": 2,
+        "PRQR": 2,
+        "ALMDT.PA": 2,
+        "EMV.AX": 2,
+        "AXE.AX": 2,
+        "MOLN.SW": 2,
+        "GSIT": 2,
+        "FTC.L": 2,
+        "BGO.L": 2
+      },
+      "close_rounding_max_rel_error": {
+        "IITU.L": 4.582e-05,
+        "ISF.L": 4.791e-05,
+        "SMGB.L": 4.763e-05,
+        "SGLN.L": 4.927e-05,
+        "BRNT.L": 4.735e-05,
+        "RR.L": 4.457e-05,
+        "PLTR": 4.583e-05,
+        "AZN.L": 4.73e-05,
+        "SHEL.L": 4.652e-05,
+        "HSBA.L": 4.821e-05,
+        "BRK-B": 4.796e-05,
+        "IBTM.L": 4.884e-05,
+        "DBMG.L": 4.765e-05,
+        "IPWR": 4.287e-05,
+        "VYGR": 4.24e-05,
+        "AL3.AX": 4.101e-05,
+        "LTBR": 4.877e-05,
+        "SLX.AX": 3.814e-05,
+        "WBT.AX": 4.133e-05,
+        "VUL.AX": 4.805e-05,
+        "IDN": 4.148e-05,
+        "EDIT": 3.801e-05,
+        "SEYE.ST": 4.281e-05,
+        "QSI": 4.423e-05,
+        "ALCLS.PA": 3.844e-05,
+        "PRQR": 3.992e-05,
+        "ALMDT.PA": 4.181e-05,
+        "EMV.AX": 4.787e-05,
+        "AXE.AX": 4.765e-05,
+        "MOLN.SW": 4.668e-05,
+        "GSIT": 4.797e-05,
+        "FTC.L": 4.452e-05,
+        "BGO.L": 4.39e-05
+      },
+      "fixed_weights_normalised": null,
+      "weight_tracking": {
+        "basis": "gap = investment_cap * target - achieved, in fractions of equity, per symbol and rebalance; achieved = qty * close / equity right after that rebalance's fills (same close); > 0 means under target (whole-share flooring, e.g. a high-priced name with a small weight)",
+        "investment_cap": 0.99,
+        "n_rebalances": 61,
+        "mean_abs_gap": 1.36e-06,
+        "max_abs_gap": 3.094e-05,
+        "max_abs_gap_symbol": "EDIT",
+        "max_abs_gap_date": "2021-11-15",
+        "mean_invested_fraction": 0.98995521,
+        "per_symbol": {
+          "IITU.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999934,
+            "mean_abs_gap": 6.6e-07,
+            "max_abs_gap": 1.46e-06
+          },
+          "ISF.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999945,
+            "mean_abs_gap": 5.5e-07,
+            "max_abs_gap": 1.27e-06
+          },
+          "SMGB.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.0299993,
+            "mean_abs_gap": 7e-07,
+            "max_abs_gap": 2.01e-06
+          },
+          "SGLN.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999938,
+            "mean_abs_gap": 6.2e-07,
+            "max_abs_gap": 1.23e-06
+          },
+          "BRNT.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999868,
+            "mean_abs_gap": 1.32e-06,
+            "max_abs_gap": 3.03e-06
+          },
+          "RR.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999753,
+            "mean_abs_gap": 2.47e-06,
+            "max_abs_gap": 8.21e-06
+          },
+          "PLTR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999715,
+            "mean_abs_gap": 2.85e-06,
+            "max_abs_gap": 1.363e-05
+          },
+          "AZN.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999923,
+            "mean_abs_gap": 7.7e-07,
+            "max_abs_gap": 1.66e-06
+          },
+          "SHEL.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.0299992,
+            "mean_abs_gap": 8e-07,
+            "max_abs_gap": 2.16e-06
+          },
+          "HSBA.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999913,
+            "mean_abs_gap": 8.7e-07,
+            "max_abs_gap": 2.2e-06
+          },
+          "BRK-B": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999931,
+            "mean_abs_gap": 6.9e-07,
+            "max_abs_gap": 1.7e-06
+          },
+          "IBTM.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999956,
+            "mean_abs_gap": 4.4e-07,
+            "max_abs_gap": 1.25e-06
+          },
+          "DBMG.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999942,
+            "mean_abs_gap": 5.8e-07,
+            "max_abs_gap": 1.6e-06
+          },
+          "IPWR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999832,
+            "mean_abs_gap": 1.68e-06,
+            "max_abs_gap": 6.04e-06
+          },
+          "VYGR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999889,
+            "mean_abs_gap": 1.11e-06,
+            "max_abs_gap": 4.44e-06
+          },
+          "AL3.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999899,
+            "mean_abs_gap": 1.01e-06,
+            "max_abs_gap": 2.63e-06
+          },
+          "LTBR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999884,
+            "mean_abs_gap": 1.16e-06,
+            "max_abs_gap": 3.81e-06
+          },
+          "SLX.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999776,
+            "mean_abs_gap": 2.24e-06,
+            "max_abs_gap": 6.07e-06
+          },
+          "WBT.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999883,
+            "mean_abs_gap": 1.17e-06,
+            "max_abs_gap": 5.09e-06
+          },
+          "VUL.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999874,
+            "mean_abs_gap": 1.26e-06,
+            "max_abs_gap": 5.06e-06
+          },
+          "IDN": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999906,
+            "mean_abs_gap": 9.4e-07,
+            "max_abs_gap": 5.17e-06
+          },
+          "EDIT": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999552,
+            "mean_abs_gap": 4.48e-06,
+            "max_abs_gap": 3.094e-05
+          },
+          "SEYE.ST": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999908,
+            "mean_abs_gap": 9.2e-07,
+            "max_abs_gap": 4.66e-06
+          },
+          "QSI": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999834,
+            "mean_abs_gap": 1.66e-06,
+            "max_abs_gap": 1.029e-05
+          },
+          "ALCLS.PA": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999868,
+            "mean_abs_gap": 1.32e-06,
+            "max_abs_gap": 6.24e-06
+          },
+          "PRQR": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999821,
+            "mean_abs_gap": 1.79e-06,
+            "max_abs_gap": 1.123e-05
+          },
+          "ALMDT.PA": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999794,
+            "mean_abs_gap": 2.06e-06,
+            "max_abs_gap": 1.244e-05
+          },
+          "EMV.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999924,
+            "mean_abs_gap": 7.6e-07,
+            "max_abs_gap": 2.17e-06
+          },
+          "AXE.AX": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999862,
+            "mean_abs_gap": 1.38e-06,
+            "max_abs_gap": 7.96e-06
+          },
+          "MOLN.SW": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999905,
+            "mean_abs_gap": 9.5e-07,
+            "max_abs_gap": 7.03e-06
+          },
+          "GSIT": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999894,
+            "mean_abs_gap": 1.06e-06,
+            "max_abs_gap": 3.31e-06
+          },
+          "FTC.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999666,
+            "mean_abs_gap": 3.34e-06,
+            "max_abs_gap": 1.821e-05
+          },
+          "BGO.L": {
+            "mean_capped_target": 0.03,
+            "mean_achieved": 0.02999884,
+            "mean_abs_gap": 1.16e-06,
+            "max_abs_gap": 3.65e-06
+          }
+        }
+      }
+    }
+  },
+  "equal_pandas": {
+    "metrics": {
+      "start_date": "2021-09-16",
+      "end_date": "2026-09-16",
+      "start_equity": 100000000.0,
+      "final_equity": 241781544.36860278,
+      "years": 4.99931554,
+      "total_return": 1.41781544,
+      "cagr": 0.19315023,
+      "max_drawdown": 0.24210696,
+      "max_drawdown_peak": "2021-11-09",
+      "max_drawdown_trough": "2022-06-17",
+      "ann_vol": 0.21738488,
+      "sharpe": 0.92073897
+    },
+    "daily_rebalanced_metrics": {
+      "start_date": "2021-09-16",
+      "end_date": "2026-09-16",
+      "start_equity": 100000000.0,
+      "final_equity": 262344134.0517085,
+      "years": 4.99931554,
+      "total_return": 1.62344134,
+      "cagr": 0.21279037,
+      "max_drawdown": 0.2868168,
+      "max_drawdown_peak": "2021-11-05",
+      "max_drawdown_trough": "2022-05-12",
+      "ann_vol": 0.20735702,
+      "sharpe": 1.03316438
+    },
+    "definition": "starting_cash * (prices.loc[first_fill:] / prices.loc[first_fill]).mean(axis=1)"
+  },
+  "runtime_seconds": {
+    "backtest_with_benchmarks": 3.91797118,
+    "equal_engine_run": 3.33441941
+  },
+  "outputs": {
+    "equity_csv": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_equity.csv",
+    "fills_csv": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_fills.csv",
+    "positions_csv": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_positions.csv",
+    "weights_csv": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_weights_equal.csv",
+    "achieved_weights_csv": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_weights_equal_achieved.csv",
+    "figure": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/figures/execution_equity.png",
+    "summary": "results/thesis/thesis5y_ex_hytax_mscl/equal_weight/execution_summary.json"
+  },
+  "notes": {
+    "fill_assumption": "optimistic market-on-close: each rebalance is sized on the day's closes and fills at that same close (close-only bars, default fill model, no fees, no slippage), the article's simplification; live, sizing would use a pre-close estimate or trade the next day",
+    "currency": "amounts are GBP in engine units (the starting cash above); the engine's venue books in USD, so files label them USD/$"
+  }
+}

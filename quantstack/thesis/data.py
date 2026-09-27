@@ -18,7 +18,9 @@ reason recorded, when
 
 * ``not_in_panel``       -- no such column;
 * ``no_data``            -- no level at all up to ``end``;
-* ``listed_after_start`` -- its first level is after the window's first bar.
+* ``listed_after_start`` -- its first level is after the window's first bar;
+* ``excluded_by_user``   -- named in ``exclude`` (a sensitivity run,
+  ``--exclude``); no other check is made for it.
 
 Missing levels inside a ticker's own span are forward-filled for runs of at
 most ``max_ffill_gap`` bars (default 3, the thesis build's own "<= 3-day
@@ -70,7 +72,7 @@ MANIFEST_NAME = "_price_panel_manifest.json"
 
 GAP_POLICIES: tuple[str, ...] = ("raise", "exclude")
 EXCLUSION_REASONS: tuple[str, ...] = (
-    "not_in_panel", "no_data", "listed_after_start", "interior_gap", "stale_at_end",
+    "not_in_panel", "no_data", "listed_after_start", "interior_gap", "stale_at_end", "excluded_by_user",
 )
 EXCLUSION_COLUMNS: tuple[str, ...] = (
     "ticker", "reason", "detail", "first_valid", "last_valid", "weight_total",
@@ -259,6 +261,7 @@ def select_window(
     strict_calendar: bool = False,
     weights: Mapping[str, float] | None = None,
     gap_policy: str = "raise",
+    exclude: Iterable[str] = (),
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """The engine-ready window and the table of excluded tickers (policy: module docstring).
 
@@ -267,7 +270,8 @@ def select_window(
     ``tickers``, with no NaN and an all-valid first row.  ``exclusions`` has
     the columns :data:`EXCLUSION_COLUMNS` (``reason`` holds ``;``-joined codes
     from :data:`EXCLUSION_REASONS`, ``detail`` says why in words,
-    ``weight_total`` comes from ``weights`` when given).
+    ``weight_total`` comes from ``weights`` when given).  Tickers in
+    ``exclude`` are dropped with the reason ``excluded_by_user``.
 
     Raises ``ValueError`` for duplicate tickers, ``start > end``, an empty
     window, ``max_ffill_gap < 0``, an unknown ``gap_policy``, a gap longer
@@ -298,8 +302,11 @@ def select_window(
     included: list[str] = []
     excluded: list[dict] = []
     gaps: dict[str, str] = {}
+    exclude = {str(t) for t in exclude}
     for t in tickers:
-        if t not in panel.columns:
+        if t in exclude:
+            reasons = [("excluded_by_user", "excluded by user")]
+        elif t not in panel.columns:
             reasons = [("not_in_panel", "no such column in the price panel")]
         else:
             reasons = _exclusion_reasons(upto_end[t], window, max_ffill_gap)

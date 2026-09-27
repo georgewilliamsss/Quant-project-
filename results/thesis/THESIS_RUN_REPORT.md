@@ -156,13 +156,37 @@ Thesis figures are from its `analysis_results.json`, realised daily over 2021-09
 - **Survivorship.** Only names that exist and are listed today were selected, and thesis5y holds only the 22 moonshots listed before 2020-12-10. The thesis says this bias cannot be quantified.
 - **Optimistic fills.** Every trade fills at the same close that sized it, at zero cost and with unlimited liquidity. Real returns will be lower, most of all for turnover-heavy schemes (HRP 115.5% a year) and the smallest moonshots.
 - **Short windows.** broad1y (0.98 years) and all54 (48 bars) support no statistical claim. all54 is a plumbing check.
-- **HRP is sensitive to bad data.** Its thesis5y result rests largely on one unverified print. Read "HRP 3.75% CAGR" as "HRP on this panel", not as a verdict on HRP.
+- **HRP is sensitive to bad data.** Its thesis5y result rests largely on one unverified print. Read "HRP 3.75% CAGR" as "HRP on this panel", not as a verdict on HRP. Without HYT.AX it returns 11.36% (section 7).
 - **In-sample allocation stats** (`allocation/`) are fitted on the returns they are scored on. For example, HRP's in-sample Sharpe is 1.46 against 0.35 out of sample.
 - Per-scheme engine files label GBP amounts as USD/$, in engine units (x 0.002 for the book).
 
 **What the numbers can support.** On this panel and window, the thesis's own weights delivered about 22 to 23% a year with 12 to 13% volatility, close to the thesis's own combined-book figures. Both naive 1/N and the pipeline's HRP did materially worse.
 
-## 7. Where everything is
+## 7. Sensitivity: HRP without the suspect prints
+
+Two reruns of thesis5y leave out the names with unverified prints: HYT.AX alone (34 names), then HYT.AX and MSCL.TO (33 names). They use `--exclude`, which records each name as `excluded_by_user`. Everything else matches the main run: window, 193-bar warm-up, first fill 2021-09-16, schedule, cash and engine settings. Both exited 0 with no denied or rejected orders. An independent recomputation from each scheme's `execution_equity.csv` matched every CAGR, volatility and drawdown below to 5e-9, and every final £ to the penny.
+
+| Run | Own CAGR | Own vol | Own max DD | Equal CAGR | Equal vol | Equal max DD | HRP CAGR | HRP vol | HRP max DD |
+|---|---|---|---|---|---|---|---|---|---|
+| Main run (35 names) | 23.40% | 12.39% | 15.11% | 15.13% | 20.29% | 29.29% | 3.75% | 13.80% | 28.20% |
+| Ex HYT.AX (34) | 23.78% | 12.42% | 15.07% | 16.73% | 20.64% | 30.14% | 11.36% | 6.71% | 6.77% |
+| Ex HYT.AX + MSCL.TO (33) | 23.80% | 12.44% | 15.08% | 16.68% | 20.89% | 28.95% | 11.29% | 6.69% | 6.05% |
+
+Own is `own_weights`, Equal is `equal_weight` (engine benchmark), HRP is `hrp_optimised`. The HRP top 5 below is the mean target over 61 rebalances.
+
+| Run | HRP final £ | HRP Sharpe rf=0 | HRP top 5 (mean weight) | HRP largest daily loss |
+|---|---|---|---|---|
+| Main run (35) | 240,452 | 0.35 | IBTM.L 34.95%, SGLN.L 12.41%, DBMG.L 9.51%, HYT.AX 8.04%, ISF.L 7.12% | -27.42% (2022-07-05) |
+| Ex HYT.AX (34) | 342,455 | 1.64 | IBTM.L 37.57%, SGLN.L 13.79%, DBMG.L 10.09%, ISF.L 7.92%, BRK-B 5.08% | -2.10% (2025-04-04) |
+| Ex HYT.AX + MSCL.TO (33) | 341,420 | 1.63 | IBTM.L 37.94%, SGLN.L 13.25%, DBMG.L 9.54%, ISF.L 8.54%, BRK-B 5.16% | -1.94% (2022-06-16) |
+
+- **One name cost HRP about 7.6 points a year.** Without HYT.AX, HRP returns 11.36% a year (£342,455) instead of 3.75% (£240,452). Its volatility halves (13.80% to 6.71%), its drawdown falls from 28.20% to 6.77%, and its worst day is -2.10% instead of -27.42%. That closes 7.2 of the 19.6-point CAGR gap to own weights (37%). The crude one-day adjustment in section 2 (about 10.6%) was close.
+- **What HRP holds instead.** HYT.AX's 45.16% first-rebalance weight moves mostly to core (39.3 of the 45.2 points). IBTM.L takes the largest share (39.92%, was 22.29%), then SGLN.L (15.22%, was 8.44%). The book averages 88.5% core before 2022-07-19 and 90.5% after, instead of 45.8% and 90.2%. No other stale series takes over: the top five have 0.6% to 2.7% unchanged days, and the two flagged names, FTC.L (34%) and BGO.L (29%), average only 1.01% and 1.32%. It is still concentrated: IBTM.L peaks at 59.80% (2026-08-14).
+- **MSCL.TO changes little.** Dropping it as well moves HRP by -0.07 points of CAGR and own weights by +0.02. HRP held it at 0.35% on average. Its unverified 2021 repair falls in the warm-up and its 2026 repair is plausible, so neither was driving a result.
+- **Own weights barely move.** HYT.AX is 0.56% of the own-weights book. Removing it adds 0.38 points of CAGR (23.40% to 23.78%); volatility and drawdown move by under 0.05 points. Equal weight gains more (15.13% to 16.73%), because 1/N held 2.86% in HYT.AX and topped it up at every rebalance. The CAGR ranking is unchanged: own weights, equal weight, HRP. On rf=0 Sharpe, HRP (1.64) is now close to own weights (1.78) and well ahead of equal weight (0.85).
+- **What the optimiser is doing.** HRP minimises estimated risk. On this universe it rewards whatever looked least volatile over its lookback: a Treasury ETF, gold, a managed-futures proxy and, while the data allowed it, a thin microcap whose stale local price looked like a bond. That is a data-quality problem, not an argument for or against HRP. Cleaned, HRP is a coherent low-risk book (6.7% vol, 6% to 7% drawdown). It still trails own weights by about 12.4 points a year, a gap flattered by the thesis's hindsight in picking the names. Before relying on any optimiser here, screen thin names for implausibly low volatility or thin volume, not only for unchanged days (1.2% for HYT.AX).
+
+## 8. Where everything is
 
 ```text
 results/thesis/
@@ -179,7 +203,13 @@ results/thesis/
       execution_weights_<fixed|equal|hrp>.csv (+ _achieved.csv), dashboard_summary.json, figures/execution_equity.png
 ```
 
-(all54 has no `own_weights_8020/`.)
+(all54 has no `own_weights_8020/`.) Two sensitivity folders (section 7) have the same layout, without `dashboard_summary.json` (run with `--no-dashboard`):
+
+```text
+results/thesis/
+  thesis5y_ex_hytax/               thesis5y without HYT.AX (34 names)
+  thesis5y_ex_hytax_mscl/          thesis5y without HYT.AX and MSCL.TO (33 names)
+```
 
 **Re-run** from the repository root (outputs go to `results/thesis/<preset>/` by default):
 
@@ -189,7 +219,9 @@ make thesis                                                    # thesis5y, 4 sch
 .venv/bin/python -m quantstack.thesis.run --preset broad1y     # ~22 s
 .venv/bin/python -m quantstack.thesis.run --preset all54       # ~9 s
 make thesis-quick                                              # 6-name smoke run -> results/quick/thesis/
+.venv/bin/python -m quantstack.thesis.run --preset thesis5y --no-dashboard --exclude HYT.AX --results results/thesis/thesis5y_ex_hytax
+.venv/bin/python -m quantstack.thesis.run --preset thesis5y --no-dashboard --exclude HYT.AX,MSCL.TO --results results/thesis/thesis5y_ex_hytax_mscl
 ```
 
-Overrides: `--start`, `--end`, `--lookback`, `--rebalance-every`, `--schemes`, `--cash`, `--investment-cap`, `--max-ffill-gap`, `--strict-calendar`, `--no-rescale`, `--no-repairs`, `--no-dashboard`, `--prices`, `--holdings`, `--results`.
-The obvious next step before relying on the HRP comparison is a sensitivity run without HYT.AX (pass `--holdings` a copy of the holdings file without that line).
+Overrides: `--start`, `--end`, `--lookback`, `--rebalance-every`, `--schemes`, `--cash`, `--investment-cap`, `--max-ffill-gap`, `--strict-calendar`, `--no-rescale`, `--no-repairs`, `--no-dashboard`, `--prices`, `--holdings`, `--results`, `--exclude`.
+`--exclude TICKER,TICKER` leaves named holdings out for a sensitivity run. They are recorded as `excluded_by_user`, and without `--results` the output goes to `<preset>_ex_<tickers>/`, never over the preset's own folder.

@@ -1,6 +1,7 @@
 """Run the thesis book through NautilusTrader several ways and compare them.
 
-``python -m quantstack.thesis.run [--preset thesis5y|broad1y|all54] [--quick] [--no-dashboard] ...``
+``python -m quantstack.thesis.run [--preset thesis5y|broad1y|all54] [--quick] [--no-dashboard]
+[--exclude TICKER,TICKER] ...``
 (``make thesis``; ``make thesis-quick`` for the 6-name CI smoke run)
 
 The book is the user's own 54-line portfolio (``data/thesis/thesis_holdings.csv``)
@@ -27,7 +28,9 @@ and the run covers the thesis's 5-year window with the 35 names listed by
 holding with at least 252 bars (50 names), about one year of trading.
 ``all54``: the only window in which all 54 names have prices (68 rows), a
 plumbing and weight check, not performance evidence.  ``--start``, ``--end``,
-``--lookback`` and ``--rebalance-every`` override a preset.
+``--lookback`` and ``--rebalance-every`` override a preset.  ``--exclude``
+drops named holdings for a sensitivity run (recorded as ``excluded_by_user``);
+everything else stays as the preset sets it.
 
 Steps (:func:`run_thesis`)
 --------------------------
@@ -306,7 +309,7 @@ def caveats(rescaled: bool, repairs: Sequence[dict], stale: Mapping[str, float],
         f"equity deployed ({1 - investment_cap:.1%} cash; the thesis holds 0.376%); curves are scaled to "
         f"the GBP {BOOK_VALUE:,.0f} book, so they show none of the thesis's own whole-share rounding.",
     ]
-    applied = [r for r in repairs if r.get("applied")]
+    applied = [r for r in repairs if r.get("applied") and r["ticker"] in included]
     if applied:
         out.append("Repaired levels: " + "; ".join(f"{r['ticker']} before {r['date']} divided by "
                                                    f"{r['factor']:.4g} ({r['verified']})" for r in applied)
@@ -671,6 +674,7 @@ def run_thesis(
     log_level: str = "WARNING",
     *,
     tickers: Sequence[str] | None = None,
+    exclude: Sequence[str] = (),
     strict_calendar: bool = False,
     expected_holdings: int | None = EXPECTED_HOLDINGS,
     rescale: bool = True,
@@ -681,6 +685,9 @@ def run_thesis(
     """Run the thesis book under ``schemes`` and write the comparison; return the summary dict.
 
     ``tickers`` restricts the universe to a subset of the holdings (``--quick``).
+    ``exclude`` drops holdings for a sensitivity run (``--exclude``): they stay
+    in the universe and are recorded in ``summary["exclusions"]`` with the
+    reason ``excluded_by_user``.
     ``rescale`` (min-at-100 per column) and ``repairs`` (:data:`repairs.REPAIRS`)
     are on by default.  ``preset`` names the :data:`PRESETS` entry this run
     stands for (labels only; the window arguments are what runs).  Equity is
@@ -719,6 +726,10 @@ def run_thesis(
         if unknown:
             raise ValueError(f"tickers not in {holdings_path.name}: {unknown}")
         universe = [t for t in universe if t in set(tickers)]
+    exclude = list(dict.fromkeys(exclude))
+    unknown = [t for t in exclude if t not in weights_all]
+    if unknown:
+        raise ValueError(f"exclude: tickers not in {holdings_path.name}: {unknown}")
     full = load_panel(prices_path)
     canonical = prices_path.resolve() == DEFAULT_PRICES.resolve()
     panel_check = verify_panel_file(prices_path, full, CANONICAL_SHAPE if canonical else None)
@@ -732,7 +743,7 @@ def run_thesis(
 
     # ---- 2. window, weights
     raw, exclusions = select_window(panel, universe, start, end, lookback_bars, max_ffill_gap,
-                                    strict_calendar=strict_calendar, weights=weights_all)
+                                    strict_calendar=strict_calendar, weights=weights_all, exclude=exclude)
     included = list(raw.columns)
     rescale_check = None
     if rescale:
@@ -875,7 +886,8 @@ def run_thesis(
                    "max_ffill_gap": max_ffill_gap, "strict_calendar": strict_calendar, "rescale": rescale,
                    "repairs": repairs, "schemes": list(schemes),
                    "scheme_allocators": {s: SCHEMES[s] for s in schemes}, "dashboard": dashboard,
-                   "tickers_subset": list(tickers) if tickers is not None else None},
+                   "tickers_subset": list(tickers) if tickers is not None else None,
+                   "exclude": exclude},
         "window": {"start": start, "end": end, "first_bar": raw.index[0], "last_bar": last_bar,
                    "trading_days": int(len(raw)), "first_fill_date": first_fill,
                    "traded_days": int((raw.index >= first_fill).sum()) if first_fill is not None else 0,
@@ -943,7 +955,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--holdings", default=str(DEFAULT_HOLDINGS),
                     help=f"holdings CSV (default: {_display_path(DEFAULT_HOLDINGS)})")
     ap.add_argument("--results", default=None,
-                    help=f"output directory (default: {_display_path(RESULTS_ROOT)}/<preset>; with --quick "
+                    help=f"output directory (default: {_display_path(RESULTS_ROOT)}/<preset>, or "
+                         "<preset>_ex_<tickers> with --exclude; with --quick "
                          f"{_display_path(QUICK_RESULTS)}, which is gitignored)")
     ap.add_argument("--start", default=None, help="first bar of the window (default: the preset's; with --quick, "
                     f"{QUICK_BARS} bars before --end); the first --lookback bars are warm-up")
@@ -967,6 +980,9 @@ def build_parser() -> argparse.ArgumentParser:
                          "minimum rescaled to 100)")
     ap.add_argument("--no-repairs", action="store_true", help="do not apply the documented level repairs")
     ap.add_argument("--no-dashboard", action="store_true", help="skip the dashboard replays")
+    ap.add_argument("--exclude", default=None, metavar="TICKER,TICKER",
+                    help="comma list of holdings to leave out, for a sensitivity run (recorded as "
+                         "excluded_by_user; the window and every other setting stay the preset's)")
     ap.add_argument("--quick", action="store_true",
                     help=f"CI smoke: {len(QUICK_TICKERS)} names ({','.join(QUICK_TICKERS)}) over the last "
                          f"{QUICK_BARS} bars up to --end")
@@ -980,7 +996,11 @@ def resolve(args: argparse.Namespace) -> dict:
     start = args.start or p.start
     if args.quick and args.start is None:
         start = quick_start(load_panel(args.prices), end)
-    results = Path(args.results) if args.results else (QUICK_RESULTS if args.quick else RESULTS_ROOT / p.name)
+    exclude = tuple(t.strip() for t in (args.exclude or "").split(",") if t.strip())
+    # a sensitivity run never lands in (and overwrites) the preset's own folder by default
+    slug = "_".join("".join(c for c in t.lower() if c.isalnum()) for t in exclude)
+    default = RESULTS_ROOT / (f"{p.name}_ex_{slug}" if exclude else p.name)
+    results = Path(args.results) if args.results else (QUICK_RESULTS if args.quick else default)
     return dict(
         prices_path=args.prices, holdings_path=args.holdings, results_dir=results, start=start, end=end,
         lookback_bars=args.lookback if args.lookback is not None else p.lookback_bars,
@@ -988,6 +1008,7 @@ def resolve(args: argparse.Namespace) -> dict:
         starting_cash=args.cash, investment_cap=args.investment_cap, max_ffill_gap=args.max_ffill_gap,
         schemes=parse_schemes(args.schemes) if args.schemes else p.schemes,
         dashboard=not args.no_dashboard, tickers=QUICK_TICKERS if args.quick else None,
+        exclude=exclude,
         strict_calendar=args.strict_calendar, rescale=not args.no_rescale, repairs=not args.no_repairs,
         preset=p.name,
     )
@@ -999,7 +1020,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         kw = resolve(args)
         print(f"[thesis] {'QUICK ' if args.quick else ''}{kw['preset']} -> {_display_path(kw['results_dir'])}; "
-              f"window {kw['start']}..{kw['end']}, lookback {kw['lookback_bars']}, schemes {', '.join(kw['schemes'])}")
+              f"window {kw['start']}..{kw['end']}, lookback {kw['lookback_bars']}, schemes {', '.join(kw['schemes'])}"
+              + (f"; SENSITIVITY: excluding {', '.join(kw['exclude'])}" if kw["exclude"] else ""))
         summary = run_thesis(**kw)
     except ValueError as exc:
         ap.error(str(exc))
