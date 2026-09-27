@@ -34,16 +34,22 @@ from quantstack.execution.backtest import (
     plot_equity,
     run_backtest,
     sort_fills,
+    weight_tracking,
     write_results,
 )
 from quantstack.execution.data import (
+    DEFAULT_SYMBOLS,
     load_prices,
     make_bar_types,
     make_bars,
     make_close_trades,
+    make_equity,
     make_instruments,
+    price_precision_for,
+    price_precisions,
     validate_symbols,
 )
+from quantstack.execution.strategy import window_returns
 
 SYMS = ["AAPL", "MSFT", "JPM"]
 START, END = "2018-01-01", "2018-12-31"
@@ -229,7 +235,13 @@ def test_benchmarks_present_and_aligned(short_run, prices):
 def test_write_results_files_follow_the_contracts(short_run, tmp_path):
     res, _ = short_run
     paths = write_results(res, tmp_path)
-    assert set(paths) == {"equity_csv", "fills_csv", "positions_csv", "weights_csv"}
+    assert set(paths) == {"equity_csv", "fills_csv", "positions_csv", "weights_csv", "achieved_weights_csv"}
+    # targets keep their layout; the achieved weights sit in a companion file with the same columns
+    targets, achieved = pd.read_csv(paths["weights_csv"]), pd.read_csv(paths["achieved_weights_csv"])
+    assert paths["achieved_weights_csv"].name == "execution_weights_hrp_achieved.csv"
+    assert list(targets.columns) == list(achieved.columns) == ["date", *SYMS]
+    assert list(achieved["date"]) == list(targets["date"]) and len(targets) == res["stats"]["n_rebalances"]
+    assert ((achieved[SYMS] >= 0) & (achieved[SYMS] <= targets[SYMS] * 0.98 + 1e-6)).all().all()
     # equity: contracts.write_equity_csv layout, strategy first, read back by the contract reader
     eq_path = paths["equity_csv"]
     assert eq_path.read_text().splitlines()[0] == "date,equity_hrp,equity_equal_engine,equity_equal_pandas"
@@ -322,6 +334,8 @@ def test_invalid_allocator_and_prices_columns_raise_before_the_engine(monkeypatc
      (["--allocator", "fixed", "--fixed-weights", "AAPL=-1,MSFT=2"], "must be finite and >= 0"),
      (["--allocator", "fixed", "--fixed-weights", "AAPL=1,MSFT=1", "--symbols", "AAPL,MSFT,JPM"],
       "no weight for ['JPM']"),
+     (["--allocator", "fixed", "--fixed-weights", "AAPL=1,MSFT=1,JPM=1", "--symbols", "AAPL,MSFT"],
+      "weights for ['JPM'], which are not in the universe"),
      (["--allocator", "fixed", "--fixed-weights", "AAPL=1,NOPE=1"], "NOPE")],
 )
 def test_cli_rejects_bad_inputs_with_exit_code_2(tmp_path, capsys, argv, message):
@@ -414,6 +428,8 @@ def test_fixed_allocator_rebalances_to_the_supplied_weights(fixed_run, tmp_path)
     assert st["n_fills"] > 0 and st["n_fills"] == st["n_orders"]
     assert st["n_denied"] == 0 and st["n_rejected"] == 0 and not st["halted_early"]
     assert st["n_rebalances"] >= 5
+    assert st["fixed_weights_normalised"] == pytest.approx(FIXED_W, abs=1e-12)
+    assert res["equal_engine"]["stats"]["fixed_weights_normalised"] is None
     # the weights file: one row per rebalance, each row the supplied vector
     paths = write_results(res, tmp_path)
     assert paths["weights_csv"] == tmp_path / "execution_weights_fixed.csv"
@@ -440,7 +456,7 @@ def test_fixed_allocator_rebalances_to_the_supplied_weights(fixed_run, tmp_path)
     "weights, expected",
     [({"AAA": 40, "BBB": 30, "CCC": 20, "DDD": 10}, [0.4, 0.3, 0.2, 0.1]),       # percentages
      ({"AAA": 0.2, "BBB": 0.1, "CCC": 0.1, "DDD": 0.0}, [0.5, 0.25, 0.25, 0.0]),  # under 1, a zero
-     ({"AAA": 1, "BBB": 1, "CCC": 1, "DDD": 1, "ZZZ": 4}, [0.25] * 4)],         # ZZZ not traded: dropped
+     ({"DDD": 1, "CCC": 1, "BBB": 1, "AAA": 1}, [0.25] * 4)],                    # key order is free
 )
 def test_fixed_weights_are_rescaled_to_sum_to_one(weights, expected):
     """Documented behaviour: fixed weights are relative, rescaled over the universe (never rejected
@@ -463,6 +479,10 @@ def test_fixed_weights_are_rescaled_to_sum_to_one(weights, expected):
      ("fixed", {**FIXED_W, "AAA": float("inf")}, "finite and >= 0"),
      ("fixed", {**FIXED_W, "AAA": "heavy"}, "not a number"),
      ("fixed", {"AAA": 0.5, "BBB": 0.5}, r"no weight for \['CCC', 'DDD'\]"),
+     # a weight for a name that is not traded is refused, not dropped with the rest rescaled
+     ("fixed", {**FIXED_W, "ZZZ": 4}, r"weights for \['ZZZ'\], which are not in the universe"),
+     ("fixed", {"AAA": 1, "BBB": 1, "CCC": 1, "ZZZ": 1},
+      r"no weight for \['DDD'\].*; weights for \['ZZZ'\], which are not in the universe"),
      ("fixed", dict.fromkeys(FIXED_SYMS, 0.0), "positive total")],
 )
 def test_fixed_weights_checked_before_the_engine_and_by_the_strategy(
@@ -498,6 +518,8 @@ def test_parse_fixed_weights_inline_json_and_csv(tmp_path):
      ("w.json", {"w.json": '[["AAPL", 1]]'}, "one JSON object"),
      ("w.json", {"w.json": "{AAPL: 1}"}, "not valid JSON"),
      ("w.json", {"w.json": '{"AAPL": true}'}, "not a number"),
+     ("w.json", {"w.json": '{"AAPL": 0.9, "MSFT": 0.1, "AAPL": 0.1}'}, "duplicate symbol AAPL"),  # not last-wins
+     ("w.json", {"w.json": '{"AAPL": 0.5, "aapl": 0.5}'}, "duplicate symbol AAPL"),
      ("w.csv", {"w.csv": "ticker,w\nAAPL,1\n"}, "symbol,weight"),
      ("w.csv", {"w.csv": "symbol,weight\nAAPL,\n"}, "not a number")],
 )
@@ -507,6 +529,34 @@ def test_parse_fixed_weights_rejects_bad_specs(tmp_path, monkeypatch, spec, file
     monkeypatch.chdir(tmp_path)  # relative file specs resolve here
     with pytest.raises(ValueError, match=match):
         parse_fixed_weights(spec)
+
+
+def test_parse_fixed_weights_reads_utf8_bom_files(tmp_path):
+    """Excel's "CSV UTF-8" export starts the file with a byte-order mark (and uses CRLF)."""
+    (tmp_path / "w.csv").write_bytes("Symbol,Weight\r\nAAPL,0.25\r\nMSFT,0.75\r\n".encode("utf-8-sig"))
+    (tmp_path / "w.json").write_bytes('{"AAPL": 0.25, "MSFT": 0.75}'.encode("utf-8-sig"))
+    for name in ("w.csv", "w.json"):
+        assert (tmp_path / name).read_bytes().startswith(b"\xef\xbb\xbf")
+        assert parse_fixed_weights(str(tmp_path / name)) == {"AAPL": 0.25, "MSFT": 0.75}
+
+
+def test_run_backtest_symbols_must_match_the_price_columns(monkeypatch, synthetic_prices):
+    class Reached(Exception):
+        pass
+
+    def reached(*a, **k):
+        raise Reached
+
+    monkeypatch.setattr(bt_mod, "_engine_run", reached)
+    with pytest.raises(ValueError, match=r"in symbols only \['AAPL', 'MSFT'\], in prices.columns only "
+                                         r"\['AAA', 'BBB', 'CCC', 'DDD'\]"):
+        run_backtest(list(DEFAULT_SYMBOLS[:2]), prices=synthetic_prices, **FAST)
+    with pytest.raises(ValueError, match=r"in symbols only \[\], in prices.columns only \['DDD'\]"):
+        run_backtest(["AAA", "BBB", "CCC"], prices=synthetic_prices, **FAST)
+    # the same names (any order, any case) or no symbols at all: validation passes, the engine is reached
+    for symbols in (None, ["ddd", "CCC", " bbb", "AAA"]):
+        with pytest.raises(Reached):
+            run_backtest(symbols, prices=synthetic_prices, **FAST)
 
 
 def test_cli_fixed_allocator_end_to_end(tmp_path):
@@ -523,9 +573,179 @@ def test_cli_fixed_allocator_end_to_end(tmp_path):
     assert summary["fixed"]["stats"]["allocator"] == "fixed"
     assert summary["fills"] > 0 and summary["denied"] == 0 and summary["rejections"] == 0
     assert summary["outputs"]["weights_csv"].endswith("execution_weights_fixed.csv")
+    assert summary["outputs"]["achieved_weights_csv"].endswith("execution_weights_fixed_achieved.csv")
+    stats = summary["fixed"]["stats"]
+    assert "achieved_weights_history" not in stats and "weights_history" not in stats
+    assert stats["weight_tracking"]["n_rebalances"] == stats["n_rebalances"] > 0
+    assert stats["price_precision"] == dict.fromkeys(SYMS, 2)
+    assert stats["fixed_weights_normalised"] == pytest.approx({"AAPL": 0.5, "MSFT": 0.3, "JPM": 0.2})
     assert equity_csv_columns(out / "execution_equity.csv") == equity_columns("fixed")
     w = pd.read_csv(out / "execution_weights_fixed.csv")
     np.testing.assert_allclose(w[SYMS].to_numpy(), np.tile([0.5, 0.3, 0.2], (len(w), 1)), rtol=0, atol=1e-6)
+
+
+# ----------------------------------------------------------------------------- price precision
+
+MIXED_SYMS = ["PENNY", "BIG", "MIDA", "MIDB"]
+MIXED_FIXED = {"PENNY": 0.25, "BIG": 0.005, "MIDA": 0.37, "MIDB": 0.375}
+MIXED_CASH = 200_000
+
+
+@pytest.fixture(scope="module")
+def mixed_prices():
+    """NaN-free panel: one name around 0.005 (half a penny), one around 400, two ordinary ones."""
+    rng = np.random.default_rng(11)
+    idx = pd.bdate_range("2019-01-01", periods=100, name="Date")
+    rets = rng.normal(0.0, 0.02, size=(len(idx), len(MIXED_SYMS)))
+    return pd.DataFrame(np.array([0.005, 400.0, 50.0, 80.0]) * np.exp(np.cumsum(rets, axis=0)),
+                        index=idx, columns=MIXED_SYMS)
+
+
+@pytest.fixture(scope="module")
+def mixed_runs(mixed_prices):
+    return {alloc: run_backtest(prices=mixed_prices, allocator=alloc, starting_cash=MIXED_CASH,
+                                fixed_weights=MIXED_FIXED if alloc == "fixed" else None,
+                                lookback_bars=20, rebalance_every=21, benchmarks=False)
+            for alloc in ("fixed", "equal", "hrp")}
+
+
+@pytest.mark.parametrize(
+    "closes, expected",
+    [([20.854, 300.0], 2), ([1.80, 5.0], 2), ([1.0], 2), ([0.5], 4), ([0.0104, 0.4], 5), ([0.005], 6),
+     ([0.000793, 0.0095], 7), ([1e-12], 9), ([np.nan, 0.004, 3.0], 6), ([np.nan, 0.0, -1.0], 2), ([], 2)],
+)
+def test_price_precision_rule(closes, expected):
+    """2 when every close is >= 1, else >= 4 significant digits at the smallest close, capped at 9."""
+    assert price_precision_for(closes) == expected
+
+
+def test_price_precision_is_2_for_every_skfolio_name():
+    """The bundled dataset (and so the pinned figures of the slow test) keeps the 0.01 tick."""
+    from skfolio.datasets import load_sp500_dataset
+
+    df = load_sp500_dataset()
+    assert set(price_precisions(df.loc[pd.Timestamp("2016-01-01"):]).values()) == {2}
+    assert set(price_precisions(load_prices()).values()) == {2}
+
+
+@pytest.mark.parametrize("precision", [6, 7, 8, 9])
+def test_equity_instrument_works_at_fine_precision(precision):
+    from nautilus_trader.model.objects import Price
+
+    inst = make_equity("PENNY", price_precision=precision)
+    assert inst.price_precision == precision
+    assert inst.price_increment == Price.from_str(f"{10.0 ** -precision:.{precision}f}")
+    px = inst.make_price(0.0001234567891)
+    assert px.precision == precision and float(px) == pytest.approx(0.0001234567891, abs=10.0 ** -precision)
+    assert Price.from_str(str(px)) == px
+    with pytest.raises(ValueError, match="price_precision"):
+        make_equity("PENNY", price_precision=precision + 10)
+
+
+def test_bars_keep_sub_penny_closes_at_the_derived_precision(mixed_prices):
+    prec = price_precisions(mixed_prices)
+    assert prec == {"PENNY": 6, "BIG": 2, "MIDA": 2, "MIDB": 2}
+    inst = make_instruments(MIXED_SYMS, price_precision=prec)
+    bars = make_bars(mixed_prices, inst, make_bar_types(inst))
+    closes = np.array([float(b.close) for b in bars]).reshape(mixed_prices.shape)
+    assert len(bars) == mixed_prices.size and (closes > 0).all()  # no bar close is 0
+    half_tick = np.array([0.5 * 10.0 ** -prec[s] for s in MIXED_SYMS])
+    assert (np.abs(closes - mixed_prices.to_numpy()) <= half_tick + 1e-12).all()
+    rel = np.abs(closes[:, 0] / mixed_prices["PENNY"].to_numpy() - 1)
+    assert rel.max() < 5e-4  # >= 4 significant digits (a 0.01 tick was off by up to 100%)
+
+
+def test_make_bars_refuses_a_close_that_rounds_to_zero(mixed_prices):
+    # the old fixed 0.01 tick: the half-penny name rounds to 0.00 on its first close under 0.005
+    inst = make_instruments(MIXED_SYMS)
+    first_zero = mixed_prices.index[(mixed_prices["PENNY"] < 0.005).to_numpy()][0].date()
+    with pytest.raises(ValueError, match=rf"PENNY: close .* on {first_zero} rounds to 0\.00 at the "
+                                         r"instrument's price_precision 2"):
+        make_bars(mixed_prices, inst, make_bar_types(inst))
+    bad = mixed_prices.copy()
+    bad.iloc[7, 2] = 0.0
+    inst = make_instruments(MIXED_SYMS, price_precision=price_precisions(bad))
+    with pytest.raises(ValueError, match=rf"MIDA: close 0\.0 on {bad.index[7].date()} is not a positive"):
+        make_bars(bad, inst, make_bar_types(inst))
+
+
+def test_backtest_refuses_a_close_below_the_finest_tick(monkeypatch, mixed_prices):
+    """Even the derived precision is capped (9): a close under half a nano-unit would be marked at 0."""
+    bad = mixed_prices.copy()
+    bad.iloc[10, 0] = 1e-10
+    assert price_precisions(bad)["PENNY"] == 9
+    with pytest.raises(ValueError, match=rf"PENNY: close 1e-10 on {bad.index[10].date()} rounds to "
+                                         r"0\.000000000 at the instrument's price_precision 9"):
+        run_backtest(prices=bad, allocator="equal", lookback_bars=20, benchmarks=False)
+
+
+def test_window_returns_refuses_non_finite_returns():
+    p = pd.DataFrame({"A": [1.0, 1.1, 1.21, 1.1], "B": [2.0, 0.0, 0.0, 2.0], "C": [3.0, 3.3, np.inf, 3.0]})
+    ok = window_returns(p[["A"]])
+    pd.testing.assert_frame_equal(ok, p[["A"]].pct_change().dropna())
+    # B: -100% then 0/0 = NaN then 2/0 = inf; C: an inf close -> inf (then 3/inf - 1 = -1)
+    with pytest.raises(ValueError, match=r"rebalance 2020-01-02: non-finite returns in the 4-bar price window "
+                                         r"for B \(2 of 3\), C \(1 of 3\)"):
+        window_returns(p, label="rebalance 2020-01-02")
+    with pytest.raises(ValueError, match="non-finite returns"):
+        window_returns(p[["A"]].iloc[:1])  # no return at all
+
+
+@pytest.mark.parametrize("allocator", ["fixed", "equal", "hrp"])
+def test_sub_penny_and_high_priced_names_trade_under_every_allocator(mixed_runs, mixed_prices, allocator):
+    res = mixed_runs[allocator]
+    st = res["stats"]
+    assert st["price_precision"] == {"PENNY": 6, "BIG": 2, "MIDA": 2, "MIDB": 2}
+    assert st["n_fills"] == st["n_orders"] > 0 and st["n_denied"] == 0 and st["n_rejected"] == 0
+    assert not st["halted_early"] and st["n_rebalances"] >= 3
+    assert st["close_rounding_max_rel_error"]["PENNY"] < 5e-4
+    # cash-account bookkeeping still agrees (USD money is in cents: < 1 cent per position)
+    assert st["final_cash"] == pytest.approx(st["final_cash_engine_account"], abs=1e-6)
+    assert st["max_equity_check_diff_vs_portfolio"] < 0.01 * len(MIXED_SYMS)
+    # the half-penny name is traded at its own close, not at 0.00 / 0.01
+    f = res["fills"]
+    pen = f[f["symbol"] == "PENNY"]
+    assert not pen.empty
+    closes = mixed_prices["PENNY"].copy()
+    closes.index = closes.index.strftime("%Y-%m-%d")
+    np.testing.assert_allclose(pen["price"].to_numpy(), closes.loc[pen["ts"].str[:10]].to_numpy(),
+                               rtol=0, atol=5e-7)
+    # achieved weight of the sub-penny name: within one share (lot) under investment_cap * target
+    targets = pd.DataFrame(st["weights_history"]).set_index("date")
+    achieved = pd.DataFrame(st["achieved_weights_history"]).set_index("date")
+    assert list(achieved.index) == list(targets.index) and list(achieved.columns) == MIXED_SYMS
+    equity = res["equity"].copy()
+    equity.index = equity.index.strftime("%Y-%m-%d")
+    for sym, tick in (("PENNY", 1e-6), ("BIG", 0.01)):
+        px = mixed_prices[sym].copy()
+        px.index = px.index.strftime("%Y-%m-%d")
+        lot = (px.loc[targets.index] + tick) / equity.loc[targets.index]  # one share, in weight
+        gap = 0.98 * targets[sym] - achieved[sym]
+        assert (gap >= -1e-6).all() and (gap <= lot + 1e-6).all(), (sym, gap.max(), lot.min())
+    wt = st["weight_tracking"]
+    assert wt["n_rebalances"] == st["n_rebalances"] and wt["investment_cap"] == 0.98
+    assert wt["per_symbol"]["PENNY"]["max_abs_gap"] < 1e-6
+    assert 0.95 < wt["mean_invested_fraction"] <= 0.98 + 1e-9
+    if allocator == "fixed":
+        assert st["fixed_weights_normalised"] == pytest.approx(MIXED_FIXED)
+        # BIG (~400) with a 0.5% weight: ~980 of 200k buys 2 shares, visibly under target, and reported
+        big = wt["per_symbol"]["BIG"]
+        assert big["mean_abs_gap"] > 2e-4 and wt["max_abs_gap_symbol"] == "BIG"
+        assert big["mean_achieved"] < big["mean_capped_target"]
+
+
+def test_weight_tracking_summary():
+    targets = [{"date": "d1", "A": 0.5, "B": 0.5}, {"date": "d2", "A": 0.5, "B": 0.5}]
+    achieved = [{"date": "d1", "A": 0.49, "B": 0.40}, {"date": "d2", "A": 0.47, "B": 0.49}]
+    wt = weight_tracking(targets, achieved, 0.98)
+    assert wt["n_rebalances"] == 2
+    assert wt["max_abs_gap"] == pytest.approx(0.09) and (wt["max_abs_gap_symbol"], wt["max_abs_gap_date"]) == ("B", "d1")
+    assert wt["mean_abs_gap"] == pytest.approx((0.0 + 0.09 + 0.02 + 0.0) / 4)
+    assert wt["per_symbol"]["A"] == pytest.approx({"mean_capped_target": 0.49, "mean_achieved": 0.48,
+                                                   "mean_abs_gap": 0.01, "max_abs_gap": 0.02})
+    assert wt["mean_invested_fraction"] == pytest.approx((0.89 + 0.96) / 2)
+    empty = weight_tracking([], [], 0.98)
+    assert empty["n_rebalances"] == 0 and empty["per_symbol"] == {} and math.isnan(empty["max_abs_gap"])
 
 
 # ----------------------------------------------------------------------------- slow

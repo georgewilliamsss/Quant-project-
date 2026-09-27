@@ -4,7 +4,8 @@
 
 ``--allocator fixed --fixed-weights AAPL=0.4,MSFT=0.6`` (or a ``.json`` / ``.csv``
 file, see :func:`parse_fixed_weights`) rebalances to that constant vector instead
-of HRP; ``--symbols`` then defaults to the symbols given.
+of HRP; ``--symbols`` then defaults to the symbols given, and if it is passed
+too, the two must name the same symbols.
 
 What it does
 ------------
@@ -16,7 +17,9 @@ What it does
    has ``lookback_bars`` closes) and exits with status 2 and a message
    otherwise.
 1. Loads daily adjusted closes for the universe (skfolio's bundled dataset,
-   see ``data.py``), builds ``Equity`` instruments (lot size 1) and one
+   see ``data.py``), builds ``Equity`` instruments (lot size 1, a price tick
+   chosen per symbol from its smallest close: 0.01 for names that never trade
+   below 1, finer below, see ``data.price_precision_for``) and one
    ``Bar`` per (symbol, day) directly (the ``BarDataWrangler`` is broken under
    pandas 3), plus one synthetic close trade per bar so the ``RiskEngine`` can
    price market orders.  Trades and bars go to the engine in one ``add_data``
@@ -89,8 +92,13 @@ Outputs (CLI, under ``--results-dir``, default ``results/``):
 file is reproducible byte for byte), ``execution_positions.csv`` (final
 ``PositionSnapshot`` via ``contracts.write_positions_csv``, including the
 account's cash; the risk module turns this file into an ORE portfolio),
-``execution_weights_<allocator>.csv``, ``execution_summary.json`` (its
-``outputs`` block lists the paths actually written) and
+``execution_weights_<allocator>.csv`` (target weights per rebalance: ``date``
+then one column per symbol, summing to 1),
+``execution_weights_<allocator>_achieved.csv`` (same layout: the book right
+after that rebalance's fills, ``qty * close / equity``; whole-share flooring
+and the ``investment_cap`` cash buffer keep it under the target, the gaps are
+summarised under ``weight_tracking`` in the stats), ``execution_summary.json``
+(its ``outputs`` block lists the paths actually written) and
 ``figures/execution_equity.png``.
 """
 
@@ -129,6 +137,7 @@ from quantstack.execution.data import (
     make_bars,
     make_close_trades,
     make_instruments,
+    price_precisions,
     validate_symbols,
 )
 
@@ -310,6 +319,56 @@ def equal_weight_daily_rebalanced(prices: pd.DataFrame, start: pd.Timestamp, sta
     return starting_cash * (1.0 + r).cumprod()
 
 
+WEIGHT_TRACKING_BASIS = (
+    "gap = investment_cap * target - achieved, in fractions of equity, per symbol and rebalance; "
+    "achieved = qty * close / equity right after that rebalance's fills (same close); "
+    "> 0 means under target (whole-share flooring, e.g. a high-priced name with a small weight)"
+)
+
+
+def weight_tracking(targets: Sequence[Mapping], achieved: Sequence[Mapping], investment_cap: float) -> dict:
+    """How far the book landed from the target weights at each rebalance.
+
+    ``targets`` and ``achieved`` are the strategy's ``weights_history`` and
+    ``achieved_history`` (rows ``{"date": ..., <symbol>: weight}``), matched
+    by date.  The orders aim at ``investment_cap * target`` of equity (the
+    rest is the cash buffer), so that is what achieved weights are compared
+    with (see :data:`WEIGHT_TRACKING_BASIS`).  Returns the overall mean and
+    max absolute gap (and where the max happened), the mean invested fraction
+    after rebalancing, and per symbol ``mean_capped_target`` (mean of
+    ``investment_cap * target``), ``mean_achieved``, ``mean_abs_gap`` and
+    ``max_abs_gap``.
+    """
+    t = pd.DataFrame(list(targets))
+    a = pd.DataFrame(list(achieved))
+    out = {"basis": WEIGHT_TRACKING_BASIS, "investment_cap": float(investment_cap), "n_rebalances": 0,
+           "mean_abs_gap": float("nan"), "max_abs_gap": float("nan"), "max_abs_gap_symbol": None,
+           "max_abs_gap_date": None, "mean_invested_fraction": float("nan"), "per_symbol": {}}
+    if t.empty or a.empty:
+        return out
+    t, a = t.set_index("date"), a.set_index("date")
+    dates = [d for d in t.index if d in a.index]
+    if not dates:
+        return out
+    t = t.loc[dates].astype(float) * float(investment_cap)
+    a = a.reindex(index=dates, columns=t.columns).astype(float).fillna(0.0)
+    gap = (t - a).abs()
+    stacked = gap.stack()
+    where = stacked.idxmax()
+    out.update({
+        "n_rebalances": len(dates),
+        "mean_abs_gap": float(stacked.mean()),
+        "max_abs_gap": float(stacked.max()),
+        "max_abs_gap_date": str(where[0]),
+        "max_abs_gap_symbol": str(where[1]),
+        "mean_invested_fraction": float(a.sum(axis=1).mean()),
+        "per_symbol": {str(sym): {"mean_capped_target": float(t[sym].mean()), "mean_achieved": float(a[sym].mean()),
+                                  "mean_abs_gap": float(gap[sym].mean()), "max_abs_gap": float(gap[sym].max())}
+                       for sym in t.columns},
+    })
+    return out
+
+
 # --------------------------------------------------------------------------- engine
 
 
@@ -346,10 +405,13 @@ def _engine_run(
 
     from quantstack.execution.strategy import SkfolioRebalance, SkfolioRebalanceConfig
 
+    from quantstack.execution.strategy import normalise_fixed_weights
+
     symbols = list(prices.columns)
-    instruments = make_instruments(symbols, venue_name)
+    precisions = price_precisions(prices)  # tick per symbol from its smallest close (data.py)
+    instruments = make_instruments(symbols, venue_name, price_precision=precisions)
     bar_types = make_bar_types(instruments)
-    bars = make_bars(prices, instruments, bar_types, volume=bar_volume)
+    bars = make_bars(prices, instruments, bar_types, volume=bar_volume)  # refuses closes rounding to <= 0
     trades = make_close_trades(bars, bar_volume) if risk_checks else []
     # Grouped per instrument for add_data (see below); order within a symbol is by day.
     bars_by_symbol: dict[str, list] = {s: [] for s in symbols}
@@ -358,6 +420,14 @@ def _engine_run(
         bars_by_symbol[b.bar_type.instrument_id.symbol.value].append(b)
     for t in trades:
         trades_by_symbol[t.instrument_id.symbol.value].append(t)
+
+    # largest relative change rounding made to a close, per symbol (the bars vs the raw panel)
+    rounding_err = {}
+    for sym in symbols:
+        raw = prices[sym].to_numpy(dtype=float)
+        raw = raw[~np.isnan(raw)]
+        got = np.array([float(b.close) for b in bars_by_symbol[sym]])
+        rounding_err[str(sym)] = float(np.max(np.abs(got - raw) / raw)) if raw.size else 0.0
 
     recorder = RecordingSink()
     tee = TeeSink(sink, recorder) if sink is not None else recorder
@@ -459,7 +529,13 @@ def _engine_run(
         "account_report_rows": int(len(account_report)),
         "max_equity_check_diff_vs_portfolio": float(strat.max_equity_check_diff),
         "n_equity_checks": int(strat.n_equity_checks),
+        "price_precision": precisions,
+        "close_rounding_max_rel_error": rounding_err,
+        "fixed_weights_normalised": (None if fixed_weights is None
+                                     else normalise_fixed_weights(fixed_weights, symbols)),
+        "weight_tracking": weight_tracking(strat.weights_history, strat.achieved_history, investment_cap),
         "weights_history": strat.weights_history,
+        "achieved_weights_history": strat.achieved_history,
         "submitted": strat.submitted,
     }
     snap = strat.last_snapshot
@@ -475,7 +551,7 @@ def _engine_run(
 
 
 def run_backtest(
-    symbols: Sequence[str] = DEFAULT_SYMBOLS,
+    symbols: Sequence[str] | None = None,
     start: str = DEFAULT_START,
     end: str = DEFAULT_END,
     allocator: str = "hrp",
@@ -495,17 +571,28 @@ def run_backtest(
 ) -> dict:
     """Backtest ``allocator`` on ``symbols`` over [start, end]; return curves and metrics.
 
+    The universe: without ``prices``, ``symbols`` (default
+    ``data.DEFAULT_SYMBOLS``) loaded from skfolio's dataset over
+    [``start``, ``end``].  With ``prices`` (a NaN-free panel, one column per
+    symbol), its columns are the universe, in column order, and its index is
+    the window (``start`` / ``end`` are not used); ``symbols`` may then be
+    left ``None``, and if it is given it must name the same symbols as
+    ``prices.columns`` (compared after strip / upper-case, order free), else
+    ``ValueError`` listing the symbols on each side only.
+
     Inputs are validated before any engine is built (``ValueError``): at least
-    two symbols, no duplicates, all in the dataset (or, when ``prices`` is
-    passed, its columns are the universe and ``symbols`` is ignored), a known
+    two symbols, no duplicates, all in the dataset, a known
     ``allocator`` / ``order_mode``, ``lookback_bars >= 3``,
     ``rebalance_every >= 1``, and ``fixed_weights`` given exactly when
     ``allocator="fixed"`` (see ``strategy.check_fixed_weights``): a mapping
-    symbol -> weight covering every symbol of the universe (0 allowed), with
-    finite non-negative values.  Fixed weights are relative, rescaled to sum
-    to 1 over the universe (keys outside it are dropped), and the strategy
-    rebalances back to them on the usual schedule; the equal-weight
-    benchmark run never sees them.  A window too short to trade (see
+    symbol -> weight whose keys are exactly the universe (0 allowed, a key
+    outside the universe is an error that lists the extra and missing
+    symbols), with finite non-negative values.  Fixed weights are relative,
+    rescaled to sum to 1 (recorded as ``stats["fixed_weights_normalised"]``),
+    and the strategy rebalances back to them on the usual schedule; the
+    equal-weight benchmark run never sees them.  A close that is not positive
+    at its instrument's price precision raises ``ValueError`` naming the
+    symbol and date (``data.make_bars``).  A window too short to trade (see
     :func:`check_window`) is *not* an error here: the engine runs, nothing
     trades, and the result has the same keys with zero fills and empty curves.
 
@@ -518,7 +605,10 @@ def run_backtest(
     * ``snapshot`` -- final ``PositionSnapshot`` (non-zero lines, the
       account's final ``cash``);
     * ``metrics`` (from the first fill; over the whole flat curve if nothing
-      traded), ``stats`` (counts, runtimes, cross-checks), ``reports``
+      traded), ``stats`` (counts, runtimes, cross-checks, per-symbol
+      ``price_precision`` and ``close_rounding_max_rel_error``, target
+      ``weights_history`` and ``achieved_weights_history`` per rebalance and
+      their ``weight_tracking`` summary, see :func:`weight_tracking`), ``reports``
       (Nautilus report DataFrames), ``prices``, ``first_fill`` (Timestamp or
       None), ``runtime_seconds``;
     * ``curves``   -- DataFrame indexed by ``date`` with the columns
@@ -543,9 +633,17 @@ def run_backtest(
         raise ValueError(f"lookback_bars must be >= 3 and rebalance_every >= 1, got "
                          f"{lookback_bars} and {rebalance_every}")
     if prices is None:
-        prices = load_prices(validate_symbols(symbols), start, end)
+        prices = load_prices(validate_symbols(DEFAULT_SYMBOLS if symbols is None else symbols), start, end)
     else:
-        validate_symbols(prices.columns)
+        columns = validate_symbols(prices.columns)
+        if symbols is not None:
+            wanted = validate_symbols(symbols)
+            only_symbols = sorted(set(wanted) - set(columns))
+            only_prices = sorted(set(columns) - set(wanted))
+            if only_symbols or only_prices:
+                raise ValueError(f"symbols and prices.columns name different universes: in symbols only "
+                                 f"{only_symbols}, in prices.columns only {only_prices} (pass symbols=None "
+                                 "to trade the panel's columns)")
     check_fixed_weights(allocator, fixed_weights, prices.columns)
     kw = dict(starting_cash=starting_cash, lookback_bars=lookback_bars,
               rebalance_every=rebalance_every, investment_cap=investment_cap,
@@ -603,7 +701,11 @@ def write_results(res: dict, results_dir: str | Path) -> dict[str, Path]:
       rows sorted by :func:`sort_fills`;
     * ``positions_csv`` -- the final snapshot, cash included, through
       :func:`quantstack.contracts.write_positions_csv`;
-    * ``weights_csv``   -- the allocator's weights at every rebalance.
+    * ``weights_csv``   -- the allocator's target weights at every rebalance
+      (``date`` + one column per symbol, unchanged layout);
+    * ``achieved_weights_csv`` -- ``execution_weights_<allocator>_achieved.csv``,
+      the same layout holding the weights actually held right after each
+      rebalance's fills (``stats["achieved_weights_history"]``).
     """
     results = Path(results_dir)
     results.mkdir(parents=True, exist_ok=True)
@@ -613,13 +715,17 @@ def write_results(res: dict, results_dir: str | Path) -> dict[str, Path]:
         "fills_csv": results / "execution_fills.csv",
         "positions_csv": results / "execution_positions.csv",
         "weights_csv": results / f"execution_weights_{allocator}.csv",
+        "achieved_weights_csv": results / f"execution_weights_{allocator}_achieved.csv",
     }
     write_equity_csv(res["curves"].round(2), paths["equity_csv"])
     sort_fills(res["fills"])[list(FILLS_SCHEMA)].to_csv(paths["fills_csv"], index=False,
                                                         float_format="%.4f")
     write_positions_csv(res["snapshot"], paths["positions_csv"])
-    pd.DataFrame(res["stats"]["weights_history"]).to_csv(paths["weights_csv"], index=False,
-                                                         float_format="%.6f")
+    targets = pd.DataFrame(res["stats"]["weights_history"])
+    targets.to_csv(paths["weights_csv"], index=False, float_format="%.6f")
+    columns = list(targets.columns) or ["date", *map(str, res["prices"].columns)]
+    pd.DataFrame(res["stats"].get("achieved_weights_history", []), columns=columns).to_csv(
+        paths["achieved_weights_csv"], index=False, float_format="%.6f")
     return paths
 
 
@@ -798,7 +904,12 @@ def _versions() -> dict:
 
 
 def _public_stats(stats: dict) -> dict:
-    return {k: v for k, v in stats.items() if k not in ("weights_history", "submitted")}
+    return {k: v for k, v in stats.items()
+            if k not in ("weights_history", "achieved_weights_history", "submitted")}
+
+
+class _JsonPairs(list):
+    """A JSON object as the list of its ``(key, value)`` pairs (``object_pairs_hook``), duplicates kept."""
 
 
 def parse_fixed_weights(spec: str) -> dict[str, float]:
@@ -810,8 +921,11 @@ def parse_fixed_weights(spec: str) -> dict[str, float]:
     * a ``.json`` file holding one object: ``{"AAPL": 0.25, "MSFT": 0.75}``;
     * a ``.csv`` file whose header names the columns ``symbol`` and ``weight``.
 
-    Only the syntax is checked here (numbers, no duplicate symbols, at least
-    one entry); the values are checked by ``strategy.check_fixed_weights``.
+    Files are read as UTF-8 with an optional byte-order mark (Excel's "CSV
+    UTF-8" export writes one).  Only the syntax is checked here (numbers, no
+    duplicate symbols -- also a key repeated inside the JSON object, which
+    ``json`` would otherwise resolve silently as last-wins -- at least one
+    entry); the values are checked by ``strategy.check_fixed_weights``.
     Raises ``ValueError``.
     """
     spec = spec.strip()
@@ -822,14 +936,16 @@ def parse_fixed_weights(spec: str) -> dict[str, float]:
             raise ValueError(f"--fixed-weights file not found: {spec}")
         if suffix == ".json":
             try:
-                data = json.loads(path.read_text())
+                # every JSON object comes back as its list of (key, value) pairs, repeats included,
+                # so the duplicate check below sees {"AAPL": 0.9, "AAPL": 0.1} (json keeps only 0.1)
+                data = json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=_JsonPairs)
             except json.JSONDecodeError as exc:
                 raise ValueError(f"--fixed-weights {spec}: not valid JSON ({exc})") from None
-            if not isinstance(data, dict):
+            if not isinstance(data, _JsonPairs):
                 raise ValueError(f'--fixed-weights {spec}: expected one JSON object {{"SYM": weight, ...}}')
-            pairs = list(data.items())
+            pairs = list(data)
         else:
-            with path.open(newline="") as fh:
+            with path.open(newline="", encoding="utf-8-sig") as fh:
                 reader = csv.DictReader(fh)
                 cols = {str(c).strip().lower(): c for c in reader.fieldnames or []}
                 if not {"symbol", "weight"} <= set(cols):
@@ -974,6 +1090,8 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
                        + ("; equity_equal_engine duplicates equity_equal (same run)" if alloc == "equal" else "")),
         "fills_csv": "FILLS_SCHEMA columns, rows sorted by (ts, symbol, side, qty)",
         "positions_csv": "final PositionSnapshot incl. the account's cash, via contracts.write_positions_csv",
+        "achieved_weights_csv": ("same layout as weights_csv: qty * close / equity right after each "
+                                 "rebalance's fills; " + WEIGHT_TRACKING_BASIS),
     }
     summary = {
         "module": "execution",
@@ -1037,6 +1155,11 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
     print(line(f"{alloc} (engine)", m_main))
     print(line(other_key.replace("_", " "), m_other, " (same run)" if alloc == "equal" else ""))
     print(line("equal (pandas B&H)", m_pd))
+    wt = res["stats"]["weight_tracking"]
+    if wt["n_rebalances"]:
+        print(f"  weight tracking over {wt['n_rebalances']} rebalances: mean |cap*target - achieved| "
+              f"{wt['mean_abs_gap']:.4%}, max {wt['max_abs_gap']:.4%} ({wt['max_abs_gap_symbol']} "
+              f"{wt['max_abs_gap_date']}), invested {wt['mean_invested_fraction']:.2%} of equity")
     for mode, v in seq.items():
         print(f"  order mode {mode:<11} orders {v['n_orders']:>4} fills {v['n_fills']:>4} "
               f"denied {v['n_denied']:>3} halted {v['halted_early']} (last day {v['last_published_day']})")

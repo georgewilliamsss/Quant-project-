@@ -76,9 +76,27 @@ every close trade precedes every bar, so each symbol's last-trade price is in
 the cache before any bar reaches the strategy, and the bars keep the column
 order of ``prices`` (the last symbol's bar still arrives last).
 
-Prices are rounded to the instrument's $0.01 tick when the bars are built
-(the dataset carries three decimals); the pandas benchmark in ``backtest.py``
-uses the unrounded closes, a sub-cent difference.
+Price precision (the tick) is chosen per instrument from the data
+------------------------------------------------------------------------
+Each close is rounded to its instrument's tick when the bars are built, so
+the tick has to fit the price level.  :func:`price_precision_for` picks it
+from the smallest positive close of each column:
+
+* smallest close >= 1: precision 2 (a 0.01 tick, at least three significant
+  digits).  Every name of skfolio's dataset is in this case, so those bars are
+  exactly what they were with the old fixed 0.01 tick;
+* smallest close < 1: ``ceil(-log10(min_close)) + 3`` decimals, so the
+  smallest close keeps at least four significant digits (0.000793 -> 7
+  decimals, 0.0104 -> 5), capped at :data:`MAX_PRICE_PRECISION` = 9.
+  (nautilus_trader 1.231.0 here is a high-precision build that accepts up to
+  16; ``Equity``, ``Price.from_str``, bars, trade ticks and default-fill-model
+  fills were checked at 6-9.)
+
+A fixed 0.01 tick used to turn a 0.004 close into 0.00 (the name was then
+skipped and its weight sat in cash, and HRP died on infinite returns) and a
+0.012 close into 0.01.  :func:`make_bars` now refuses, with a ``ValueError``
+naming the symbol and date, any close that is not positive after rounding.
+The pandas benchmark in ``backtest.py`` uses the unrounded closes.
 
 Timestamps: ``ts_event = ts_init = <bar date> 21:00 UTC`` in nanoseconds,
 i.e. the US cash close (16:00 New York during EST; one hour after the close
@@ -87,9 +105,11 @@ during EDT, which is harmless for daily bars).
 
 from __future__ import annotations
 
+import math
 from decimal import Decimal
 from typing import Iterable, Mapping, Sequence
 
+import numpy as np
 import pandas as pd
 
 DEFAULT_SYMBOLS: tuple[str, ...] = ("AAPL", "MSFT", "JPM", "JNJ", "XOM", "PG", "HD", "UNH")
@@ -98,6 +118,12 @@ DEFAULT_END = "2022-12-28"
 DEFAULT_VENUE = "XNAS"
 BAR_CLOSE_UTC = pd.Timedelta(hours=21)
 MIN_SYMBOLS = 2
+#: Precision used when every close is >= 1 (a 0.01 tick); also the lower bound of a derived one.
+DEFAULT_PRICE_PRECISION = 2
+#: Upper bound on the derived precision (nautilus standard precision allows 9).
+MAX_PRICE_PRECISION = 9
+#: Below 1, the smallest close keeps at least this many significant digits.
+SUBUNIT_SIGNIFICANT_DIGITS = 4
 
 
 def validate_symbols(symbols: Iterable[str], min_symbols: int = MIN_SYMBOLS) -> list[str]:
@@ -155,20 +181,54 @@ def load_prices(
     return df
 
 
-def make_equity(symbol: str, venue: str = DEFAULT_VENUE, price_precision: int = 2):
-    """A cash-equity instrument with ``lot_size = 1``.
+def price_precision_for(closes: Iterable[float]) -> int:
+    """Decimals of the price tick for one instrument, from its closes (NaN ignored).
+
+    ``2`` when the smallest positive close is >= 1 (the 0.01 tick already
+    keeps three significant digits), else ``ceil(-log10(min_close)) + 3`` so
+    the smallest close keeps at least :data:`SUBUNIT_SIGNIFICANT_DIGITS` (4)
+    significant digits, capped at :data:`MAX_PRICE_PRECISION` (9).  With no
+    positive close at all the default 2 is returned (:func:`make_bars` then
+    refuses the series).  Examples: 20.85 -> 2, 1.80 -> 2, 0.5 -> 4,
+    0.0104 -> 5, 0.000793 -> 7, 1e-12 -> 9.
+    """
+    a = np.array(list(closes), dtype=float)
+    a = a[np.isfinite(a) & (a > 0)]
+    if a.size == 0:
+        return DEFAULT_PRICE_PRECISION
+    lo = float(a.min())
+    if lo >= 1.0:
+        return DEFAULT_PRICE_PRECISION
+    digits = math.ceil(-math.log10(lo)) + SUBUNIT_SIGNIFICANT_DIGITS - 1
+    return int(min(MAX_PRICE_PRECISION, max(DEFAULT_PRICE_PRECISION, digits)))
+
+
+def price_precisions(prices: pd.DataFrame) -> dict[str, int]:
+    """column -> :func:`price_precision_for` of that column, for every column of ``prices``."""
+    return {str(c): price_precision_for(prices[c].to_numpy(dtype=float)) for c in prices.columns}
+
+
+def make_equity(symbol: str, venue: str = DEFAULT_VENUE, price_precision: int = DEFAULT_PRICE_PRECISION):
+    """A cash-equity instrument with ``lot_size = 1`` and a ``10**-price_precision`` tick.
 
     ``TestInstrumentProvider.equity`` (nautilus_trader.test_kit.providers) is
     close, but it hard-codes ``lot_size=100`` and AAPL's ISIN for every
     symbol; a lot of 100 would force round-lot positions, which distorts small
     weights on a $1M book.  So we build the ``Equity`` ourselves.
     Equities have ``size_precision`` 0, so quantities are whole shares.
+    ``price_precision`` must be an int in 0..:data:`MAX_PRICE_PRECISION`;
+    pick it with :func:`price_precision_for`.
     """
     from nautilus_trader.model.currencies import USD
     from nautilus_trader.model.identifiers import InstrumentId, Symbol, Venue
     from nautilus_trader.model.instruments import Equity
     from nautilus_trader.model.objects import Price, Quantity
 
+    if isinstance(price_precision, bool) or not isinstance(price_precision, (int, np.integer)) \
+            or not 0 <= int(price_precision) <= MAX_PRICE_PRECISION:
+        raise ValueError(f"price_precision for {symbol} must be an int in 0..{MAX_PRICE_PRECISION}, "
+                         f"got {price_precision!r}")
+    price_precision = int(price_precision)
     increment = Price(10.0**-price_precision, price_precision)
     return Equity(
         instrument_id=InstrumentId(Symbol(symbol), Venue(venue)),
@@ -182,9 +242,25 @@ def make_equity(symbol: str, venue: str = DEFAULT_VENUE, price_precision: int = 
     )
 
 
-def make_instruments(symbols: Iterable[str], venue: str = DEFAULT_VENUE) -> dict:
-    """symbol -> ``Equity`` for every symbol."""
-    return {s: make_equity(s, venue) for s in symbols}
+def make_instruments(
+    symbols: Iterable[str],
+    venue: str = DEFAULT_VENUE,
+    price_precision: int | Mapping[str, int] = DEFAULT_PRICE_PRECISION,
+) -> dict:
+    """symbol -> ``Equity`` for every symbol.
+
+    ``price_precision`` is one int for all symbols (default 2, the 0.01 tick)
+    or a mapping symbol -> precision, usually :func:`price_precisions` of the
+    price panel (``backtest.py`` does that); a symbol missing from the
+    mapping raises ``ValueError``.
+    """
+    symbols = list(symbols)
+    if isinstance(price_precision, Mapping):
+        missing = [s for s in symbols if str(s) not in price_precision]
+        if missing:
+            raise ValueError(f"no price_precision for {missing}")
+        return {s: make_equity(s, venue, price_precision[str(s)]) for s in symbols}
+    return {s: make_equity(s, venue, price_precision) for s in symbols}
 
 
 def bar_type_for(instrument) -> "BarType":  # noqa: F821 - nautilus type
@@ -223,8 +299,14 @@ def make_bars(
     copy-on-write; see the module docstring).  Close-only data: ``open = high
     = low = close``.  Within a day, bars are emitted in the column order of
     ``prices``; the strategy uses that to know when the *last* symbol of the
-    day has arrived.  NaN closes are skipped.  ``volume`` is the liquidity
-    placeholder discussed in the module docstring (keep it large).
+    day has arrived.  NaN closes are skipped (no bar that day).  ``volume`` is
+    the liquidity placeholder discussed in the module docstring (keep it large).
+
+    Each close is rounded to its instrument's tick (``make_price``).  A close
+    that is infinite, not positive, or rounds to 0 at that precision raises
+    ``ValueError`` naming the symbol and the date: the engine must never mark
+    or trade a name at 0 (build the instruments with
+    ``make_instruments(..., price_precision=price_precisions(prices))``).
     """
     from nautilus_trader.model.data import Bar
     from nautilus_trader.model.objects import Quantity
@@ -239,11 +321,27 @@ def make_bars(
     for i, t in enumerate(ts):
         for s in symbols:
             c = cols[s][i]
-            if c != c or c <= 0:  # NaN or non-positive
+            if c != c:  # NaN: no bar for this symbol today
                 continue
-            px = instruments[s].make_price(Decimal(repr(float(c))))
+            inst = instruments[s]
+            if not math.isfinite(c) or c <= 0:
+                raise ValueError(f"{s}: close {float(c)!r} on {_day(prices.index[i])} is not a positive finite "
+                                 "price; the engine cannot mark or trade it")
+            px = inst.make_price(Decimal(repr(float(c))))
+            if not px.as_double() > 0:
+                raise ValueError(
+                    f"{s}: close {float(c)!r} on {_day(prices.index[i])} rounds to {px} at the instrument's "
+                    f"price_precision {inst.price_precision}; build the instruments with "
+                    "make_instruments(..., price_precision=price_precisions(prices)) or rescale the series")
             bars.append(Bar(bar_types[s], px, px, px, px, vol, t, t))
     return bars
+
+
+def _day(label) -> str:
+    try:
+        return pd.Timestamp(label).date().isoformat()
+    except (TypeError, ValueError):
+        return str(label)
 
 
 def make_close_trades(bars: Iterable, size: int = DEFAULT_BAR_VOLUME) -> list:
@@ -295,6 +393,11 @@ __all__ = [
     "MIN_SYMBOLS",
     "validate_symbols",
     "load_prices",
+    "DEFAULT_PRICE_PRECISION",
+    "MAX_PRICE_PRECISION",
+    "SUBUNIT_SIGNIFICANT_DIGITS",
+    "price_precision_for",
+    "price_precisions",
     "make_equity",
     "make_instruments",
     "make_bar_types",
