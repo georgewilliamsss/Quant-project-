@@ -1,0 +1,134 @@
+{
+  "perspective_version": "5.5.1",
+  "tables": {
+    "positions": {
+      "schema": {
+        "symbol": "string",
+        "qty": "float",
+        "last": "float",
+        "value": "float"
+      },
+      "index": "symbol"
+    },
+    "equity": {
+      "schema": {
+        "date": "string",
+        "equity": "float"
+      },
+      "index": "date"
+    },
+    "fills": {
+      "schema": {
+        "ts": "string",
+        "symbol": "string",
+        "side": "string",
+        "qty": "float",
+        "price": "float"
+      },
+      "index": null
+    },
+    "meta": {
+      "schema": {
+        "key": "string",
+        "value": "string"
+      },
+      "index": "key"
+    }
+  },
+  "update_path": "Arrow IPC bytes (typed from contracts schemas), not list-of-dicts JSON",
+  "row_semantics": "whole-row: every schema column is sent for every row, so a key missing from a row nulls that cell; equity date keys are normalised to YYYY-MM-DD",
+  "security": {
+    "authentication": "none",
+    "websocket_origin_policy": "same-origin only (Origin host:port must equal Host; loopback hosts only when bound to loopback) plus explicit --allow-origin entries; clients sending no Origin header (non-browser) are accepted",
+    "default_bind_host": "127.0.0.1"
+  },
+  "npm_packages_used_by_static_index_html": {
+    "@perspective-dev/client": "5.5.1",
+    "@perspective-dev/viewer": "5.5.1",
+    "@perspective-dev/viewer-charts": "5.5.1",
+    "@perspective-dev/viewer-datagrid": "5.5.1",
+    "source_file": "quantstack/dashboard/static/index.html",
+    "all_pinned_to_perspective_python": true,
+    "note": "read from the page's jsdelivr URLs; renamed from @finos/perspective* upstream -- see the module docstring in quantstack/dashboard/server.py"
+  },
+  "wire_selftest": {
+    "port_used": "ephemeral",
+    "measured_this_run": true,
+    "hosted_tables": [
+      "equity",
+      "fills",
+      "meta",
+      "positions"
+    ],
+    "positions_rows_read_back_over_websocket": [
+      {
+        "symbol": "AAPL",
+        "qty": 25.0,
+        "last": 101.5,
+        "value": 2537.5
+      },
+      {
+        "symbol": "MSFT",
+        "qty": 5.0,
+        "last": 98.27639451941653,
+        "value": 491.3819725970826
+      }
+    ],
+    "equity_rows_read_back_over_websocket": [
+      {
+        "date": "2026-09-24",
+        "equity": 1000000.0
+      },
+      {
+        "date": "2026-09-25",
+        "equity": 1004000.0
+      }
+    ],
+    "fills_rows_read_back_over_websocket": [
+      {
+        "ts": "2026-09-25T14:30:00",
+        "symbol": "AAPL",
+        "side": "BUY",
+        "qty": 25.0,
+        "price": 101.5
+      }
+    ],
+    "indexed_update_overwrote_in_place": true,
+    "float_round_trip_bit_exact": true,
+    "foreign_origin_handshake": {
+      "origin": "https://evil.example.com",
+      "http_status": 403
+    },
+    "same_origin_handshake_http_status": 101,
+    "origin_policy_enforced": true
+  },
+  "replay": {
+    "is_demo": false,
+    "fallback_reason": null,
+    "equity_csv": "results/thesis/broad1y/hrp_optimised/execution_equity.csv",
+    "positions_csv": "results/thesis/broad1y/hrp_optimised/execution_positions.csv",
+    "fills_csv": "results/thesis/broad1y/hrp_optimised/execution_fills.csv",
+    "fills_warning": null,
+    "equity_source_column": "equity_hrp",
+    "equity_columns_available": [
+      "equity_hrp",
+      "equity_equal_engine",
+      "equity_equal_pandas"
+    ],
+    "positions_flat_book": false,
+    "n_positions": 50,
+    "n_equity_points": 499,
+    "n_fills": 599,
+    "table_sizes_after_load": {
+      "positions": 50,
+      "equity": 499,
+      "fills": 599
+    },
+    "table_size_warnings": [],
+    "meta_table": {
+      "data_source": "replay",
+      "note": "replay of results/thesis/broad1y/hrp_optimised/execution_equity.csv [equity_hrp]"
+    }
+  },
+  "summary_kind": "ad-hoc"
+}

@@ -1,0 +1,91 @@
+{
+  "window": {
+    "first_return": "2024-09-27",
+    "last_return": "2026-09-16",
+    "n_days": 498
+  },
+  "n_assets": 50,
+  "method": "each vector held constant over the window, rebalanced daily, no costs; formulas of quantstack.allocation.compare (sharpe = mean/std(ddof=1)*sqrt(252), annualized_mean_arithmetic = mean*252, cagr/max_drawdown_compounded on compounded wealth)",
+  "fitted_on": "the whole window's daily returns (in-sample)",
+  "stats": {
+    "thesis_w_renormalised": {
+      "annualized_mean_arithmetic": 0.33476744,
+      "ann_vol": 0.13706849,
+      "sharpe": 2.44233701,
+      "cagr": 0.38424869,
+      "max_drawdown_compounded": 0.16687609,
+      "n_near_zero": 0,
+      "n_assets": 50,
+      "max_weight": 0.1376601,
+      "effective_n": 13.96529507,
+      "n_days": 498
+    },
+    "thesis_w_8020": {
+      "annualized_mean_arithmetic": 0.33539289,
+      "ann_vol": 0.13810442,
+      "sharpe": 2.42854569,
+      "cagr": 0.38491673,
+      "max_drawdown_compounded": 0.16845152,
+      "n_near_zero": 0,
+      "n_assets": 50,
+      "max_weight": 0.13624821,
+      "effective_n": 14.23430722,
+      "n_days": 498
+    },
+    "equal_w": {
+      "annualized_mean_arithmetic": 0.37763557,
+      "ann_vol": 0.24061856,
+      "sharpe": 1.56943656,
+      "cagr": 0.41697848,
+      "max_drawdown_compounded": 0.28516279,
+      "n_near_zero": 0,
+      "n_assets": 50,
+      "max_weight": 0.02,
+      "effective_n": 50.0,
+      "n_days": 498
+    },
+    "hrp_w": {
+      "annualized_mean_arithmetic": 0.09191264,
+      "ann_vol": 0.05740871,
+      "sharpe": 1.60102261,
+      "cagr": 0.0944496,
+      "max_drawdown_compounded": 0.06321464,
+      "n_near_zero": 0,
+      "n_assets": 50,
+      "max_weight": 0.53157923,
+      "effective_n": 3.28205861,
+      "n_days": 498
+    },
+    "max_sharpe_w": {
+      "annualized_mean_arithmetic": 0.40132187,
+      "ann_vol": 0.10651787,
+      "sharpe": 3.76764823,
+      "cagr": 0.48488382,
+      "max_drawdown_compounded": 0.09091067,
+      "n_near_zero": 28,
+      "n_assets": 50,
+      "max_weight": 0.28412538,
+      "effective_n": 6.87264085,
+      "n_days": 498
+    },
+    "inv_var_w": {
+      "annualized_mean_arithmetic": 0.14027216,
+      "ann_vol": 0.06712161,
+      "sharpe": 2.08982104,
+      "cagr": 0.14795561,
+      "max_drawdown_compounded": 0.08615822,
+      "n_near_zero": 0,
+      "n_assets": 50,
+      "max_weight": 0.35036405,
+      "effective_n": 5.98776455,
+      "n_days": 498
+    }
+  },
+  "errors": {},
+  "fit_seconds": {
+    "equal_w": 9.759e-05,
+    "hrp_w": 0.07361278,
+    "max_sharpe_w": 0.0344464,
+    "inv_var_w": 0.000721
+  }
+}

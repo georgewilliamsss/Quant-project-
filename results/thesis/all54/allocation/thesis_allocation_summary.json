@@ -1,0 +1,81 @@
+{
+  "window": {
+    "first_return": "2026-06-15",
+    "last_return": "2026-09-16",
+    "n_days": 67
+  },
+  "n_assets": 54,
+  "method": "each vector held constant over the window, rebalanced daily, no costs; formulas of quantstack.allocation.compare (sharpe = mean/std(ddof=1)*sqrt(252), annualized_mean_arithmetic = mean*252, cagr/max_drawdown_compounded on compounded wealth)",
+  "fitted_on": "the whole window's daily returns (in-sample)",
+  "stats": {
+    "thesis_w_renormalised": {
+      "annualized_mean_arithmetic": -0.00580595,
+      "ann_vol": 0.13879209,
+      "sharpe": -0.04183199,
+      "cagr": -0.01514919,
+      "max_drawdown_compounded": 0.07089399,
+      "n_near_zero": 0,
+      "n_assets": 54,
+      "max_weight": 0.132842,
+      "effective_n": 14.89062033,
+      "n_days": 67
+    },
+    "thesis_w_8020": {
+      "annualized_mean_arithmetic": -0.00580595,
+      "ann_vol": 0.13879209,
+      "sharpe": -0.04183199,
+      "cagr": -0.01514919,
+      "max_drawdown_compounded": 0.07089399,
+      "n_near_zero": 0,
+      "n_assets": 54,
+      "max_weight": 0.132842,
+      "effective_n": 14.89062033,
+      "n_days": 67
+    },
+    "equal_w": {
+      "annualized_mean_arithmetic": -0.46464735,
+      "ann_vol": 0.21008468,
+      "sharpe": -2.21171453,
+      "cagr": -0.38544994,
+      "max_drawdown_compounded": 0.16244042,
+      "n_near_zero": 0,
+      "n_assets": 54,
+      "max_weight": 0.01851852,
+      "effective_n": 54.0,
+      "n_days": 67
+    },
+    "max_sharpe_w": {
+      "annualized_mean_arithmetic": 0.46061758,
+      "ann_vol": 0.05666934,
+      "sharpe": 8.12816246,
+      "cagr": 0.58189441,
+      "max_drawdown_compounded": 0.01228281,
+      "n_near_zero": 35,
+      "n_assets": 54,
+      "max_weight": 0.20241451,
+      "effective_n": 8.94142081,
+      "n_days": 67
+    },
+    "inv_var_w": {
+      "annualized_mean_arithmetic": -0.02375124,
+      "ann_vol": 0.0484707,
+      "sharpe": -0.49001234,
+      "cagr": -0.0246012,
+      "max_drawdown_compounded": 0.02388358,
+      "n_near_zero": 0,
+      "n_assets": 54,
+      "max_weight": 0.36882994,
+      "effective_n": 5.32280759,
+      "n_days": 67
+    }
+  },
+  "errors": {
+    "hrp_w": "ValueError: HRP on 54 assets needs at least 108 rows (2x the asset count, so the sample covariance it clusters on is full-rank-enough to be stable); got 67"
+  },
+  "fit_seconds": {
+    "equal_w": 0.00011089,
+    "hrp_w": 0.00031999,
+    "max_sharpe_w": 0.0470555,
+    "inv_var_w": 0.00046259
+  }
+}
