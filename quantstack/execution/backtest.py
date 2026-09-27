@@ -2,11 +2,16 @@
 
 ``python -m quantstack.execution.backtest [--allocator hrp] [--start 2016-01-01] [--end 2022-12-28]``
 
+``--allocator fixed --fixed-weights AAPL=0.4,MSFT=0.6`` (or a ``.json`` / ``.csv``
+file, see :func:`parse_fixed_weights`) rebalances to that constant vector instead
+of HRP; ``--symbols`` then defaults to the symbols given.
+
 What it does
 ------------
 0. Validates the inputs before any engine is built: at least two symbols, no
-   duplicates, every symbol in the dataset, a known allocator (``ValueError``
-   from :func:`run_backtest`); the CLI also checks that the window holds more
+   duplicates, every symbol in the dataset, a known allocator, fixed weights
+   exactly when ``allocator="fixed"`` (``ValueError`` from
+   :func:`run_backtest`); the CLI also checks that the window holds more
    than ``lookback_bars`` bars per symbol (the strategy trades only once it
    has ``lookback_bars`` closes) and exits with status 2 and a message
    otherwise.
@@ -92,6 +97,7 @@ account's cash; the risk module turns this file into an ORE portfolio),
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import sys
@@ -99,7 +105,7 @@ import time
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -329,6 +335,7 @@ def _engine_run(
     bar_volume: int,
     venue_name: str,
     log_level: str = "WARNING",
+    fixed_weights: Mapping[str, float] | None = None,
 ) -> EngineRun:
     from nautilus_trader.backtest.engine import BacktestEngine, BacktestEngineConfig
     from nautilus_trader.config import LoggingConfig
@@ -399,6 +406,8 @@ def _engine_run(
             investment_cap=investment_cap,
             allocator=allocator,
             order_mode=order_mode,
+            fixed_weights=(None if fixed_weights is None
+                           else {str(k): float(v) for k, v in fixed_weights.items()}),
         )
         strat = SkfolioRebalance(cfg, sink=tee)
         engine.add_strategy(strat)
@@ -482,6 +491,7 @@ def run_backtest(
     benchmarks: bool = True,
     prices: pd.DataFrame | None = None,
     log_level: str = "WARNING",
+    fixed_weights: Mapping[str, float] | None = None,
 ) -> dict:
     """Backtest ``allocator`` on ``symbols`` over [start, end]; return curves and metrics.
 
@@ -489,7 +499,13 @@ def run_backtest(
     two symbols, no duplicates, all in the dataset (or, when ``prices`` is
     passed, its columns are the universe and ``symbols`` is ignored), a known
     ``allocator`` / ``order_mode``, ``lookback_bars >= 3``,
-    ``rebalance_every >= 1``.  A window too short to trade (see
+    ``rebalance_every >= 1``, and ``fixed_weights`` given exactly when
+    ``allocator="fixed"`` (see ``strategy.check_fixed_weights``): a mapping
+    symbol -> weight covering every symbol of the universe (0 allowed), with
+    finite non-negative values.  Fixed weights are relative, rescaled to sum
+    to 1 over the universe (keys outside it are dropped), and the strategy
+    rebalances back to them on the usual schedule; the equal-weight
+    benchmark run never sees them.  A window too short to trade (see
     :func:`check_window`) is *not* an error here: the engine runs, nothing
     trades, and the result has the same keys with zero fills and empty curves.
 
@@ -515,11 +531,12 @@ def run_backtest(
 
     ``sink`` receives every update live (a recorder is tee'd alongside it).
     """
-    from quantstack.execution.strategy import ALLOCATORS, ORDER_MODES
+    from quantstack.execution.strategy import ALLOCATORS, ORDER_MODES, check_fixed_weights
 
     t_all = time.perf_counter()
     if allocator not in ALLOCATORS:
         raise ValueError(f"allocator must be one of {ALLOCATORS}, got {allocator!r}")
+    check_fixed_weights(allocator, fixed_weights)
     if order_mode not in ORDER_MODES:
         raise ValueError(f"order_mode must be one of {ORDER_MODES}, got {order_mode!r}")
     if lookback_bars < 3 or rebalance_every < 1:
@@ -529,11 +546,12 @@ def run_backtest(
         prices = load_prices(validate_symbols(symbols), start, end)
     else:
         validate_symbols(prices.columns)
+    check_fixed_weights(allocator, fixed_weights, prices.columns)
     kw = dict(starting_cash=starting_cash, lookback_bars=lookback_bars,
               rebalance_every=rebalance_every, investment_cap=investment_cap,
               order_mode=order_mode, risk_checks=risk_checks, bar_volume=bar_volume,
               venue_name=venue, log_level=log_level)
-    main = _engine_run(prices, allocator, sink=sink, **kw)
+    main = _engine_run(prices, allocator, sink=sink, fixed_weights=fixed_weights, **kw)
     first_fill = pd.Timestamp(main.stats["first_fill_date"]) if main.stats["first_fill_date"] else None
     out = {
         "equity": main.equity,
@@ -616,6 +634,7 @@ LIGHT = {
 STRATEGY_LABELS = {  # allocator -> (legend label, title name)
     "hrp": ("HRP in NautilusTrader", "HRP"),
     "equal": ("Equal weight in NautilusTrader (monthly)", "monthly equal weight"),
+    "fixed": ("Fixed weights (user-supplied) in NautilusTrader", "fixed weights"),
 }
 
 
@@ -720,7 +739,7 @@ def sequencing_experiment(
     symbols: Sequence[str], start: str, end: str, allocator: str = "hrp",
     starting_cash: float = 1_000_000, lookback_bars: int = 252, rebalance_every: int = 21,
     investment_cap: float = 0.98, modes: Sequence[str] = ("sells_first", "buys_first"),
-    log_level: str = "OFF",
+    log_level: str = "OFF", fixed_weights: Mapping[str, float] | None = None,
 ) -> dict:
     """Re-run the backtest with the naive order sequencings (see ``strategy.py``)."""
     prices = load_prices(symbols, start, end)
@@ -729,7 +748,7 @@ def sequencing_experiment(
         r = run_backtest(symbols, start, end, allocator=allocator, starting_cash=starting_cash,
                          lookback_bars=lookback_bars, rebalance_every=rebalance_every,
                          investment_cap=investment_cap, order_mode=mode, benchmarks=False,
-                         prices=prices, log_level=log_level)
+                         prices=prices, log_level=log_level, fixed_weights=fixed_weights)
         st = r["stats"]
         row = {k: st[k] for k in ("n_orders", "n_fills", "n_denied", "n_rejected",
                                   "halted_early", "last_published_day")}
@@ -740,14 +759,15 @@ def sequencing_experiment(
 
 
 def run_sequencing_experiment_subprocess(symbols, start, end, allocator, cash, lookback,
-                                         rebalance_every, investment_cap) -> dict:
+                                         rebalance_every, investment_cap, fixed_weights=None) -> dict:
     """Run :func:`sequencing_experiment` in a fresh interpreter with logging OFF."""
     import subprocess
 
-    args = json.dumps([list(symbols), start, end, allocator, cash, lookback,
-                       rebalance_every, investment_cap])
+    args = json.dumps([[list(symbols), start, end, allocator, cash, lookback,
+                        rebalance_every, investment_cap],
+                       {"fixed_weights": None if fixed_weights is None else dict(fixed_weights)}])
     code = ("import json,sys; from quantstack.execution.backtest import sequencing_experiment as f; "
-            "a=json.loads(sys.argv[1]); print('@@'+json.dumps(f(*a)))")
+            "a,k=json.loads(sys.argv[1]); print('@@'+json.dumps(f(*a,**k)))")
     proc = subprocess.run([sys.executable, "-c", code, args], capture_output=True, text=True,
                           cwd=str(REPO_ROOT), timeout=600)
     for ln in proc.stdout.splitlines():
@@ -781,6 +801,69 @@ def _public_stats(stats: dict) -> dict:
     return {k: v for k, v in stats.items() if k not in ("weights_history", "submitted")}
 
 
+def parse_fixed_weights(spec: str) -> dict[str, float]:
+    """``--fixed-weights`` -> ``{SYMBOL: weight}``, symbols stripped and upper-cased (as ``--symbols``).
+
+    ``spec`` is one of:
+
+    * inline pairs: ``"AAPL=0.25,MSFT=0.75"``;
+    * a ``.json`` file holding one object: ``{"AAPL": 0.25, "MSFT": 0.75}``;
+    * a ``.csv`` file whose header names the columns ``symbol`` and ``weight``.
+
+    Only the syntax is checked here (numbers, no duplicate symbols, at least
+    one entry); the values are checked by ``strategy.check_fixed_weights``.
+    Raises ``ValueError``.
+    """
+    spec = spec.strip()
+    path = Path(spec)
+    suffix = path.suffix.lower()
+    if suffix in (".json", ".csv"):
+        if not path.is_file():
+            raise ValueError(f"--fixed-weights file not found: {spec}")
+        if suffix == ".json":
+            try:
+                data = json.loads(path.read_text())
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"--fixed-weights {spec}: not valid JSON ({exc})") from None
+            if not isinstance(data, dict):
+                raise ValueError(f'--fixed-weights {spec}: expected one JSON object {{"SYM": weight, ...}}')
+            pairs = list(data.items())
+        else:
+            with path.open(newline="") as fh:
+                reader = csv.DictReader(fh)
+                cols = {str(c).strip().lower(): c for c in reader.fieldnames or []}
+                if not {"symbol", "weight"} <= set(cols):
+                    raise ValueError(f"--fixed-weights {spec}: need a header with columns symbol,weight, "
+                                     f"got {reader.fieldnames}")
+                pairs = [(row[cols["symbol"]], row[cols["weight"]]) for row in reader]
+    else:
+        pairs = []
+        for item in spec.split(","):
+            if not item.strip():
+                continue
+            sym, sep, w = item.partition("=")
+            if not sep:
+                raise ValueError(f"--fixed-weights: expected SYM=WEIGHT pairs or a .json / .csv file, "
+                                 f"got {item.strip()!r}")
+            pairs.append((sym, w))
+    out: dict[str, float] = {}
+    for sym, w in pairs:
+        sym = str(sym if sym is not None else "").strip().upper()
+        if not sym:
+            raise ValueError(f"--fixed-weights: empty symbol (weight {w!r})")
+        if sym in out:
+            raise ValueError(f"--fixed-weights: duplicate symbol {sym}")
+        try:
+            if isinstance(w, bool):
+                raise TypeError
+            out[sym] = float(w)
+        except (TypeError, ValueError):
+            raise ValueError(f"--fixed-weights: weight for {sym} is not a number: {w!r}") from None
+    if not out:
+        raise ValueError("--fixed-weights: no SYM=WEIGHT entries")
+    return out
+
+
 def _display_path(path: Path) -> str:
     """Repo-relative for paths inside the repo (``results/...``), else absolute."""
     path = Path(path).resolve()
@@ -796,10 +879,16 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
     the files the CLI writes.  The benchmark and sequencing runs never see it.
     """
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--allocator", default="hrp", choices=["hrp", "equal"])
+    ap.add_argument("--allocator", default="hrp", choices=["hrp", "equal", "fixed"])
+    ap.add_argument("--fixed-weights", metavar="SPEC",
+                    help="with --allocator fixed (and only then): SYM=W,SYM2=W2 or a .json file "
+                         '{"SYM": W, ...} or a .csv file with columns symbol,weight; weights are '
+                         "relative (rescaled to sum to 1)")
     ap.add_argument("--start", default=DEFAULT_START)
     ap.add_argument("--end", default=DEFAULT_END)
-    ap.add_argument("--symbols", default=",".join(DEFAULT_SYMBOLS))
+    ap.add_argument("--symbols", default=None,
+                    help=f"comma-separated universe (default {','.join(DEFAULT_SYMBOLS)}; "
+                         "with --allocator fixed, the --fixed-weights symbols)")
     ap.add_argument("--cash", type=float, default=1_000_000)
     ap.add_argument("--lookback", type=int, default=252)
     ap.add_argument("--rebalance-every", type=int, default=21)
@@ -813,8 +902,20 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
     figs = results / "figures"
     t0 = time.perf_counter()
     # ---- validate before any engine is built (argparse's error(): message + exit status 2)
+    from quantstack.execution.strategy import check_fixed_weights, normalise_fixed_weights
+
+    fixed = None
     try:
-        symbols = validate_symbols([s for s in args.symbols.split(",") if s.strip()])
+        if args.allocator == "fixed" and args.fixed_weights is None:
+            raise ValueError("--allocator fixed needs --fixed-weights (SYM=W,... or a .json / .csv file)")
+        if args.fixed_weights is not None and args.allocator != "fixed":
+            raise ValueError(f"--fixed-weights is only used with --allocator fixed, not {args.allocator}")
+        if args.fixed_weights is not None:
+            fixed = parse_fixed_weights(args.fixed_weights)
+            check_fixed_weights(args.allocator, fixed)
+        universe = args.symbols if args.symbols is not None else ",".join(fixed or DEFAULT_SYMBOLS)
+        symbols = validate_symbols([s for s in universe.split(",") if s.strip()])
+        check_fixed_weights(args.allocator, fixed, symbols)
         if args.lookback < 3 or args.rebalance_every < 1:
             raise ValueError("--lookback must be >= 3 and --rebalance-every >= 1")
         prices = load_prices(symbols, args.start, args.end)
@@ -824,7 +925,7 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
     res = run_backtest(symbols, args.start, args.end, allocator=args.allocator,
                        starting_cash=args.cash, lookback_bars=args.lookback,
                        rebalance_every=args.rebalance_every, investment_cap=args.investment_cap,
-                       prices=prices, sink=sink)
+                       prices=prices, sink=sink, fixed_weights=fixed)
     if res["first_fill"] is None:  # not expected once check_window passed; never write empty files
         ap.exit(2, f"{ap.prog}: error: the backtest produced no fills "
                    f"(orders {res['stats']['n_orders']}, denied {res['stats']['n_denied']}, "
@@ -845,7 +946,7 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
     if not args.no_sequencing_experiment:
         seq = run_sequencing_experiment_subprocess(
             symbols, args.start, args.end, alloc, args.cash, args.lookback,
-            args.rebalance_every, args.investment_cap)
+            args.rebalance_every, args.investment_cap, fixed_weights=fixed)
         st = res["stats"]
         seq["two_phase"] = {k: st[k] for k in ("n_orders", "n_fills", "n_denied", "n_rejected",
                                                "halted_early", "last_published_day")}
@@ -887,7 +988,10 @@ def main(argv: Sequence[str] | None = None, *, sink: DashboardSink | None = None
                    "rebalance_every": args.rebalance_every, "investment_cap": args.investment_cap,
                    "order_mode": "two_phase", "venue": DEFAULT_VENUE, "oms": "NETTING",
                    "account": "CASH", "fill_model": "default", "fees": "none",
-                   "bar_volume": DEFAULT_BAR_VOLUME, "risk_checks_close_trades": True},
+                   "bar_volume": DEFAULT_BAR_VOLUME, "risk_checks_close_trades": True,
+                   **({"fixed_weights": fixed,  # as supplied, then as traded (rescaled over the universe)
+                       "fixed_weights_normalised": normalise_fixed_weights(fixed, symbols)}
+                      if fixed is not None else {})},
         "fills": res["stats"]["n_fills"],
         "orders": res["stats"]["n_orders"],
         "rejections": res["stats"]["n_rejected"],

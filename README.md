@@ -311,6 +311,9 @@ Lookback 252 bars, rebalance every 21 days, 98% investment cap.
 The first rebalance is 2016-12-30; there are 72 in total.
 
 **Run.** `make execution` writes `results/execution_*.csv`, `execution_summary.json` and the figure.
+`python -m quantstack.execution.backtest --allocator {hrp,equal,fixed}` picks the allocator.
+`--allocator fixed --fixed-weights AAPL=0.6,MSFT=0.4` (or a `.json` object, or a `.csv` with columns `symbol,weight`) rebalances to that constant vector on the same schedule, against the same equal-weight benchmarks.
+Weights are relative (rescaled to sum to 1) and `--symbols` defaults to the names given; pass `--results-dir` to keep the canonical files.
 
 | | HRP in the engine | Equal weight in the engine, monthly | Equal weight, pandas buy-and-hold |
 |---|---|---|---|

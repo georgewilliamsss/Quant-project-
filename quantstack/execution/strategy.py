@@ -105,14 +105,20 @@ Allocators
 ``"hrp"``: ``skfolio.optimization.HierarchicalRiskParity()`` with its
 defaults, fitted through ``contracts.fit_weights`` (the contract, not
 ``quantstack.allocation``, which is built concurrently).  ``"equal"``: 1/N.
-Both run on the same schedule (first rebalance once warmed up, then every
-``rebalance_every`` days), so a comparison isolates the weighting scheme.
+``"fixed"``: a caller-supplied constant vector (``fixed_weights``, symbol ->
+weight), rescaled to sum to 1 over the universe (see
+:func:`normalise_fixed_weights`), so the book is pulled back to the same
+target at every rebalance.  All run on the same schedule (first rebalance
+once warmed up, then every ``rebalance_every`` days), so a comparison
+isolates the weighting scheme.
 """
 
 from __future__ import annotations
 
+import math
 import time
 from collections import deque
+from collections.abc import Iterable, Mapping
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
@@ -143,7 +149,7 @@ from quantstack.contracts import (
     validate_weights,
 )
 
-ALLOCATORS = ("hrp", "equal")
+ALLOCATORS = ("hrp", "equal", "fixed")
 ORDER_MODES = ("two_phase", "sells_first", "buys_first")
 
 
@@ -155,6 +161,9 @@ class SkfolioRebalanceConfig(StrategyConfig, frozen=True):
     deployed; the remaining cash buffer absorbs rounding and price drift.
     ``order_mode`` is ``"two_phase"`` for real runs; the other two modes exist
     to reproduce the failure modes documented in the module docstring.
+    ``fixed_weights`` (symbol -> weight, keyed like ``InstrumentId.symbol``,
+    e.g. ``"AAPL"``) is required with ``allocator="fixed"`` and must be
+    ``None`` otherwise; see :func:`check_fixed_weights`.
     """
 
     instrument_ids: list[InstrumentId]
@@ -164,6 +173,60 @@ class SkfolioRebalanceConfig(StrategyConfig, frozen=True):
     investment_cap: float = 0.98
     allocator: str = "hrp"
     order_mode: str = "two_phase"
+    fixed_weights: dict[str, float] | None = None
+
+
+def check_fixed_weights(
+    allocator: str,
+    fixed_weights: Mapping[str, float] | None,
+    symbols: Iterable[str] | None = None,
+) -> None:
+    """Raise ``ValueError`` unless ``fixed_weights`` fits ``allocator`` (and the universe).
+
+    ``allocator="fixed"`` needs a non-empty mapping symbol -> weight whose
+    values are finite and non-negative; any other allocator needs ``None``.
+    With ``symbols`` (the universe) it also runs
+    :func:`normalise_fixed_weights`, so a universe symbol without a weight, or
+    weights summing to zero over the universe, fail here rather than at the
+    first rebalance.
+    """
+    if allocator != "fixed":
+        if fixed_weights is not None:
+            raise ValueError(f"fixed_weights is only used with allocator='fixed', got allocator={allocator!r}")
+        return
+    if not isinstance(fixed_weights, Mapping) or not fixed_weights:
+        raise ValueError("allocator='fixed' needs fixed_weights: a non-empty mapping symbol -> weight, "
+                         f"got {fixed_weights!r}")
+    for symbol, w in fixed_weights.items():
+        try:
+            w = float(w)
+        except (TypeError, ValueError):
+            raise ValueError(f"fixed weight for {symbol!r} is not a number: {w!r}") from None
+        if not math.isfinite(w) or w < 0:
+            raise ValueError(f"fixed weight for {symbol!r} must be finite and >= 0, got {w}")
+    if symbols is not None:
+        normalise_fixed_weights(fixed_weights, symbols)
+
+
+def normalise_fixed_weights(fixed_weights: Mapping[str, float], symbols: Iterable[str]) -> dict[str, float]:
+    """``fixed_weights`` restricted to ``symbols`` and rescaled to sum to 1, as validated ``Weights``.
+
+    Fixed weights are relative: ``{"A": 2, "B": 1, "C": 1}`` and
+    ``{"A": 0.5, "B": 0.25, "C": 0.25}`` both mean 50/25/25 (the investment
+    cap then applies as for every allocator).  Keys not in ``symbols`` are
+    dropped before rescaling.  Every symbol needs a weight (0 to hold none):
+    a missing one raises ``ValueError``, as does a zero total.
+    """
+    symbols = [str(s) for s in symbols]
+    missing = [s for s in symbols if s not in fixed_weights]
+    if missing:
+        raise ValueError(f"fixed_weights has no weight for {missing}; every symbol of the universe "
+                         f"{symbols} needs one (0 to hold none), got keys {sorted(fixed_weights)}")
+    raw = {s: float(fixed_weights[s]) for s in symbols}
+    total = sum(raw.values())
+    if not total > 0:
+        raise ValueError(f"fixed weights over {symbols} sum to {total}; need a positive total")
+    return validate_weights({s: w / total for s, w in raw.items()})
 
 
 def _ns_to_date(ts_ns: int) -> date:
@@ -195,6 +258,7 @@ class SkfolioRebalance(Strategy):
             raise ValueError("lookback_bars must be >= 3 and rebalance_every >= 1")
         self.sink: DashboardSink = sink if sink is not None else NullSink()
         self.symbols: list[str] = [iid.symbol.value for iid in config.instrument_ids]
+        check_fixed_weights(config.allocator, config.fixed_weights, self.symbols)
         self.ids: dict[str, InstrumentId] = {iid.symbol.value: iid for iid in config.instrument_ids}
         self.venue = config.instrument_ids[0].venue
         self.closes: dict[str, deque] = {s: deque(maxlen=config.lookback_bars) for s in self.symbols}
@@ -238,6 +302,11 @@ class SkfolioRebalance(Strategy):
                 self.stop()
                 return
             self.instruments[s] = inst
+        if self.config.fixed_weights is not None:
+            ignored = sorted(set(self.config.fixed_weights) - set(self.symbols))
+            if ignored:
+                self.log.warning(f"fixed_weights for {ignored} ignored: not in the universe {self.symbols}; "
+                                 "the rest are rescaled to sum to 1")
         for bt in self.config.bar_types:
             self.subscribe_bars(bt)
 
@@ -331,6 +400,8 @@ class SkfolioRebalance(Strategy):
         if self.config.allocator == "equal":
             n = returns.shape[1]
             return validate_weights({s: 1.0 / n for s in returns.columns})
+        if self.config.allocator == "fixed":
+            return normalise_fixed_weights(self.config.fixed_weights, returns.columns)
         from skfolio.optimization import HierarchicalRiskParity
 
         return fit_weights(HierarchicalRiskParity(), returns)
@@ -442,4 +513,5 @@ class SkfolioRebalance(Strategy):
         self._sell_done(event.client_order_id.value)
 
 
-__all__ = ["SkfolioRebalance", "SkfolioRebalanceConfig", "ALLOCATORS", "ORDER_MODES"]
+__all__ = ["SkfolioRebalance", "SkfolioRebalanceConfig", "ALLOCATORS", "ORDER_MODES",
+           "check_fixed_weights", "normalise_fixed_weights"]

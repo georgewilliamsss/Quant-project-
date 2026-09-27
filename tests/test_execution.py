@@ -7,6 +7,7 @@ The full 8-name 2016-2022 run is marked ``slow``.
 
 from __future__ import annotations
 
+import json
 import math
 
 import numpy as np
@@ -28,6 +29,7 @@ from quantstack.execution.backtest import (
     check_window,
     equal_weight_pandas,
     equity_columns,
+    parse_fixed_weights,
     perf_metrics,
     plot_equity,
     run_backtest,
@@ -312,7 +314,15 @@ def test_invalid_allocator_and_prices_columns_raise_before_the_engine(monkeypatc
     [(["--start", "2022-06-01"], "more than lookback_bars=252"),
      (["--symbols", "AAPL"], "at least 2"),
      (["--symbols", "AAPL,AAPL"], "duplicate"),
-     (["--symbols", "AAPL,NOPE"], "NOPE")],
+     (["--symbols", "AAPL,NOPE"], "NOPE"),
+     (["--allocator", "fixed"], "--allocator fixed needs --fixed-weights"),
+     (["--fixed-weights", "AAPL=0.5,MSFT=0.5"], "only used with --allocator fixed, not hrp"),
+     (["--allocator", "equal", "--fixed-weights", "AAPL=1,MSFT=1"], "only used with --allocator fixed"),
+     (["--allocator", "fixed", "--fixed-weights", "AAPL"], "expected SYM=WEIGHT"),
+     (["--allocator", "fixed", "--fixed-weights", "AAPL=-1,MSFT=2"], "must be finite and >= 0"),
+     (["--allocator", "fixed", "--fixed-weights", "AAPL=1,MSFT=1", "--symbols", "AAPL,MSFT,JPM"],
+      "no weight for ['JPM']"),
+     (["--allocator", "fixed", "--fixed-weights", "AAPL=1,NOPE=1"], "NOPE")],
 )
 def test_cli_rejects_bad_inputs_with_exit_code_2(tmp_path, capsys, argv, message):
     out = tmp_path / "results"
@@ -362,6 +372,160 @@ def test_perf_metrics_on_synthetic_curve():
     p = pd.DataFrame({"A": [1.0, 2.0, 2.0], "B": [1.0, 1.0, 0.5]}, index=idx[:3])
     ew = equal_weight_pandas(p, idx[1], 100.0)
     assert ew.iloc[0] == 100.0 and ew.iloc[1] == 100.0 and ew.iloc[2] == pytest.approx(75.0)
+
+
+# ----------------------------------------------------------------------------- fixed weights
+
+FIXED_SYMS = ["AAA", "BBB", "CCC", "DDD"]
+FIXED_W = {"AAA": 0.4, "BBB": 0.3, "CCC": 0.2, "DDD": 0.1}
+
+
+@pytest.fixture(scope="module")
+def synthetic_prices():
+    """Four seeded geometric random walks from $100 over 180 business days."""
+    rng = np.random.default_rng(7)
+    idx = pd.bdate_range("2019-01-01", periods=180, name="Date")
+    rets = rng.normal(0.0003, 0.012, size=(len(idx), len(FIXED_SYMS)))
+    return pd.DataFrame(100 * np.exp(np.cumsum(rets, axis=0)), index=idx, columns=FIXED_SYMS)
+
+
+@pytest.fixture(scope="module")
+def fixed_run(synthetic_prices):
+    return run_backtest(prices=synthetic_prices, allocator="fixed", fixed_weights=FIXED_W,
+                        lookback_bars=20, rebalance_every=21)
+
+
+def _strategy(allocator, fixed_weights, symbols=FIXED_SYMS):
+    """A ``SkfolioRebalance`` built by hand (no engine): its own checks and ``compute_weights``."""
+    from quantstack.execution.strategy import SkfolioRebalance, SkfolioRebalanceConfig
+
+    inst = make_instruments(symbols)
+    bts = make_bar_types(inst)
+    cfg = SkfolioRebalanceConfig(instrument_ids=[inst[s].id for s in symbols],
+                                 bar_types=[bts[s] for s in symbols],
+                                 allocator=allocator, fixed_weights=fixed_weights)
+    return SkfolioRebalance(cfg)
+
+
+def test_fixed_allocator_rebalances_to_the_supplied_weights(fixed_run, tmp_path):
+    res = fixed_run
+    st = res["stats"]
+    assert st["allocator"] == "fixed"
+    assert st["n_fills"] > 0 and st["n_fills"] == st["n_orders"]
+    assert st["n_denied"] == 0 and st["n_rejected"] == 0 and not st["halted_early"]
+    assert st["n_rebalances"] >= 5
+    # the weights file: one row per rebalance, each row the supplied vector
+    paths = write_results(res, tmp_path)
+    assert paths["weights_csv"] == tmp_path / "execution_weights_fixed.csv"
+    w = pd.read_csv(paths["weights_csv"])
+    assert list(w.columns) == ["date", *FIXED_SYMS] and len(w) == st["n_rebalances"]
+    np.testing.assert_allclose(w[FIXED_SYMS].to_numpy(),
+                               np.tile([FIXED_W[s] for s in FIXED_SYMS], (len(w), 1)), rtol=0, atol=1e-6)
+    # ... and traded: the first rebalance buys investment_cap * w of the $1M, to within one share
+    f = res["fills"]
+    day0 = f[f["ts"].str[:10] == st["first_fill_date"]]
+    assert set(day0["side"]) == {"BUY"} and set(day0["symbol"]) == set(FIXED_SYMS)
+    for _, row in day0.iterrows():
+        shortfall = 0.98 * FIXED_W[row["symbol"]] * 1_000_000 - row["qty"] * row["price"]
+        assert -1e-6 <= shortfall < row["price"]
+    # layout follows the <allocator> convention; the 1/N benchmark never sees the fixed vector
+    assert list(res["curves"].columns) == equity_columns("fixed") == [
+        "equity_fixed", "equity_equal_engine", "equity_equal_pandas"]
+    assert read_equity_csv(paths["equity_csv"]).name == "equity_fixed"
+    bench = pd.DataFrame(res["equal_engine"]["stats"]["weights_history"]).set_index("date")
+    assert res["equal_engine"]["stats"]["allocator"] == "equal" and np.allclose(bench.to_numpy(), 0.25)
+
+
+@pytest.mark.parametrize(
+    "weights, expected",
+    [({"AAA": 40, "BBB": 30, "CCC": 20, "DDD": 10}, [0.4, 0.3, 0.2, 0.1]),       # percentages
+     ({"AAA": 0.2, "BBB": 0.1, "CCC": 0.1, "DDD": 0.0}, [0.5, 0.25, 0.25, 0.0]),  # under 1, a zero
+     ({"AAA": 1, "BBB": 1, "CCC": 1, "DDD": 1, "ZZZ": 4}, [0.25] * 4)],         # ZZZ not traded: dropped
+)
+def test_fixed_weights_are_rescaled_to_sum_to_one(weights, expected):
+    """Documented behaviour: fixed weights are relative, rescaled over the universe (never rejected
+    for their sum); the investment cap then applies as for HRP and 1/N."""
+    returns = pd.DataFrame(np.zeros((5, len(FIXED_SYMS))), columns=FIXED_SYMS)
+    w = _strategy("fixed", weights).compute_weights(returns)
+    assert list(w) == FIXED_SYMS
+    assert [w[s] for s in FIXED_SYMS] == pytest.approx(expected, abs=1e-12)
+    assert sum(w.values()) == pytest.approx(1.0, abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    "allocator, weights, match",
+    [("fixed", None, "needs fixed_weights"),
+     ("fixed", {}, "needs fixed_weights"),
+     ("equal", FIXED_W, "only used with allocator='fixed'"),
+     ("hrp", FIXED_W, "only used with allocator='fixed'"),
+     ("fixed", {**FIXED_W, "AAA": -0.1}, "finite and >= 0"),
+     ("fixed", {**FIXED_W, "AAA": float("nan")}, "finite and >= 0"),
+     ("fixed", {**FIXED_W, "AAA": float("inf")}, "finite and >= 0"),
+     ("fixed", {**FIXED_W, "AAA": "heavy"}, "not a number"),
+     ("fixed", {"AAA": 0.5, "BBB": 0.5}, r"no weight for \['CCC', 'DDD'\]"),
+     ("fixed", dict.fromkeys(FIXED_SYMS, 0.0), "positive total")],
+)
+def test_fixed_weights_checked_before_the_engine_and_by_the_strategy(
+        monkeypatch, synthetic_prices, allocator, weights, match):
+    monkeypatch.setattr(bt_mod, "_engine_run", lambda *a, **k: pytest.fail("engine started"))
+    with pytest.raises(ValueError, match=match):
+        run_backtest(prices=synthetic_prices, allocator=allocator, fixed_weights=weights, **FAST)
+    with pytest.raises(ValueError, match=match):  # the strategy enforces the same contract itself
+        _strategy(allocator, weights)
+
+
+def test_parse_fixed_weights_inline_json_and_csv(tmp_path):
+    expected = {"AAPL": 0.25, "MSFT": 0.75}
+    assert parse_fixed_weights("AAPL=0.25,MSFT=0.75") == expected
+    assert parse_fixed_weights(" aapl = 0.25 , msft=0.75, ") == expected  # normalised like --symbols
+    (tmp_path / "w.json").write_text('{"AAPL": 0.25, "msft": 0.75}')
+    assert parse_fixed_weights(str(tmp_path / "w.json")) == expected
+    (tmp_path / "w.csv").write_text("Symbol, Weight ,note\nAAPL,0.25,core\nMSFT,0.75,\n")
+    assert parse_fixed_weights(str(tmp_path / "w.csv")) == expected
+    (tmp_path / "W.JSON").write_text('{"AAPL": 1, "MSFT": 3}')  # ints; suffix case-insensitive
+    assert parse_fixed_weights(str(tmp_path / "W.JSON")) == {"AAPL": 1.0, "MSFT": 3.0}
+    assert list(parse_fixed_weights("MSFT=1,AAPL=3")) == ["MSFT", "AAPL"]  # order kept (default universe)
+
+
+@pytest.mark.parametrize(
+    "spec, files, match",
+    [("AAPL", {}, "expected SYM=WEIGHT"),
+     ("AAPL=x", {}, "not a number"),
+     ("AAPL=1,aapl=2", {}, "duplicate symbol AAPL"),
+     (" , ", {}, "no SYM=WEIGHT"),
+     ("=0.5", {}, "empty symbol"),
+     ("missing.json", {}, "not found"),
+     ("w.json", {"w.json": '[["AAPL", 1]]'}, "one JSON object"),
+     ("w.json", {"w.json": "{AAPL: 1}"}, "not valid JSON"),
+     ("w.json", {"w.json": '{"AAPL": true}'}, "not a number"),
+     ("w.csv", {"w.csv": "ticker,w\nAAPL,1\n"}, "symbol,weight"),
+     ("w.csv", {"w.csv": "symbol,weight\nAAPL,\n"}, "not a number")],
+)
+def test_parse_fixed_weights_rejects_bad_specs(tmp_path, monkeypatch, spec, files, match):
+    for name, text in files.items():
+        (tmp_path / name).write_text(text)
+    monkeypatch.chdir(tmp_path)  # relative file specs resolve here
+    with pytest.raises(ValueError, match=match):
+        parse_fixed_weights(spec)
+
+
+def test_cli_fixed_allocator_end_to_end(tmp_path):
+    """--fixed-weights from a CSV of percentages; --symbols defaults to its symbols."""
+    out = tmp_path / "results"
+    (tmp_path / "mine.csv").write_text("symbol,weight\nAAPL,50\nMSFT,30\nJPM,20\n")
+    bt_mod.main(["--allocator", "fixed", "--fixed-weights", str(tmp_path / "mine.csv"),
+                 "--start", START, "--end", END, "--lookback", "60", "--no-sequencing-experiment",
+                 "--results-dir", str(out)])
+    summary = json.loads((out / "execution_summary.json").read_text())
+    assert summary["universe"] == SYMS
+    assert summary["config"]["fixed_weights"] == {"AAPL": 50.0, "MSFT": 30.0, "JPM": 20.0}
+    assert summary["config"]["fixed_weights_normalised"] == pytest.approx({"AAPL": 0.5, "MSFT": 0.3, "JPM": 0.2})
+    assert summary["fixed"]["stats"]["allocator"] == "fixed"
+    assert summary["fills"] > 0 and summary["denied"] == 0 and summary["rejections"] == 0
+    assert summary["outputs"]["weights_csv"].endswith("execution_weights_fixed.csv")
+    assert equity_csv_columns(out / "execution_equity.csv") == equity_columns("fixed")
+    w = pd.read_csv(out / "execution_weights_fixed.csv")
+    np.testing.assert_allclose(w[SYMS].to_numpy(), np.tile([0.5, 0.3, 0.2], (len(w), 1)), rtol=0, atol=1e-6)
 
 
 # ----------------------------------------------------------------------------- slow
