@@ -19,7 +19,7 @@ It reproduces the article "Five Repos, One Engine: Wiring the Open-Source Quant 
 | Execution | NautilusTrader 1.231.0 | `quantstack/execution/backtest.py` | 573 fills, 0 rejections; HRP 1M to 2,479,775.76 |
 | Display | Perspective 5.5.1 | `quantstack/dashboard/server.py` | indexed tables over a same-origin websocket |
 
-Contents: [Quick start](#quick-start) · [The four wires](#the-four-wires) · [Pricing](#pricing-quantlib) · [Risk](#risk-ore) · [Bridge](#the-bridge-test-ore-to-standalone-quantlib) · [Sizing](#sizing-skfolio) · [Execution](#execution-nautilustrader) · [Display](#display-perspective) · [Version skew](#version-skew-is-the-tax) · [Takeaways](#the-articles-five-takeaways) · [Limits](#what-this-is-and-is-not) · [Repo map](#repo-map) · [Contributing](#contributing) · [Credits](#credits)
+Contents: [Quick start](#quick-start) · [The four wires](#the-four-wires) · [Pricing](#pricing-quantlib) · [Risk](#risk-ore) · [Bridge](#the-bridge-test-ore-to-standalone-quantlib) · [Sizing](#sizing-skfolio) · [Execution](#execution-nautilustrader) · [Display](#display-perspective) · [Thesis run](#thesis-portfolio-run) · [Version skew](#version-skew-is-the-tax) · [Takeaways](#the-articles-five-takeaways) · [Limits](#what-this-is-and-is-not) · [Repo map](#repo-map) · [Contributing](#contributing) · [Credits](#credits)
 
 ## Quick start
 
@@ -36,6 +36,7 @@ make check        # all five libraries import in ONE process and print their ver
 make all          # python scripts/run_all.py: every stage in one process, regenerates results/
 make quick        # python scripts/run_all.py --quick: 16 ORE paths, short backtest, writes results/quick/
 make serve        # python scripts/run_all.py --serve: full run, dashboard stays up on 127.0.0.1:8080
+make thesis       # the thesis book under its own weights, 80/20, equal weight and HRP; writes results/thesis/thesis5y/
 make dashboard    # replay the committed results/ on http://127.0.0.1:8080 (no auth: localhost only)
 make test-fast    # everything except the end-to-end runs
 make test-slow    # ORE 1000-path run, full backtest, run_all --quick, browser test
@@ -315,6 +316,16 @@ The first rebalance is 2016-12-30; there are 72 in total.
 `--allocator fixed --fixed-weights AAPL=0.6,MSFT=0.4` (or a `.json` object, or a `.csv` with columns `symbol,weight`) rebalances to that constant vector on the same schedule, against the same equal-weight benchmarks.
 Weights are relative (rescaled to sum to 1) and `--symbols` defaults to the names given; pass `--results-dir` to keep the canonical files.
 
+**Price ticks and weight tracking.** Each instrument's tick comes from its own data.
+A name whose closes are all >= 1 keeps the 0.01 tick.
+A cheaper one gets `ceil(-log10(min_close)) + 3` decimals (at least 4 significant digits, at most 9), so sub-penny names are marked and traded at their real price.
+Any close that is not positive after rounding stops the run with an error naming the symbol and date.
+Positions are whole units, so a high-priced name with a small weight lands under its target.
+Each run writes `execution_weights_<allocator>_achieved.csv` (the weights actually held after every rebalance, same layout as `execution_weights_<allocator>.csv`), and `stats["weight_tracking"]` in the summary reports the mean and max gap between `investment_cap x target` and achieved weight, per symbol and overall.
+With `--allocator fixed`, the weights must name exactly the traded symbols; a missing or extra symbol is an error.
+JSON files may not repeat a key, and files exported from Excel with a UTF-8 BOM are accepted.
+`run_backtest(prices=panel)` trades the panel's columns; if you also pass `symbols`, it must name the same set.
+
 | | HRP in the engine | Equal weight in the engine, monthly | Equal weight, pandas buy-and-hold |
 |---|---|---|---|
 | Final equity from $1M | 2,479,775.76 | 2,838,765.94 | 2,804,157.82 |
@@ -403,6 +414,68 @@ The page loads the pinned `@perspective-dev/*` 5.5.1 JavaScript from jsdelivr; `
 
 ![Dashboard in headless Chromium](results/figures/dashboard_screenshot.png)
 
+## Thesis portfolio run
+
+**What it does.** `quantstack/thesis/` runs the user's own two-sleeve book through the same NautilusTrader engine under four weighting schemes, then writes a side-by-side comparison.
+The book is `data/thesis/thesis_holdings.csv`: 14 core lines and 40 moonshot lines, GBP 200,000, split 80/20.
+Prices come from the thesis build's `prices_gbp_daily.csv` at the repository root, checked against `_price_panel_manifest.json`.
+
+| Scheme | Engine allocator | Target weights |
+|---|---|---|
+| `own_weights` | `fixed` | the thesis's `weight_total`, renormalised over the names with usable prices, so excluded weight is spread pro rata |
+| `own_weights_8020` | `fixed` | the same weights renormalised within each sleeve, so core and moonshot keep 80/20 |
+| `equal_weight` | `equal` | 1/N over the same names |
+| `hrp_optimised` | `hrp` | the pipeline's own optimiser: skfolio's HRP, refitted on the trailing lookback window at every rebalance |
+
+The fixed schemes are pulled back to their targets every 21 trading days.
+All schemes share the window, the schedule, the cash and the fills described under [Execution](#execution-nautilustrader), and each run also gets the engine's equal-weight benchmark and the pandas buy-and-hold.
+
+**Presets.**
+
+| Preset | Window | Warm-up | Names | Purpose |
+|---|---|---|---|---|
+| `thesis5y` (default) | 2020-12-10 to 2026-09-16 | 193 bars | 35 | first fill on 2021-09-16, the thesis's base date: the thesis's own 5-year window |
+| `broad1y` | 2024-09-26 to 2026-09-16 | 252 bars | 50 | every name with a year of history; about one year of trading |
+| `all54` | 2026-06-12 to 2026-09-16 | 21 bars | 54 | the only window with every name; a plumbing and weight check, not performance evidence (no 80/20 run: nothing is excluded) |
+
+A name listed after the window starts is excluded, with the reason recorded; in `thesis5y` that is SPCX and 18 moonshots, 11% of the book.
+`own_weights` then holds core 87.6% and moonshot 12.4%, which is why `own_weights_8020` exists.
+`--start`, `--end`, `--lookback` and `--rebalance-every` override a preset.
+
+**Run.**
+
+```bash
+make thesis         # python -m quantstack.thesis.run: preset thesis5y, four schemes, dashboard replays
+make thesis-quick   # 6 names over the last 400 bars, no replays (~7 s); writes results/quick/thesis/ (gitignored)
+python -m quantstack.thesis.run --preset broad1y
+```
+
+Other options: `--schemes`, `--cash`, `--investment-cap`, `--max-ffill-gap`, `--strict-calendar`, `--no-rescale`, `--no-repairs`, `--no-dashboard`, `--prices`, `--holdings`, `--results`.
+Bad inputs exit with status 2 before any engine is built; a scheme that fails inside the engine is recorded, the others still run, and the exit status is 1.
+
+**Data handling.** The panel is a GBP total-return index (dividends reinvested, FX applied), not share prices: BRK-B's level is in the tens of thousands and LTBR's below 0.01.
+Before the window is cut, `thesis/repairs.py` divides MSCL.TO's levels before two unadjusted share consolidations (1:12 on 2026-02-02, plausible; about 1:21 on 2021-08-19, unverified), and logs both.
+Gaps of up to 3 bars are forward-filled, matching the build's own rule (only DBMG.L on 2025-04-22/23); longer gaps are an error, and nothing is back-filled.
+Each column is then rescaled so its minimum over the window is 100, which leaves returns unchanged.
+The engine trades a GBP 100,000,000 book in whole shares at 99% invested, so rounding stays under 2% of the smallest thesis line; curves and final equity are reported scaled to the GBP 200,000 book.
+
+**Outputs** (under `results/thesis/<preset>/`):
+
+```text
+thesis_summary.json    config, panel check, repairs, included and excluded names, sleeve splits, per-scheme metrics
+thesis_comparison.md   metrics (Sharpe at rf 0 and at the thesis's 3.75%), the thesis's own figures, weights,
+                       target vs achieved weights, in-sample allocation stage, caveats
+thesis_equity.csv      date, equity_<scheme> (GBP 200,000 book) for each scheme, then equity_<scheme>_engine
+data_availability.csv  per holding: first and last level, gaps, largest daily move, included or why not
+figures/               thesis_equity.png (log scale, drawdowns), thesis_weights.png (one panel per scheme)
+allocation/            thesis, 1/N, HRP, Max Sharpe and inverse-variance weights on the whole window, scored in-sample
+own_weights/  own_weights_8020/  equal_weight/  hrp_optimised/
+                       the execution module's files for each run, plus dashboard_summary.json from the replay
+```
+
+**Read the own-weights runs with care.** The thesis picked its names and weights in September 2026, with hindsight over the whole window, so backtesting them from 2021 flatters them.
+The comparison lists this with the other caveats: no costs, fills at the signal's own close, stale prints in the thinnest names, and per-scheme files that label GBP amounts as USD.
+
 ## Version skew is the tax
 
 Each item was hit while building this repo and is handled in code.
@@ -466,6 +539,12 @@ quantstack/
     data.py               skfolio dataset -> Nautilus instruments, bars, close trades
     strategy.py           SkfolioRebalance: HRP inside on_bar, two-phase orders
     backtest.py           engine setup, benchmarks, sequencing experiment, results/execution_*
+  thesis/
+    universe.py           thesis_holdings.csv -> tickers, sleeves, weights; both renormalisations
+    data.py               GBP panel loader, manifest check, availability, window policy, rescaling
+    repairs.py            documented level repairs (unadjusted share consolidations), logged
+    report.py             in-sample stats, thesis_comparison.md, the two thesis figures
+    run.py                presets, run_thesis + CLI: own weights, 80/20, equal weight, HRP in NautilusTrader
   dashboard/
     server.py             PerspectiveSink, origin-checked Tornado app, replay, self-test, CLI
     static/index.html     two <perspective-viewer> panels, pinned @perspective-dev 5.5.1
@@ -476,6 +555,7 @@ tests/
   conftest.py             imports ORE first for the whole session
   test_contracts.py  test_pricing.py  test_allocation.py  test_risk.py
   test_bridge.py     test_execution.py  test_dashboard.py  test_run_all.py
+  test_thesis.py
 results/
   *_summary.json, *.csv   canonical outputs quoted in this README
   run_all_summary.json    per-stage numbers and timings of the one-process run

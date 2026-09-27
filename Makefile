@@ -2,7 +2,7 @@
 PY ?= .venv/bin/python
 UV ?= uv
 
-.PHONY: venv install check pricing allocation risk bridge execution dashboard all quick serve test test-fast test-slow clean
+.PHONY: venv install check pricing allocation risk bridge execution thesis thesis-quick dashboard all quick serve test test-fast test-slow clean
 
 venv:        ## creates .venv only if it does not exist yet
 	test -x $(PY) || $(UV) venv .venv --python 3.13
@@ -27,6 +27,12 @@ bridge: risk ## ORE curve -> standalone QuantLib re-price (the 1 bp bridge test)
 
 execution:   ## NautilusTrader backtest with skfolio HRP inside the event loop
 	$(PY) -m quantstack.execution.backtest
+
+thesis:      ## the thesis book (data/thesis/) in NautilusTrader: own weights, 80/20, equal weight, HRP -> results/thesis/thesis5y/
+	$(PY) -m quantstack.thesis.run
+
+thesis-quick: ## same, 6 names over the last 400 bars, no dashboard replay (~7 s; writes results/quick/thesis/, gitignored)
+	$(PY) -m quantstack.thesis.run --quick --no-dashboard
 
 dashboard:   ## Perspective server on http://127.0.0.1:8080 (replays results/, no auth: localhost only)
 	$(PY) -m quantstack.dashboard.server --port 8080
