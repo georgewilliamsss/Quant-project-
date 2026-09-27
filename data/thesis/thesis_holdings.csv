@@ -1,0 +1,55 @@
+ticker,name,sleeve,exchange,currency,sector,weight_total,weight_sleeve,gbp_invested,price_local,shares,notes
+IITU.L,iShares S&P 500 Information Technology Sector UCITS ETF (Acc),core,LSE,GBP,Equity ETF,0.043155,0.053943,8623.73,37.99,227,
+ISF.L,iShares Core FTSE 100 UCITS ETF (Dist),core,LSE,GBP,Equity ETF,0.108282,0.135353,21656.34,10.462,2070,
+SMGB.L,VanEck Semiconductor UCITS ETF,core,LSE,GBP,Equity ETF,0.132842,0.166052,26565.88,76.78,346,Largest weight in the book; contributes 35.8% of ex-ante portfolio risk (key concentration).
+SGLN.L,iShares Physical Gold ETC,core,LSE,GBP,Commodity,0.11863,0.148288,23700.6,62.7,378,Near-zero beta (0.05); commodity group sits at 20% ceiling almost entirely because of this line.
+BRNT.L,WisdomTree Brent Crude Oil,core,LSE,GBP,Commodity,0.04137,0.051712,8218.71,73.3813,112,
+RR.L,Rolls-Royce Holdings plc,core,LSE,GBP,Stock (Industrials),0.04,0.05,7995.33,14.406,555,Binding at single-stock 5% cap; user-named position.
+PLTR,Palantir Technologies Inc.,core,NYSE,USD,Stock (Tech),0.04,0.05,7893.1,129.3951,61,Binding at single-stock 5% cap; user-named position; price quoted in GBP in thesis.
+SPCX,Space Exploration Technologies Corp. (SpaceX),core,NASDAQ,USD,Stock (Aerospace),0.02,0.025,3919.41,111.9831,35,"67 bars of history; fixed 2.5%-of-core policy weight, excluded from thesis optimiser/covariance; price quoted in GBP in thesis."
+AZN.L,AstraZeneca PLC,core,LSE,GBP,Stock (Pharma),0.008621,0.010777,1699.04,121.36,14,
+SHEL.L,Shell plc,core,LSE,GBP,Stock (Energy),0.04,0.05,7975.6,35.765,223,Binding at single-stock 5% cap; user-named position.
+HSBA.L,HSBC Holdings plc,core,LSE,GBP,Stock (Financials),0.04,0.05,7991.34,15.078,530,Binding at single-stock 5% cap; user-named position.
+BRK-B,Berkshire Hathaway Inc. Class B,core,NYSE,USD,Stock (Financials/Insurance),0.011379,0.014223,1928.98,385.7956,5,price quoted in GBP in thesis.
+IBTM.L,iShares $ Treasury Bond 7-10yr UCITS ETF (Dist),core,LSE,GBP,Bond ETF,0.08,0.1,15985.68,123.92,129,Entire bond allocation; sits at the 10% group floor (both gilts held at 0%).
+DBMG.L,iMGP DBi Managed Futures UCITS ETF (Acc),core,LSE,GBP,Trend-following fund,0.075721,0.094652,15133.22,100.22,151,Beta 0.13 to world equity; statistics depend on a data repair (100x quote-scale glitch fixed) and rely on proxy price history.
+IPWR,Ideal Power Inc.,moonshot,NasdaqCM,USD,"AI infrastructure (power, cooling, networking)",0.005,0.025,998.96,2.8872,346,
+VYGR,"Voyager Therapeutics, Inc.",moonshot,NASDAQ,USD,Gene editing & gene therapy,0.005,0.025,998.3,2.2637,441,
+AL3.AX,AML3D Limited,moonshot,ASX,AUD,Advanced materials,0.005,0.025,999.99,0.0714,14004,
+ONWD.BR,ONWARD Medical N.V.,moonshot,Euronext Brussels,EUR,"Longevity, neurotech & BCI",0.005,0.025,999.98,2.398,417,
+LTBR,Lightbridge Corporation,moonshot,NASDAQ Capital Market,USD,"Nuclear: SMR, fuel & enrichment",0.005,0.025,998.82,4.802,208,
+ARA.TO,Aclara Resources Inc.,moonshot,Toronto Stock Exchange,CAD,Critical minerals & rare earths,0.005,0.025,999.13,1.9514,512,
+SLX.AX,Silex Systems Limited,moonshot,ASX,AUD,"Nuclear: SMR, fuel & enrichment",0.005,0.025,998.49,2.3221,430,
+NYXH,Nyxoah SA,moonshot,NASDAQ (also Euronext Brussels),USD,Digital health & medtech devices,0.005,0.025,999.71,1.1504,869,
+ALMU,"Aeluma, Inc.",moonshot,NasdaqCM,USD,"Photonic, neuromorphic & novel compute",0.005,0.025,996.77,9.9677,100,
+WBT.AX,Weebit Nano Limited,moonshot,ASX,AUD,"Photonic, neuromorphic & novel compute",0.005,0.025,998.62,1.6133,619,
+VUL.AX,Vulcan Energy Resources Limited,moonshot,ASX,AUD,"Grid, geothermal & clean fuels",0.005,0.025,998.82,1.1848,843,
+IDN,"Intellicheck, Inc.",moonshot,NASDAQ,USD,Fintech infrastructure,0.005,0.025,999.8,1.7664,566,
+GELN.L,Gelion plc,moonshot,LSE (AIM),GBP,Next-gen batteries & storage,0.005,0.025,999.92,0.145,6896,
+EDIT,"Editas Medicine, Inc.",moonshot,NASDAQ,USD,Gene editing & gene therapy,0.005,0.025,999.65,2.0114,497,
+SEYE.ST,Smart Eye AB (publ),moonshot,Nasdaq Stockholm,SEK,"Autonomy, lidar & machine vision",0.005,0.025,998.69,4.027,248,Phone-dealt only on ii (GBP 49 surcharge each way).
+QSI,Quantum-Si Incorporated,moonshot,NASDAQ,USD,"Obesity, metabolic & diagnostics",0.005,0.025,999.63,0.5418,1845,
+CRBU,"Caribou Biosciences, Inc.",moonshot,NASDAQ,USD,"RNA, cell therapy & next-gen biologics",0.005,0.025,999.19,0.9278,1077,2023 Pfizer investment claim flagged as unverified in source.
+ALCLS.PA,Cellectis S.A.,moonshot,Euronext Paris,EUR,"RNA, cell therapy & next-gen biologics",0.005,0.025,999.57,0.9858,1014,
+GUTS,"Fractyl Health, Inc.",moonshot,NASDAQ,USD,"Obesity, metabolic & diagnostics",0.005,0.025,999.94,0.4179,2393,"Nasdaq delisting notice 2026-09-10, currently stayed pending Hearings Panel appeal."
+PRME,"Prime Medicine, Inc.",moonshot,NasdaqGM,USD,Gene editing & gene therapy,0.005,0.025,999.74,2.2266,449,Replaced NAUT (Nautilus Biotechnology) after its net-cash thesis was invalidated by a new ~$125m ATM equity facility.
+PRQR,ProQR Therapeutics N.V.,moonshot,NASDAQ,USD,"RNA, cell therapy & next-gen biologics",0.005,0.025,999.48,1.3805,724,
+ALMDT.PA,Median Technologies SA,moonshot,Euronext Growth Paris,EUR,"Obesity, metabolic & diagnostics",0.005,0.025,998.42,3.2416,308,"Euronext Growth (junior market); ii online dealability unconfirmed, flagged for phone/search check before ordering; sensitivity/specificity figures flagged as unverified."
+CU6.AX,Clarity Pharmaceuticals Ltd,moonshot,ASX,AUD,Other frontier (radiopharmaceutical theranostics),0.005,0.025,999.37,1.1055,904,Down ~63% from 52-week high for reasons the dossier could not establish; Fast Track designation claim flagged as unverified.
+LAES,SEALSQ Corp,moonshot,NasdaqGS,USD,Post-quantum & cybersecurity,0.005,0.025,999.63,1.6254,615,
+IMSR,Terrestrial Energy Inc.,moonshot,NASDAQ Global Select,USD,"Nuclear: SMR, fuel & enrichment",0.005,0.025,999.93,3.1544,317,
+EMV.AX,EMVision Medical Devices Ltd,moonshot,ASX,AUD,Digital health & medtech devices,0.005,0.025,999.4,0.9177,1089,
+SLDP,"Solid Power, Inc.",moonshot,NASDAQ Global Select,USD,Next-gen batteries & storage,0.005,0.025,998.68,1.7739,563,
+HYT.AX,HyTerra Ltd,moonshot,ASX,AUD,"Grid, geothermal & clean fuels",0.005,0.025,1000.0,0.0032,315091,Quoted in fractions of an Australian cent; smallest position in sleeve (~USD 7.6m mkt cap); lowest dossier confidence (3/10); spread flagged as likely to exceed all other costs combined.
+MSCL.TO,Satellos Bioscience Inc.,moonshot,Toronto Stock Exchange,CAD,Other frontier (muscle regeneration),0.005,0.025,998.11,6.9313,144,
+2498.HK,"Robosense Technology Co., Ltd",moonshot,HKEX,HKD,"Humanoids, robotics & automation components",0.005,0.025,998.83,1.5226,656,Market-cap/shareholding figures required fact-check correction after a Yahoo data-provider discrepancy; Cainiao shareholding claim flagged as unverified.
+GFUZ,General Fusion Group Ltd.,moonshot,NASDAQ Global Market,USD,Fusion supply chain,0.005,0.025,995.02,5.8188,171,"De-SPACed 2026-07-13, trading ~half debut price; market-cap/shareholding figures required fact-check correction after a Yahoo data-provider discrepancy."
+AXE.AX,Archer Materials Limited,moonshot,ASX,AUD,Quantum computing & sensing,0.005,0.025,999.98,0.0979,10219,Replaced HEX.L (Helix Exploration) after that thesis (helium-resource NPV claim) was falsified.
+MOLN.SW,Molecular Partners AG,moonshot,SIX Swiss Exchange,CHF,"RNA, cell therapy & next-gen biologics",0.005,0.025,997.89,2.9093,343,Phone-dealt only on ii (GBP 49 surcharge each way).
+LIS.AX,Li-S Energy Limited,moonshot,ASX,AUD,Next-gen batteries & storage,0.005,0.025,999.95,0.0793,12603,Thinnest-traded name in the sleeve (~USD 18k/day).
+GSIT,"GSI Technology, Inc.",moonshot,NasdaqGS,USD,"Photonic, neuromorphic & novel compute",0.005,0.025,999.59,3.57,280,
+BIOA,"BioAge Labs, Inc.",moonshot,NASDAQ,USD,"Longevity, neurotech & BCI",0.005,0.025,995.1,5.7521,173,
+AISP,"Airship AI Holdings, Inc.",moonshot,NASDAQ,USD,AI applications & agents,0.005,0.025,999.62,1.4139,707,
+FTC.L,Filtronic plc,moonshot,LSE AIM,GBP,"Space: launch, in-orbit, satellites, EO",0.005,0.025,999.57,2.33,429,"SpaceX warrant mechanics claim flagged as unverified in source; the only profitable, cash-generative, net-cash name in the sleeve."
+BTQ,BTQ Technologies Corp.,moonshot,NasdaqGM,USD,Quantum computing & sensing,0.005,0.025,999.42,1.952,512,Acute financing risk (~1.6 quarters of cash); QPerfect consideration claim flagged as unverified.
+BGO.L,Bango PLC,moonshot,LSE (AIM),GBP,Fintech infrastructure,0.005,0.025,1000.0,0.625,1600,Gross debt tripled in a year against thin cash; flagged as most likely path to loss in the sleeve.
