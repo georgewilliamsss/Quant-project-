@@ -1,0 +1,691 @@
+<title>Trading Challenge Playbook</title>
+<meta name="description" content="Five-slot catalyst-chain plan for the Bloomberg Global Trading Challenge 2026, Oct 12 to Nov 13.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column (max 1060px) under a sticky section rail. Cards only for the five positions and the scenario overlays; everything else is tables and text. */
+:root{
+  --bg:#edf1f0;
+  --surface:#ffffff;
+  --ink:#13202a;
+  --muted:#55646c;
+  --rule:#d3dbdb;
+  --accent:#0c5b6a;
+  --accent-soft:#dbeaec;
+  --verify-ink:#834600;
+  --verify-bg:#fbead0;
+  --bull:#15704a;
+  --bear:#ad3229;
+  --lead:#8a5a00;
+  --fig-bg:#fbfbf9;
+  --font-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --step-0:1rem;
+  --step-1:1.2rem;
+  --step-2:1.6rem;
+  --step-3:2.1rem;
+  --step-4:clamp(2.5rem,6.5vw,3.9rem);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1316;--surface:#151d21;--ink:#e2e9eb;--muted:#95a4ab;--rule:#28343a;
+    --accent:#6dc1d0;--accent-soft:#15323a;--verify-ink:#f1bd63;--verify-bg:#3a290d;
+    --bull:#62c890;--bear:#f27f74;--lead:#e7b95c;--fig-bg:#fbfbf9;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1316;--surface:#151d21;--ink:#e2e9eb;--muted:#95a4ab;--rule:#28343a;
+  --accent:#6dc1d0;--accent-soft:#15323a;--verify-ink:#f1bd63;--verify-bg:#3a290d;
+  --bull:#62c890;--bear:#f27f74;--lead:#e7b95c;--fig-bg:#fbfbf9;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:var(--step-0);line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:1060px;margin:0 auto;padding-inline:clamp(16px,4vw,40px)}
+h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:.01em;text-wrap:balance;line-height:1.05;margin:0}
+h1{font-size:var(--step-4);text-transform:uppercase;letter-spacing:.02em}
+h2{font-size:var(--step-3);text-transform:uppercase;letter-spacing:.03em}
+h3{font-size:var(--step-1);font-weight:600;margin:0;text-wrap:balance;line-height:1.3}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.mono,code,.tk{font-family:var(--font-mono)}
+code{font-size:.88em;background:var(--accent-soft);color:var(--ink);padding:.05em .35em;border-radius:3px;white-space:nowrap}
+.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.verify{display:inline;background:var(--verify-bg);color:var(--verify-ink);font-weight:600;font-size:.86em;padding:.05em .4em;border-radius:3px;white-space:nowrap}
+.tabnum,table{font-variant-numeric:tabular-nums}
+.up{color:var(--bull);font-weight:600}
+.down{color:var(--bear);font-weight:600}
+
+/* header */
+header.top{padding-block:40px 28px;display:grid;gap:18px}
+.lede{font-size:var(--step-1);color:var(--muted);max-width:60ch}
+.dates{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:2px solid var(--ink)}
+.dates li{padding:12px 12px 4px 0;display:grid;gap:2px;align-content:start}
+.dates .d{font-family:var(--font-display);font-size:var(--step-2);font-weight:600;line-height:1}
+.dates .t{font-family:var(--font-mono);font-size:.78rem;color:var(--muted)}
+.dates .l{font-size:.92rem}
+@media (max-width:760px){
+  .dates{grid-template-columns:1fr}
+  .dates li{grid-template-columns:7.5rem 1fr;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule);column-gap:12px}
+  .dates .t{grid-column:1}
+  .dates .l{grid-column:2;grid-row:1 / span 2}
+}
+
+/* nav */
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav.rail .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+nav.rail a{flex:none;font-family:var(--font-mono);font-size:.8rem;text-decoration:none;color:var(--ink);padding:6px 10px;border-radius:4px;white-space:nowrap}
+nav.rail a:hover{background:var(--accent-soft)}
+
+main{display:grid;gap:56px;padding-block:32px 64px}
+section{display:grid;gap:18px;scroll-margin-top:56px;min-width:0}
+.sec-head{display:grid;gap:6px;padding-top:14px;border-top:1px solid var(--rule)}
+.sec-head .eyebrow{color:var(--accent)}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px clamp(16px,3vw,24px);display:grid;gap:14px;min-width:0}
+.scroll{overflow-x:auto;min-width:0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule)}
+th{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;border-bottom:1.5px solid var(--ink)}
+tr:last-child td{border-bottom:0}
+td .tk,.tk{font-weight:600;white-space:nowrap}
+table.wide{min-width:780px}
+table.mid{min-width:620px}
+td.date{white-space:nowrap;font-family:var(--font-mono);font-size:.84rem}
+tr.key td{background:var(--accent-soft)}
+tr.key td:first-child{padding-left:8px}
+
+ol.checks{margin:0;padding-left:1.4rem;display:grid;gap:10px}
+ol.checks li{padding-left:4px;max-width:78ch}
+ol.checks b{font-weight:600}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stat{background:var(--surface);padding:16px;display:grid;gap:4px;align-content:start}
+.stat .n{font-family:var(--font-display);font-size:2.3rem;font-weight:600;line-height:1}
+.stat .c{font-size:.88rem;color:var(--muted)}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.logic{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px}
+.logic > div{display:grid;gap:4px;min-width:0}
+@media (max-width:760px){.logic{grid-template-columns:1fr}}
+
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figure .frame{background:var(--fig-bg);border:1px solid var(--rule);border-radius:6px;padding:8px;overflow-x:auto}
+figure img{display:block;width:100%;height:auto;min-width:720px;max-width:none}
+@media (min-width:761px){figure img{min-width:0;max-width:100%}}
+figcaption{font-size:.88rem;color:var(--muted);max-width:80ch}
+
+/* position cards */
+.sleeve-label{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.cards{display:grid;gap:14px}
+.cards.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cards.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:900px){.cards.three{grid-template-columns:1fr}}
+@media (max-width:760px){.cards.two{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.card .slot{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.card .ticker{font-family:var(--font-mono);font-size:1.7rem;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.card .name{font-size:.95rem;color:var(--muted)}
+.card dl{margin:0;display:grid;grid-template-columns:5.2rem 1fr;gap:6px 10px;font-size:.9rem}
+.card dt{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.card dd{margin:0;min-width:0}
+.card p{font-size:.92rem}
+.card .v{font-size:.86rem}
+.moves{display:flex;gap:14px;flex-wrap:wrap}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.chip.theme{color:var(--accent)}
+.chip.binary{color:var(--bear)}
+.sizing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px}
+.sizing > div{display:grid;gap:4px;min-width:0}
+@media (max-width:760px){.sizing{grid-template-columns:1fr}}
+
+/* scenarios */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.scen{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.scen ul{margin:0;padding-left:1.1rem;display:grid;gap:6px;font-size:.93rem}
+.odds{font-family:var(--font-mono);font-size:.8rem;color:var(--muted)}
+
+/* modes */
+.mode{display:inline-block;font-family:var(--font-mono);font-size:.74rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.m-hail{background:var(--bear);color:var(--surface)}
+.m-cont{background:var(--accent);color:var(--surface)}
+.m-lead{background:var(--lead);color:var(--surface)}
+.m-lock{background:var(--bull);color:var(--surface)}
+.formula{font-family:var(--font-mono);font-size:.95rem;background:var(--accent-soft);padding:10px 12px;border-radius:4px;overflow-x:auto;white-space:nowrap}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+@media (max-width:760px){.calc{grid-template-columns:1fr}}
+.calc form{display:grid;gap:12px}
+.field{display:grid;gap:4px}
+.field label{font-size:.85rem;color:var(--muted)}
+.field input[type=number]{font-family:var(--font-mono);font-size:1rem;padding:8px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink);width:100%;max-width:12rem}
+.tick{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.out{display:grid;gap:10px;align-content:start}
+.out .row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:6px;font-size:.95rem}
+.out .row b{font-family:var(--font-mono);font-weight:600}
+.out .do{font-size:.93rem}
+
+/* checklist */
+.checklist{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.checklist li{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:start}
+.checklist li:last-child{border-bottom:0}
+.checklist input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.checklist label{font-size:.95rem;cursor:pointer}
+.checklist input:checked + label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--rule)}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{font-family:var(--font-mono);font-size:.8rem;padding:6px 12px;border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:4px;cursor:pointer}
+button:hover{background:var(--accent-soft)}
+
+ul.plain{margin:0;padding-left:1.1rem;display:grid;gap:8px;max-width:80ch}
+footer{padding-block:24px 48px;border-top:1px solid var(--rule);color:var(--muted);font-size:.85rem}
+</style>
+
+<header class="wrap top">
+  <div class="eyebrow">Bloomberg Global Trading Challenge 2026 · Team playbook · as of Tue 29 Sep 2026</div>
+  <h1>Trading Challenge Playbook</h1>
+  <p class="lede">Five slots, each running a chain of catalysts. Sell the day after each event resolves, roll everything into the next one, and finish the window in events that land Nov 10-13.</p>
+  <ol class="dates" aria-label="Key dates">
+    <li><span class="d">Oct 4</span><span class="t">Sun 23:59 NY</span><span class="l">Registration closes</span></li>
+    <li><span class="d">Oct 12</span><span class="t">Mon 09:00 NY</span><span class="l">Trading opens</span></li>
+    <li><span class="d">Oct 16</span><span class="t">Fri 23:59 NY</span><span class="l">Initial positions due, fully invested</span></li>
+    <li><span class="d">Oct 27</span><span class="t">Tue, pre-FOMC</span><span class="l">Midpoint check</span></li>
+    <li><span class="d">Nov 13</span><span class="t">Fri 16:00 NY</span><span class="l">Final US marks (window ends 17:00)</span></li>
+  </ol>
+</header>
+
+<nav class="rail" aria-label="Sections">
+  <div class="wrap">
+    <a href="#facts">Read first</a><a href="#bar">The bar</a><a href="#book">Opening book</a><a href="#calendar">Rotation calendar</a><a href="#scenarios">Scenarios</a><a href="#rules">Decision rules</a><a href="#routine">Daily routine</a><a href="#bench">Bench</a><a href="#limits">Limitations</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="facts">
+  <div class="sec-head"><span class="eyebrow">Section 1</span><h2>Read this first</h2></div>
+  <div class="panel">
+    <h3>What we had wrong</h3>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>We thought</th><th>Correct fact</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td>$100,000 notional</td><td><b>US$1,000,000.</b> The 20% cap is <b>$200,000 per name.</b></td><td>Returns are scale-free; orders are 10x bigger.</td></tr>
+          <tr><td>Starts Oct 14, runs a month</td><td><b>Opens Mon Oct 12, 09:00 NY. Measured to Fri Nov 13, 17:00 NY.</b> 25 weekdays.</td><td>Two extra days at the start.</td></tr>
+          <tr><td>Register when ready</td><td><b>Registration closes Sun Oct 4, 23:59 NY.</b> Advisor or captain registers a team of 3-5 students.</td><td>Register this week. Confirm eligibility and Terminal access.</td></tr>
+          <tr><td>Score = our return</td><td><b>Time-weighted return relative to the WLS Price Return Index</b>, published as dollar relative P&amp;L.</td><td>Cash loses whatever the index gains.</td></tr>
+          <tr><td>Build the book gradually</td><td><b>Fully invested in week 1.</b> Initial positions due <b>Fri Oct 16, 23:59 NY</b> (2025 rules said 09:00 that Friday).</td><td>Enter on Day 1.</td></tr>
+          <tr><td>Minimum 5 stocks</td><td>No stated minimum. Five comes from the 20% cap plus full investment.</td><td>Hold ⌈book value / $200k⌉ names.</td></tr>
+          <tr><td>Anything goes</td><td>Long only, no leverage, no ETFs, WLS members only (~10,000 global names).</td><td>Micro-caps below the WLS cut-off are out.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Five things to confirm on the Terminal before Oct 12</h3>
+    <ol class="checks">
+      <li><b>Cap enforcement.</b> Checked only at order entry, or continuously? What happens on a breach? Read the <code>TMSG</code> help menu and the challenge FAQ, then get a written answer from Bloomberg for Education through the faculty advisor. This decides whether winners can run.</li>
+      <li><b>WLS membership of every candidate.</b> <code>WLS Index MEMB &lt;GO&gt;</code>, or index membership on <code>DES</code>. Trade the local line that is in the index. INO (~$130M) is at real risk of sitting below the cut-off.</li>
+      <li><b>Simulator fill rules.</b> Market or limit fills, last price or bid/ask, after-hours trading (FDA news often lands after the close), whether a Taipei or Tokyo stock locked limit-up can be bought at the limit, commissions. Answer with one small test order.</li>
+      <li><b>Minimum price and liquidity rules.</b> Minimum price, market cap or volume, Hong Kong board lots, any minimum number of positions.</li>
+      <li><b>How relative P&amp;L treats cash and FX.</b> <code>TMSG</code> help → Calculations → Relative P&amp;L. Benchmark from Oct 12 09:00 or from our entry? Cash at 0%? Price or total return? How are non-USD positions converted, and do FX moves count against the cap?</li>
+    </ol>
+  </div>
+</section>
+
+<section id="bar">
+  <div class="sec-head"><span class="eyebrow">Section 2</span><h2>The bar and the logic</h2></div>
+  <div class="stats">
+    <div class="stat"><span class="n">+142%</span><span class="c">Median winning score, 3,000-team field (model fitted to 2023-25 winners)</span></div>
+    <div class="stat"><span class="n">1 in 5</span><span class="c">Chance that +100% wins. +140% is a coin flip; +200% wins 3 times in 4.</span></div>
+    <div class="stat"><span class="n">0.6%</span><span class="c">P(win) for five static lottery tickets (0.11% with fairly priced events)</span></div>
+    <div class="stat"><span class="n">2-5%</span><span class="c">Realistic P(win) for our plan, about 100x a random team's 0.033%</span></div>
+  </div>
+  <div class="panel">
+    <p><b>Target: +140% relative in 25 trading days.</b> Winners made +64 points (2023), about +168 (2024) and at least +310% (2025). A +20-40% result is top 1% and wins nothing.</p>
+    <div class="logic">
+      <div><h3>Five static picks cannot win</h3><p>A position is capped at $200k at entry, so a stock that doubles adds only +20% to the book. With four flat slots, the fifth must return about <b>+610%</b> to lift the book to +142%.</p></div>
+      <div><h3>Chain, don't hold</h3><p>Each slot owns one catalyst. When it resolves, win or lose, sell and roll everything into the next one. Going from 1 to 3 events per slot lifted P(win) about tenfold: 7-29% under the notes' assumptions, 2.8-7.3% with fairly priced events.</p></div>
+      <div><h3>Correlate our bets</h3><p>One correlated theme beat five unrelated names 17-31x. Modest correlation among our binaries nearly doubled P(win), 2.8% to 5.2%.</p></div>
+      <div><h3>Buy variance, let winners run</h3><p>Contested FDA decisions and Phase 3 readouts (+80% to +200% / -55% to -75%) are the tickets. Consensus approvals, earnings roulette (0.95%) and weekly rotation (0.27%) are too tame. Trimming winners to 20% cut the best chain's P(win) by a third.</p></div>
+      <div><h3>Avoid the crowd</h3><p>Every team will own Micron. A crowded theme pays exactly when the bar is highest, so we hold the theme through higher-beta, less-owned names.</p></div>
+      <div><h3>Behind means more variance</h3><p>A falling book is never a reason to de-risk. Cutting risk only makes sense once we are clearly above the projected pack maximum (section 6).</p></div>
+    </div>
+  </div>
+  <figure>
+    <div class="frame"><img src="fig_pwin_by_strategy.png" alt="Dot chart of P(win) by strategy for fields of 1,000, 3,000 and 5,000 teams on a log scale. Sequential binary chains lead in every setting; static tickets, weekly rotation and unrelated themes sit near the 1-in-3,001 fair share." loading="lazy" width="2400" height="930"></div>
+    <figcaption>P(win) by strategy and field size. Right panel (fairly priced events) is the robust guide: sequential Phase 3 chains 7.3%, sequential PDUFA 2.8%, one theme 1.1%, static tickets 0.11%, fair share 0.033%.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame"><img src="fig_return_distributions.png" alt="Histograms of one-month relative return for ten strategies with the median winning scores of +85% and +142% marked. Only the sequential chains put meaningful mass beyond +142%." loading="lazy" width="2400" height="1020"></div>
+    <figcaption>Return distributions, winners allowed to run (blue) versus trimmed to 20% after every event (orange). Only the sequential chains put real probability beyond the +142% median winning score.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame"><img src="fig_sensitivity.png" alt="Six panels of P(win) sensitivity to approval odds, approval pop size, events per slot, correlation among binaries, theme correlation and melt-up size." loading="lazy" width="2250" height="1260"></div>
+    <figcaption>What moves P(win): the size of the approval pop and the number of events per slot matter most; correlation among our binaries helps; theme correlation barely matters once high.</figcaption>
+  </figure>
+</section>
+
+<section id="book">
+  <div class="sec-head"><span class="eyebrow">Section 3 · Enter Oct 12-13</span><h2>The opening book</h2></div>
+  <div class="panel sizing">
+    <div><h3>Five positions, 20% each</h3><p>$200k nominal per name. Until Bloomberg confirms the cap is checked only at entry, buy <b>$190k each</b> and put the remaining <b>$50k in SNDK US</b> as a buffer, so we stay fully invested without breaching on the first uptick or FX move. If the cap is entry-only, buy $199k each.</p></div>
+    <div><h3>Strict cap reading</h3><p>If the cap is enforced continuously, it does not grow with the book. <b>Above $1M, re-spread across ⌈book value / $200k⌉ names</b>: seven at $1.4M, ten at $2M. Bull and bear moves below are estimates, not sourced facts.</p></div>
+  </div>
+
+  <div class="sleeve-label"><h3>Theme sleeve · memory and AI hardware</h3><span class="muted">Three slots in the highest-beta, least-crowded names. No Micron, no Nvidia.</span></div>
+  <div class="cards three">
+    <article class="card">
+      <div class="slot">Slot 1 <span class="chip theme">Theme</span></div>
+      <div><div class="ticker">AXTI US</div><div class="name">AXT Inc · US small-cap</div></div>
+      <dl>
+        <dt>Catalyst</dt><dd>Q3 results, late Oct / early Nov. SK Hynix read-through ~Oct 22-23; hyperscaler capex ~Oct 27-29.</dd>
+        <dt>Bull</dt><dd><span class="up">+50% to +100%</span></dd>
+        <dt>Bear</dt><dd><span class="down">-35% to -50%</span></dd>
+        <dt>Exit</dt><dd>Day after the Q3 print; roll into IONQ US.</dd>
+      </dl>
+      <p>Makes indium-phosphide substrates for AI-datacentre optics. <b>+1,529% over 52 weeks</b>, ranked #2 for a +50% month (10-12%). A small-float supplier rather than a mega-cap every team owns. Memory names fell 5-16% in single days on Jul 2, Aug 6 and Aug 18: that is the bear case.</p>
+      <p class="v"><span class="verify">Verify:</span> Q3 date (last year's pattern only), price, float, short interest, ADV ≥ $2M, WLS membership.</p>
+    </article>
+    <article class="card">
+      <div class="slot">Slot 2 <span class="chip theme">Theme</span></div>
+      <div><div class="ticker">2408 TT</div><div class="name">Nanya Technology · Taiwan DRAM</div></div>
+      <dl>
+        <dt>Catalyst</dt><dd>October monthly sales by <b>Nov 10</b>. SK Hynix Q3; Samsung final Q3 ~Oct 29-30; contract prices at month-end.</dd>
+        <dt>Bull</dt><dd><span class="up">+50% to +80%</span></dd>
+        <dt>Bear</dt><dd><span class="down">-30% to -40%</span></dd>
+        <dt>Exit</dt><dd>Day after the October sales release; roll into the endgame.</dd>
+      </dl>
+      <p>Highest-beta proxy for DRAM contract prices (up as much as 95% in Q1). Asian names are rarely held by student teams and their news is independent of US flow; the 2024 winners held mostly foreign stocks. The ±10% daily limit turns big news into multi-day runs.</p>
+      <p class="v"><span class="verify">Verify:</span> price, YTD move, WLS membership of the local line, limit-up fills.</p>
+    </article>
+    <article class="card">
+      <div class="slot">Slot 3 <span class="chip theme">Theme</span></div>
+      <div><div class="ticker">285A JP</div><div class="name">Kioxia Holdings · Japan NAND</div></div>
+      <dl>
+        <dt>Catalyst</dt><dd>Own results <b>~Nov 12-14</b>. SanDisk fiscal Q1 ~Nov 5-6; NAND contract prices.</dd>
+        <dt>Bull</dt><dd><span class="up">+50% to +80%</span></dd>
+        <dt>Bear</dt><dd><span class="down">-30% to -40%</span></dd>
+        <dt>Exit</dt><dd>Results after the Tokyo close on or before Nov 12: hold through. Later: sell Nov 11.</dd>
+      </dl>
+      <p>SanDisk's fab partner. SanDisk is +695% YTD on NAND pricing; Kioxia has the same driver, a listing students rarely touch, and results that may land at the very end. Tokyo is shut Mon Oct 12, so the order fills at the Oct 13 Tokyo open.</p>
+      <p class="v"><span class="verify">Verify:</span> results date, price, WLS membership.</p>
+    </article>
+  </div>
+
+  <div class="sleeve-label"><h3>Binary sleeve · biotech chain</h3><span class="muted">Two dated events, correlated by sector. Each slot rolls on after its event.</span></div>
+  <div class="cards two">
+    <article class="card">
+      <div class="slot">Slot 4 <span class="chip binary">Binary A</span></div>
+      <div><div class="ticker">MRNA US</div><div class="name">Moderna · +550% YTD</div></div>
+      <dl>
+        <dt>Catalyst</dt><dd>Full Phase 3 melanoma data at the ESMO Presidential Symposium, <b>Sat Oct 24</b>; market reacts Mon Oct 26.</dd>
+        <dt>Bull</dt><dd><span class="up">+30% to +60%</span> on stronger survival data or a bid</dd>
+        <dt>Bear</dt><dd><span class="down">-20% to -35%</span> sell-the-news</dd>
+        <dt>Exit</dt><dd><b>Sell at the Mon Oct 26 open</b>, win or lose, or on the day of any bid. Roll into MSTR US.</dd>
+      </dl>
+      <p>The biggest dated binary in the first half. At ~$70-75B, Merck could bid, which gives a real right tail (9% for a +50% month). Liquid, certainly a WLS member, and it correlates our binary sleeve with INO.</p>
+      <p class="v"><span class="verify">Verify:</span> ESMO slot, and <code>OMON</code> implied move and skew by Oct 9. Below ±15% or puts richer than calls: swap to a WLS small-cap mRNA or cancer-vaccine peer showing ±35% into ESMO (<code>BI</code>, <code>EQS</code>).</p>
+    </article>
+    <article class="card">
+      <div class="slot">Slot 5 <span class="chip binary">Binary B</span></div>
+      <div><div class="ticker">INO US</div><div class="name">Inovio Pharmaceuticals · ~$130M</div></div>
+      <dl>
+        <dt>Catalyst</dt><dd>BLA for INO-3107 (adult recurrent respiratory papillomatosis), accelerated approval. <b>PDUFA Fri Oct 30.</b></dd>
+        <dt>Bull</dt><dd><span class="up">+80% to +200%</span> on approval (odds ~50-55%)</dd>
+        <dt>Bear</dt><dd><span class="down">-55% to -75%</span> on a complete response letter</dd>
+        <dt>Exit</dt><dd>Reaction day: Oct 30 if in hours, else Mon Nov 2 open. Sell at once on a raise or a date extension.</dd>
+      </dl>
+      <p>The only verified in-window, sub-$500M, single-asset FDA decision in our research, and a genuine coin-flip: a competitor was approved in 2025, and the FDA's filing letter (per Inovio's own Dec 2025 acceptance announcement, seen only in search summaries) flagged a preliminary conclusion that accelerated-approval eligibility was not adequately justified. The contested, convex ticket the simulation rewards. Hold from Day 1 to catch the run-up.</p>
+      <p class="v"><span class="verify">Verify:</span> WLS membership, price, the FDA-note source (the biotech research instead found the late-cycle meeting and inspections completed), any shelf or ATM offering (cash runs only "into Q4 2026"). Not a WLS member: slot 5 goes to SNDK US until Oct 26, then COIN US.</p>
+    </article>
+  </div>
+</section>
+
+<section id="calendar">
+  <div class="sec-head"><span class="eyebrow">Section 4</span><h2>The rotation calendar</h2></div>
+  <div class="panel">
+    <p><b>The rule.</b> Sell the day after the event resolves, win or lose. Roll the full proceeds into the slot's next event within 1-2 days, capped at $200k per name; any excess opens a new slot. Never average down.</p>
+    <h3>Slot chains</h3>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>Slot</th><th>Leg 1</th><th>Leg 2</th><th>Leg 3</th><th>Endgame (Nov 9-13)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><span class="tk">AXTI US</span> → Q3 print</td><td><span class="tk">IONQ US</span>, Q3 Nov 4-9</td><td>—</td><td>Next free endgame name</td></tr>
+          <tr><td>2</td><td><span class="tk">2408 TT</span> → Nov 10 sales</td><td>—</td><td>—</td><td>Next free endgame name</td></tr>
+          <tr><td>3</td><td><span class="tk">285A JP</span> → results</td><td>—</td><td>—</td><td>Kioxia if results ≤ Nov 12 JST</td></tr>
+          <tr><td>4</td><td><span class="tk">MRNA US</span> → Oct 26</td><td><span class="tk">MSTR US</span>, Oct 26 → Nov 5</td><td><span class="tk">QBTS US</span>, Q3 Nov 6-12</td><td>Next free endgame name</td></tr>
+          <tr><td>5</td><td><span class="tk">INO US</span> → Oct 30 / Nov 2</td><td><span class="tk">CBRS US</span> (Q3) or <span class="tk">SMCI US</span> (Nov 3)</td><td>—</td><td>CBRS lock-up or RGTI US</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Dated calendar</h3>
+    <p class="muted">(E) = third-party estimate, (L) = calendar listing; neither is company-confirmed. <span class="verify">Verify:</span> every date on <code>EVTS</code> a week ahead. Highlighted rows are the decision points.</p>
+    <div class="scroll">
+      <table class="wide">
+        <thead><tr><th>Date (NY)</th><th>Event</th><th>Slot</th><th>Action</th><th>If the date slips</th></tr></thead>
+        <tbody>
+          <tr class="key"><td class="date">Mon Oct 12</td><td>Opens 09:00. Tokyo, Toronto closed.</td><td>All</td><td>Buy AXTI, MRNA, INO, SNDK buffer at the open. Queue Nanya (Taipei open, 21:00 NY) and Kioxia (Tokyo, Oct 13). Small test order.</td><td>000660 KS or SNDK US if a foreign fill fails</td></tr>
+          <tr><td class="date">Wed Oct 14</td><td>US Sept CPI. ASML (~Oct 14), TSMC (~Oct 15).</td><td>Theme</td><td>Hold.</td><td>—</td></tr>
+          <tr><td class="date">Fri Oct 16</td><td>Entry deadline 23:59. Options expiry. IRD PDUFA Sat Oct 17.</td><td>All</td><td>Confirm 100% invested. Skip IRD (consensus).</td><td>—</td></tr>
+          <tr><td class="date">Oct 22-23</td><td>SK Hynix Q3 (~). Leaderboard.</td><td>Theme</td><td>If the sleeve gains 30% in 5 days, add theme names.</td><td>—</td></tr>
+          <tr><td class="date">Sat Oct 24</td><td>ESMO: Moderna. PHAR PDUFA (consensus, skip).</td><td>4</td><td>Hold over the weekend.</td><td>—</td></tr>
+          <tr class="key"><td class="date">Mon Oct 26</td><td>ESMO reaction. GSK PDUFA (skip).</td><td>4</td><td>Sell MRNA at the open; buy MSTR US (FOMC, earnings, election).</td><td>COIN US (Oct 29 AMC, L); CBRS US (Oct 30-Nov 2, E); HOOD US (Nov 4, L)</td></tr>
+          <tr><td class="date">~Oct 26</td><td>Anthropic IPO pricing: <b>unverified rumour, conflict of interest noted.</b></td><td>None</td><td>Not traded. Verify independently.</td><td>—</td></tr>
+          <tr class="key"><td class="date">Tue Oct 27</td><td><b>Midpoint.</b> FOMC day 1. MSFT, GOOGL, META (~Oct 27-29).</td><td>All</td><td>Compute the gap, set the mode, consolidate (section 6).</td><td>—</td></tr>
+          <tr><td class="date">Wed Oct 28</td><td><b>FOMC 14:00</b> (hike ~70% priced).</td><td>4, theme</td><td>Hold through.</td><td>—</td></tr>
+          <tr><td class="date">Thu Oct 29</td><td>ECB. US GDP and PCE. COIN Q3 AMC (L). Samsung final Q3 (~).</td><td>4</td><td>If chain 4 holds COIN, sell Oct 30.</td><td>—</td></tr>
+          <tr class="key"><td class="date">Fri Oct 30</td><td><b>INO PDUFA.</b> BoJ. CBRS Q3 window opens. Leaderboard.</td><td>5</td><td>Sell INO on the reaction.</td><td>If extended: sell, roll early.</td></tr>
+          <tr><td class="date">Late Oct / early Nov</td><td>AXTI Q3. Seagate, WDC fiscal Q1.</td><td>1</td><td>Sell AXTI the day after its print; buy IONQ US.</td><td>QBTS US; ASTS US</td></tr>
+          <tr><td class="date">Mon Nov 2</td><td>INO reaction if after hours.</td><td>5</td><td>Buy CBRS US if its Q3 is still ahead, else SMCI US (Nov 3 AMC, L).</td><td>SPCX US (Nov 3, low convexity); DJT US</td></tr>
+          <tr class="key"><td class="date">Tue Nov 3</td><td><b>Midterms.</b> SPCX Q3 plus ~28% lock-up tranche (L). SMCI, AMD.</td><td>4, 5</td><td>Hold MSTR.</td><td>—</td></tr>
+          <tr><td class="date">Wed Nov 4</td><td>Election reaction. MSTR Q3 AMC (L). HOOD. Treasury refunding.</td><td>4</td><td>Hold MSTR into its print.</td><td>—</td></tr>
+          <tr><td class="date">Thu Nov 5</td><td>BoE. MSCI review (~Nov 5-12). SanDisk FQ1 (~).</td><td>4</td><td>Sell MSTR; buy QBTS US.</td><td>RGTI US; ASTS US</td></tr>
+          <tr><td class="date">Fri Nov 6</td><td>US payrolls. Leaderboard.</td><td>All</td><td>Set endgame mode; draft the endgame book.</td><td>—</td></tr>
+          <tr class="key"><td class="date">Mon Nov 9</td><td>ASTS Q3 AMC (E). CBRS lock-up (~Nov 9-10).</td><td>All</td><td><b>Endgame book in place.</b></td><td>—</td></tr>
+          <tr><td class="date">Tue Nov 10</td><td>US Oct CPI. Taiwan sales deadline. ALAB (L). US-China truce expiry (~).</td><td>2</td><td>Sell Nanya the day after its release; roll into the endgame.</td><td>—</td></tr>
+          <tr><td class="date">Wed Nov 11</td><td>CRCL Q3 (L). IONQ (L date). Veterans Day, stocks open.</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td class="date">Thu Nov 12</td><td>Last US after-close reports reacting in window. Last Japanese results.</td><td>All</td><td>Lock mode only: index basket by the close.</td><td>—</td></tr>
+          <tr class="key"><td class="date">Fri Nov 13</td><td>Asian closes 02:00-04:00 NY. <b>US close 16:00 = final marks.</b> Possible FDA action on Sat Nov 14 goal dates.</td><td>All</td><td>No new Asian trades after their close.</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>The endgame: every slot in an event resolving Nov 10-13</h3>
+    <p>Fill slots in this order, skipping names already held. Use only names whose event <code>EVTS</code> confirms will land by the Nov 12 US close or the Nov 13 Asian session. The quantum names form a correlated earnings cluster at the very end, when there is no time for moves to fade.</p>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>#</th><th>Name</th><th>Event</th><th>Date and status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="tk">RGTI US</td><td>Q3 results</td><td>E Nov 9-13; only if after the close on or before Nov 12</td></tr>
+          <tr><td>2</td><td class="tk">QBTS US</td><td>Q3 results</td><td>E Nov 6-12</td></tr>
+          <tr><td>3</td><td class="tk">IONQ US</td><td>Q3 results</td><td>E Nov 4-9, L Nov 11</td></tr>
+          <tr><td>4</td><td class="tk">CBRS US</td><td>180-day IPO lock-up</td><td>~Nov 9-10, derived. <span class="verify">Verify:</span> prospectus terms</td></tr>
+          <tr><td>5</td><td class="tk">285A JP</td><td>Results</td><td>~Nov 12-14. <span class="verify">Verify</span></td></tr>
+          <tr><td>6</td><td class="tk">ASTS US</td><td>Q3 results</td><td>E Nov 9 AMC</td></tr>
+          <tr><td>7</td><td class="tk">CRWV US</td><td>Q3 results</td><td>~Nov 10-12 by 2025 pattern; L says Nov 16</td></tr>
+          <tr><td>8</td><td class="tk">FRO / DHT / STNG US</td><td>Post-midterm Iran strike risk</td><td>Nov 4-13 (section 5)</td></tr>
+          <tr><td>9</td><td class="tk">BTAI US</td><td>IGALMI goal date Sat Nov 14</td><td>Possible Fri action. <span class="verify">Verify:</span> date and indication conflict</td></tr>
+          <tr><td>10</td><td class="tk">CYTK US</td><td>Aficamten goal date Sat Nov 14</td><td>Consensus (~90%, +5-10%). Only if shown to be contested.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="scenarios">
+  <div class="sec-head"><span class="eyebrow">Section 5</span><h2>Scenario overlays</h2></div>
+  <div class="grid2">
+    <article class="scen">
+      <h3>Strait of Hormuz</h3>
+      <div class="odds">Grind 50-55% · Escalation 25-30% · Reopening 15-20%</div>
+      <ul>
+        <li><b>Grind (default):</b> no tanker or airline position. Tankers sit near records, so escalation is largely priced. They are not a safe leg.</li>
+        <li><b>Escalation signals</b> (talks end, pre-midterm strikes, Gulf infrastructure attacks, Brent above $115): roll the next free slot into <span class="tk">FRO US</span>, then DHT US or STNG US, two slots at most. Watch the theme kill rule: oil lifts yields.</li>
+        <li><b>Reopening signals</b> (a dated deal, blockade lifted, Brent below $95): one or two slots into <span class="tk">AAL US</span>, UAL US or CCL US; hold the theme. June's deal collapsed within ~3 weeks, so take profits within days.</li>
+      </ul>
+    </article>
+    <article class="scen">
+      <h3>FOMC, Wed Oct 28</h3>
+      <div class="odds">Hike 65-72% priced</div>
+      <ul>
+        <li>Every memory sell-off in July-September came with a yield spike. A hawkish hike hits the theme and the crypto chain; a hold (~30%) sparks a long-duration rally.</li>
+        <li>Do not de-risk into the meeting. Apply the theme kill rule after the decision, not before.</li>
+        <li>PCE (Oct 29) and the BoJ (Oct 30) complete the bond-rout risk week.</li>
+      </ul>
+    </article>
+    <article class="scen">
+      <h3>Midterms, Tue Nov 3</h3>
+      <div class="odds">Democratic sweep ~62% · Republican Senate hold ~31%</div>
+      <ul>
+        <li>A sweep is priced and should move little. The tradable surprise is a <b>Republican Senate hold</b>: MSTR, COIN, HOOD and DJT rally.</li>
+        <li>Chain 4 holds <span class="tk">MSTR US</span> through the vote for exactly this reason.</li>
+        <li>Skip solar on a sweep; it is crushed by rates. Senate control may not be called until Nov 4 or later.</li>
+      </ul>
+    </article>
+    <article class="scen">
+      <h3>Post-midterm Iran strike</h3>
+      <div class="odds">Reported as expected after Nov 3, inside the window</div>
+      <ul>
+        <li>Brent to $120-150; tankers and defence up; airlines, cruise and long-duration names down as yields climb. Our quantum-heavy endgame is exposed.</li>
+        <li>Strong strike signals by the Nov 6 leaderboard: move 1-2 endgame slots into FRO / DHT / STNG and hold to the Nov 13 close.</li>
+        <li>In Hail Mary mode with strong signals, the whole book goes into FRO, DHT, STNG, INSW and TNK.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="sec-head"><span class="eyebrow">Section 6</span><h2>Mid-competition decision rules</h2></div>
+  <div class="panel">
+    <h3>The Oct 27 midpoint check (before the FOMC)</h3>
+    <p>R = our relative return. L = the best other return on the leaderboard (#2 if we lead). d = trading days left (14 at the Oct 27 open). m(d) is how far the best of ~40 max-variance teams typically climbs in the time left: 1.9 / 1.75 / 1.55 / 1.35 / 1.2 / 1.15 at 20 / 15 / 10 / 5 / 2 / 1 days. Before the first leaderboard, use a bar of +140%.</p>
+    <div class="formula">B̂ = max((1 + L) × m(d), 1.4) − 1 &nbsp;&nbsp;·&nbsp;&nbsp; G = ln(1 + R) − ln(1 + B̂)</div>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>Mode</th><th>Gap</th><th>Behaviour</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mode m-hail">Hail Mary</span></td><td class="mono">G ≤ −0.4</td><td>Fewest names allowed. Everything on the most convex correlated driver, preferring the latest events (the quantum cluster).</td></tr>
+          <tr><td><span class="mode m-cont">Contention</span></td><td class="mono">−0.4 &lt; G &lt; +0.10</td><td>Maximum variance. Whole book into the engine that is working.</td></tr>
+          <tr><td><span class="mode m-lead">Leader</span></td><td class="mono">+0.10 ≤ G &lt; +0.30</td><td>Swap correlated bets for independent ones; sell binaries before their events. Never cash.</td></tr>
+          <tr><td><span class="mode m-lock">Lock</span></td><td class="mono">G ≥ +0.30</td><td>Index-tracking basket of the largest WLS constituents, USD-weighted, spread across regions. Never cash.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel calc">
+    <form id="gap-form" novalidate>
+      <h3>Gap calculator</h3>
+      <p class="muted">Prefilled with example values, not our result.</p>
+      <div class="field"><label for="calc-r">Our relative return, %</label><input id="calc-r" type="number" step="1" value="30" inputmode="decimal"></div>
+      <div class="field"><label for="calc-l">Best other team's return, %</label><input id="calc-l" type="number" step="1" value="60" inputmode="decimal"></div>
+      <div class="field"><label for="calc-d">Trading days left (0-25)</label><input id="calc-d" type="number" step="1" min="0" max="25" value="14" inputmode="numeric"></div>
+      <label class="tick" for="calc-nb"><input id="calc-nb" type="checkbox"> No leaderboard yet (use a +140% bar)</label>
+    </form>
+    <div class="out" aria-live="polite">
+      <div class="row"><span>m(d), pack growth multiple</span><b id="o-m">—</b></div>
+      <div class="row"><span>Projected bar B̂</span><b id="o-b">—</b></div>
+      <div class="row"><span>Gap G</span><b id="o-g">—</b></div>
+      <div class="row"><span>Mode</span><span id="o-mode">—</span></div>
+      <p class="do" id="o-do"></p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Consolidation at the midpoint</h3>
+      <ul class="plain">
+        <li><b>Theme up 30%+ with momentum:</b> whole book into the theme, 5+ names (add SNDK US, 000660 KS, WDC US). Keep INO through Oct 30.</li>
+        <li><b>Theme flat or down, binaries working:</b> move theme slots into the crypto-election and quantum clusters.</li>
+        <li><b>Both down:</b> Hail Mary.</li>
+        <li><b>Theme kill rule:</b> sell the sleeve if it falls 25% from its high-water mark, or the memory factor falls 20% in 10 days.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Leaderboard and locking in</h3>
+      <ul class="plain">
+        <li>TMSG reportedly shows our rank, with a full ranking weekly (~Oct 16, 23, 30, Nov 6). <span class="verify">Verify:</span> cadence, and whether portal challenge 13 is live.</li>
+        <li>Recompute B̂ and G after each release. Beating #2 is not the test: +80% against a leader at +60% still gives G = −0.41.</li>
+        <li><b>Lock almost never:</b> only at G ≥ +0.30. With a leader at +60% at the midpoint, that means +267% or more.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Cap handling under both readings</h3>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>Situation</th><th>A: checked at entry only</th><th>B: continuous (default until confirmed in writing)</th></tr></thead>
+        <tbody>
+          <tr><td>Opening sizes</td><td>5 × $199k</td><td>5 × $190k plus $50k SNDK buffer</td></tr>
+          <tr><td>Theme winner, momentum intact</td><td>Let it run; never add above $200k</td><td>Trim to ≤ $190k at 15:30 NY daily; move excess into other theme names</td></tr>
+          <tr><td>Binary winner</td><td>Sell at T+0 / T+1 and roll</td><td>Same</td></tr>
+          <tr><td>Book above $1M</td><td>⌈book value / $200k⌉ slots</td><td>Same (forced)</td></tr>
+          <tr><td>Foreign names</td><td>FX irrelevant</td><td>Keep 5% FX headroom</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Keep a timestamped log of every position against $200k at entry and at 15:30 NY daily. Disqualification costs everything; reading B costs about 1 point of P(win). Switch to A the day Bloomberg confirms it.</p>
+  </div>
+</section>
+
+<section id="routine">
+  <div class="sec-head"><span class="eyebrow">Section 7</span><h2>Daily routine on the Terminal</h2></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="bar"><h3>07:30 NY · ten minutes</h3><button type="button" id="ck-reset">Clear today</button></div>
+      <ul class="checklist" id="checklist">
+        <li><input type="checkbox" id="ck1"><label for="ck1"><code>TMSG</code> positions, cash (~0), rank, anything above $190k.</label></li>
+        <li><input type="checkbox" id="ck2"><label for="ck2"><code>NI FDA</code> <code>NI BIO</code> <code>TOP</code> and <code>CN</code> on holdings: FDA actions, readouts, deals, offerings.</label></li>
+        <li><input type="checkbox" id="ck3"><label for="ck3"><code>EVTS</code> / <code>ERN</code> on holdings and next-in-chain names: date, time, before-open or after-close. Anything that slipped outside the window is sold today.</label></li>
+        <li><input type="checkbox" id="ck4"><label for="ck4"><code>CACS</code> on holdings: reverse splits, rights issues, offerings.</label></li>
+        <li><input type="checkbox" id="ck5"><label for="ck5"><code>GP</code> / <code>GIP</code> on holdings and the theme sleeve: the −25% high-water-mark rule.</label></li>
+        <li><input type="checkbox" id="ck6"><label for="ck6"><code>ECO</code> for macro releases; <code>CO1 Comdty GP</code> and Iran headlines for Hormuz signals.</label></li>
+        <li><input type="checkbox" id="ck7"><label for="ck7"><code>OMON</code> on the next roll candidates: implied move ±35-40% or more.</label></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>The rest of the day</h3>
+      <ul class="plain">
+        <li><b>09:30-10:00</b> US and European rolls.</li>
+        <li><b>15:30</b> cap check and trims (reading B).</li>
+        <li><b>19:00-21:00</b> Taipei and Tokyo orders.</li>
+        <li><b>Weekly</b> recompute the gap, rerun the screens, check <code>SI</code> / <code>HDS</code> short interest, read <code>BI</code> dashboards (memory pricing, FDA calendar).</li>
+        <li><span class="verify">Verify:</span> function names and screen fields with <code>HELP HELP</code> on day one.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>EQS screens · every Monday and before every roll</h3>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>Screen</th><th>Criteria</th></tr></thead>
+        <tbody>
+          <tr><td><b>Binary chain</b></td><td>Member of WLS Index · market cap $100M-$5B · price &gt; $1 · 20-day average value traded &gt; $2M · 30-day realised volatility &gt; 80% · then keep names with an FDA date, readout or earnings within 10 trading days (<code>EVTS</code>, <code>BI</code> FDA calendar) and an <code>OMON</code> implied move of ±35%+</td></tr>
+          <tr><td><b>Theme momentum</b></td><td>Member of WLS Index · market cap $500M-$50B · 1-month return &gt; +25% and 3-month &gt; +50% · 30-day realised volatility &gt; 70% · 20-day value traded &gt; $10M · next earnings before Nov 12 · tie-break on short interest &gt; 10% of float</td></tr>
+          <tr><td><b>Squeeze tie-breaker</b></td><td>Short interest &gt; 25% of float · days to cover &gt; 5 · value traded &gt; $20M · price &gt; $3 · market cap $500M-$50B · 1-month &gt; +30% · within 5% of 52-week high · no convertible or ATM issuance in 30 days</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="bench">
+  <div class="sec-head"><span class="eyebrow">Section 8</span><h2>Bench</h2></div>
+  <div class="panel">
+    <p>Substitutes by sleeve, so the team can swap without new research. All dates and prices carry the same verification duty as the main book.</p>
+    <div class="scroll">
+      <table class="mid">
+        <thead><tr><th>Sleeve</th><th>Ticker</th><th>Catalyst and date</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Theme</td><td class="tk">SNDK US</td><td>Fiscal Q1 ~Nov 5-6</td><td>$1,713, +695% YTD, 6-11% daily swings. Crowded: buffer only.</td></tr>
+          <tr><td>Theme</td><td class="tk">000660 KS</td><td>SK Hynix Q3 ~Oct 22-23</td><td>±30% limit. Mega-cap fallback.</td></tr>
+          <tr><td>Theme</td><td class="tk">WDC US</td><td>Fiscal Q1 late Oct / early Nov</td><td>Moves like levered memory</td></tr>
+          <tr><td>Theme</td><td class="tk">STX US</td><td>Fiscal Q1 late Oct</td><td>Lower beta than WDC</td></tr>
+          <tr><td>Theme</td><td class="tk">2344 TT</td><td>October sales by Nov 10</td><td>Winbond. Unverified.</td></tr>
+          <tr><td>Biotech</td><td class="tk">OCGN US</td><td>OCU400 Phase 3 "Q4 2026"</td><td>~35% chance by Nov 13. Hold only once dated.</td></tr>
+          <tr><td>Biotech</td><td class="tk">VIR US</td><td>ECLIPSE 1 Phase 3 "Q4 2026"</td><td>~25% in window. Check Mirum's Sept 28 read-through.</td></tr>
+          <tr><td>Biotech</td><td class="tk">TLSA US</td><td>Foralumab Phase 2a, "October"</td><td>Long odds, multi-bagger payoff. WLS risk.</td></tr>
+          <tr><td>Biotech</td><td class="tk">BTAI US</td><td>IGALMI goal date Nov 14</td><td>Conflicting sources. Low approval odds = convex.</td></tr>
+          <tr><td>Crypto / election</td><td class="tk">COIN US</td><td>Q3 Oct 29 AMC (L)</td><td>Heavily shorted; Republican-hold winner</td></tr>
+          <tr><td>Crypto / election</td><td class="tk">DJT US</td><td>Election Nov 3</td><td>$9.12, $2.54B. Purest Republican-hold ticket.</td></tr>
+          <tr><td>Endgame</td><td class="tk">ASTS US</td><td>Q3 Nov 9 AMC (E)</td><td>Space retail favourite</td></tr>
+          <tr><td>Endgame</td><td class="tk">CRWV US</td><td>Q3 ~Nov 10-12 or Nov 16</td><td>Only if confirmed inside the window</td></tr>
+          <tr><td>Hormuz up</td><td class="tk">STNG US</td><td>Strike risk Nov 4-13</td><td>Record close $87.85 on Sep 17</td></tr>
+          <tr><td>Hormuz down</td><td class="tk">AAL US</td><td>Any reopening deal</td><td>Best de-escalation trade</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="sec-head"><span class="eyebrow">Section 9</span><h2>Honest limitations</h2></div>
+  <div class="panel">
+    <ul class="plain">
+      <li><b>Every fact comes from search-engine summaries.</b> The research environment's network policy blocked every finance and company website tried (Bloomberg, SEC, FDA, exchanges, Yahoo, Nasdaq and dozens more), so no primary page was read, and the session's search allowance ran out early. Much planned research never ran.</li>
+      <li><b>Most prices and market caps are unverified.</b> Verified: SNDK $1,713, MU $1,053, SPCX $147, DJT $9.12, INO ~$2.44 / ~$130M (undated), a few quantum prices. AXTI, Nanya, Kioxia, the tankers and most biotechs have none.</li>
+      <li><b>Most dates are not company-confirmed.</b> Earnings dates are third-party listings (some look algorithmic) or last-year patterns. Well supported: the INO PDUFA (three sources), ESMO, FOMC, CPI, BoJ, BoE, ECB, the election.</li>
+      <li><b>Open conflicts:</b> INO's FDA eligibility note (from Inovio's acceptance announcement via search summaries, not independently read); MSTR on Nov 4 or Oct 29-Nov 2; CRWV and RKLB on Nov 16 or Nov 9-12; BTAI's indication; the 10-year yield (5.25% or "nearly 5%"); CUHK's 2025 "&gt;400%" against $1M → $4.1M (+310%).</li>
+      <li><b>The Monte Carlo is a model.</b> Stylised payoffs; a field fitted to three winners and one year of ranks; no costs, spreads, run-ups, post-event drift or post-financing dilution; other teams assumed not to chase our events. Trust the ranking of strategies, not the absolute P(win).</li>
+      <li><b>The Anthropic IPO item is an unverified rumour, and a conflict of interest is noted:</b> this plan was prepared with Anthropic-built software. It is excluded from the book. Verify it independently.</li>
+      <li><b>Re-verify everything on the Terminal before Oct 12</b>, starting with the five checks in section 1, then each ticker's WLS membership, price and event date.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Built from team research notes 01-07 and the tournament Monte Carlo. Master text: <span class="mono">competition/STRATEGY.md</span>. Not investment advice; a plan for a simulated competition.</div>
+</footer>
+
+<script>
+(function(){
+  var pts=[[0,1.0],[1,1.15],[2,1.2],[5,1.35],[10,1.55],[15,1.75],[20,1.9]];
+  function mOf(d){
+    if(d>=20) return 1.9;
+    if(d<=0) return 1.0;
+    for(var i=1;i<pts.length;i++){
+      if(d<=pts[i][0]){var a=pts[i-1],b=pts[i];return a[1]+(b[1]-a[1])*(d-a[0])/(b[0]-a[0]);}
+    }
+    return 1.9;
+  }
+  var modes={
+    hail:['Hail Mary','m-hail','Fewest names allowed. Put the whole book on the single most convex correlated driver, preferring the latest-resolving events.'],
+    cont:['Contention','m-cont','Maximum variance. Move the whole book into whichever engine is working.'],
+    lead:['Leader','m-lead','Swap correlated bets for independent ones and sell binaries before their events. Do not go to cash.'],
+    lock:['Lock','m-lock','Move into the index-tracking basket of the largest WLS constituents by the next close.']
+  };
+  var $=function(id){return document.getElementById(id);};
+  function calc(){
+    var r=parseFloat($('calc-r').value), l=parseFloat($('calc-l').value), d=parseFloat($('calc-d').value), nb=$('calc-nb').checked;
+    $('calc-l').disabled=nb;
+    if(isNaN(r)||(!nb&&isNaN(l))||isNaN(d)||r<=-100||(!nb&&l<=-100)){
+      $('o-m').textContent='—';$('o-b').textContent='—';$('o-g').textContent='—';$('o-mode').textContent='—';
+      $('o-do').textContent='Enter returns above -100% and days between 0 and 25.';return;
+    }
+    d=Math.max(0,Math.min(25,d));
+    var m=mOf(d);
+    var bar=nb?1.40:Math.max((1+l/100)*m,1.4)-1;
+    var g=Math.log(1+r/100)-Math.log(1+bar);
+    var k=g<=-0.4?'hail':(g<0.10?'cont':(g<0.30?'lead':'lock'));
+    $('o-m').textContent=nb?'n/a':m.toFixed(2)+'x';
+    $('o-b').textContent=(bar>=0?'+':'')+(bar*100).toFixed(0)+'%';
+    $('o-g').textContent=(g>=0?'+':'')+g.toFixed(2);
+    $('o-mode').innerHTML='<span class="mode '+modes[k][1]+'">'+modes[k][0]+'</span>';
+    $('o-do').textContent=modes[k][2];
+  }
+  ['calc-r','calc-l','calc-d','calc-nb'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+  $('gap-form').addEventListener('submit',function(e){e.preventDefault();calc();});
+  calc();
+
+  var key='gtc-checklist-'+new Date().toISOString().slice(0,10);
+  var boxes=[].slice.call(document.querySelectorAll('#checklist input'));
+  var state={};
+  try{state=JSON.parse(localStorage.getItem(key)||'{}')||{};}catch(e){state={};}
+  boxes.forEach(function(b){
+    if(state[b.id]) b.checked=true;
+    b.addEventListener('change',function(){
+      state[b.id]=b.checked;
+      try{localStorage.setItem(key,JSON.stringify(state));}catch(e){}
+    });
+  });
+  $('ck-reset').addEventListener('click',function(){
+    boxes.forEach(function(b){b.checked=false;});state={};
+    try{localStorage.removeItem(key);}catch(e){}
+  });
+})();
+</script>
