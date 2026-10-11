@@ -60,52 +60,55 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 .top{padding-block:36px 22px;display:grid;gap:12px}
 .rule-line{font-size:var(--step-1);max-width:62ch}
 .rule-line b{font-weight:600}
-.status{font-size:.93rem;color:var(--muted);max-width:70ch}
+.status{font-family:var(--font-mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 
-/* week strip */
+/* week strip: one cell per week; squares show how firm each pick's date is (solid = confirmed, half = likely, outline = unverified) */
 .strip{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
 .strip li{min-width:0}
 .strip li + li .cell{border-left:1px solid var(--rule)}
-.cell{display:grid;gap:6px;padding:12px 12px 14px;text-decoration:none;color:var(--ink);height:100%}
+.cell{display:grid;gap:7px;align-content:start;padding:12px 12px 14px;text-decoration:none;color:var(--ink);height:100%;min-width:0}
 .cell:hover{background:var(--accent-soft)}
 .cell:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .cell .wk{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cell .rng{font-family:var(--font-display);font-size:1.35rem;font-weight:600;line-height:1;white-space:nowrap}
+.cell .rng span{white-space:nowrap}
 .meter{display:flex;gap:3px}
-.meter i{display:block;width:12px;height:12px;border-radius:2px}
-.meter .on{background:var(--accent)}
-.meter .off{border:1.5px dashed var(--muted);opacity:.7}
-.cell .cnt{font-family:var(--font-mono);font-size:.8rem;font-variant-numeric:tabular-nums}
-.cell.short .cnt{color:var(--unv-ink)}
+.meter i{display:block;width:12px;height:12px;border-radius:2px;border:1.5px solid transparent}
+.meter .s-confirmed{background:var(--conf-ink);border-color:var(--conf-ink)}
+.meter .s-likely{background:linear-gradient(135deg,var(--likely-ink) 50%,transparent 50%);border-color:var(--likely-ink)}
+.meter .s-unverified{border-color:var(--unv-ink)}
+.tks{display:flex;flex-wrap:wrap;gap:1px 8px;font-family:var(--font-mono);font-size:.76rem;font-weight:500;line-height:1.35;min-width:0}
 .legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:.86rem;color:var(--muted);padding-top:12px}
-.legend span{display:inline-flex;gap:8px;align-items:center}
+.legend > span{display:inline-flex;gap:8px;align-items:center}
 
 /* tags */
 .tag{display:inline-block;font-family:var(--font-mono);font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;white-space:nowrap;line-height:1.5}
 .tag.likely{background:var(--likely-bg);color:var(--likely-ink)}
 .tag.unverified{background:var(--unv-bg);color:var(--unv-ink)}
 .tag.confirmed{background:var(--conf-bg);color:var(--conf-ink)}
+.offs{display:inline-block;font-family:var(--font-mono);font-size:.64rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border:1px dashed var(--muted);border-radius:3px;color:var(--muted);white-space:nowrap;line-height:1.5}
 
 /* weeks */
 main{display:grid;gap:52px;padding-block:40px 56px}
 .week{display:grid;gap:0;scroll-margin-top:16px;min-width:0}
 .week-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
 .week-head .range{font-family:var(--font-mono);font-size:.86rem;color:var(--muted)}
-.week-head .fill{margin-left:auto;font-family:var(--font-mono);font-size:.78rem;color:var(--muted)}
-.week-head .fill.short{color:var(--unv-ink);font-weight:600}
+.week-head .fill{margin-left:auto;font-family:var(--font-mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .picks{display:grid}
 
 .pick{display:grid;grid-template-columns:13.5rem minmax(0,1fr);gap:20px 32px;padding-block:22px;border-bottom:1px solid var(--rule);scroll-margin-top:16px}
 .id{display:grid;gap:4px;align-content:start;min-width:0}
-.tkrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tkrow{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
 .tk{font-family:var(--font-mono);font-size:1.6rem;font-weight:600;line-height:1.1;letter-spacing:-.01em}
 .exch{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .co{font-size:.95rem;font-weight:500}
 .px{margin:10px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;padding-top:10px;border-top:1px solid var(--rule)}
-.px div{display:grid;gap:1px;min-width:0}
+.px div{display:grid;gap:1px;align-content:start;min-width:0}
 .px dt{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .px dd{margin:0;font-size:1rem;font-weight:500}
+.px dd small{display:block;font-family:var(--font-body);font-size:.76rem;font-weight:400;color:var(--muted);line-height:1.35}
 .px dd.unk{color:var(--unv-ink);font-weight:400;font-size:.9rem}
+.offwhy{margin-top:6px;font-size:.8rem;line-height:1.4;color:var(--muted)}
 
 .body{display:grid;gap:12px;min-width:0;align-content:start}
 .what{font-size:1.04rem;line-height:1.5;max-width:66ch}
@@ -121,15 +124,12 @@ main{display:grid;gap:52px;padding-block:40px 56px}
 .src{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
 .src a{overflow-wrap:anywhere}
 
-.open-slots{display:flex;align-items:center;gap:14px;padding:16px;margin-top:16px;border:1.5px dashed var(--rule);border-radius:4px;color:var(--muted);font-size:.93rem}
-.open-slots b{color:var(--ink);font-weight:600}
-.slots{display:flex;gap:4px;flex:none}
-.slots i{display:block;width:14px;height:14px;border:1.5px dashed var(--muted);border-radius:2px;opacity:.7}
-
 .week-foot{display:grid;gap:8px;padding-top:16px}
-.alts{font-size:.88rem}
+.alts{font-size:.86rem;max-width:84ch}
+.alts b{font-family:var(--font-mono);font-weight:600}
+.alts .sep{color:var(--muted);padding-inline:4px}
 .alts .k,.note-k{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:8px}
-.note{font-size:.88rem;color:var(--muted);max-width:78ch}
+.note{font-size:.84rem;color:var(--muted);max-width:84ch}
 
 /* footer */
 footer{border-top:2px solid var(--ink);padding-block:22px 56px;display:grid;gap:22px;font-size:.9rem}
@@ -141,7 +141,6 @@ footer h3{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;tex
 footer ul.plain{margin:0;padding-left:1.1rem;display:grid;gap:8px;max-width:80ch;color:var(--ink)}
 footer details summary{cursor:pointer;font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 footer details ul{margin-top:10px}
-.asof{color:var(--muted);font-size:.82rem}
 
 @media (max-width:720px){
   .pick{grid-template-columns:minmax(0,1fr);gap:14px}
@@ -152,30 +151,31 @@ footer details ul{margin-top:10px}
   .week-head .fill{margin-left:0;width:100%}
 }
 @media (max-width:560px){
-  .cell{padding:10px 6px 12px;gap:5px}
+  .cell{padding:10px 6px 12px;gap:6px}
   .cell .rng{font-size:1rem;white-space:normal}
   .cell .wk{font-size:.64rem;letter-spacing:.04em}
   .meter{gap:2px}
-  .meter i{width:9px;height:9px}
-  .cell .cnt{font-size:.72rem}
-  .cell .cnt .lbl{display:none}
+  .meter i{width:9px;height:9px;border-width:1.25px}
+  .tks{font-size:.66rem;gap:0 5px}
 }
+
 </style>
 
 <div class="wrap">
   <header class="top">
-    <span class="eyebrow">Trading Challenge 2026 &middot; Team pick list</span>
+    <span class="eyebrow">Trading Challenge 2026 &middot; Team pick list &middot; As of Sun Oct 11</span>
     <h1>Weekly Catalyst Calendar</h1>
-    <p class="rule-line">Mon Oct 12 &ndash; Fri Nov 13, 2026. <b>Each week holds five new stocks whose catalyst lands inside that week</b>, with no ticker repeated.</p>
-    <p class="status">16 of 25 slots filled. 9 slots are still open (Weeks 1–3, three each). Status as of Sun Oct 11, 2026.</p>
+    <p class="rule-line"><b>Five new stocks every week, each with its catalyst inside that week</b>, Mon Oct 12 &ndash; Fri Nov 13, 2026.</p>
+    <p class="status">25 tickers, none repeated &middot; 5 confirmed · 7 likely · 13 unverified &middot; 6 off-screen</p>
   </header>
 
   <nav aria-label="Weeks">
-    <ul class="strip"><li><a href="#week-1" class="cell short"><span class="wk">Week 1</span><span class="rng">Oct 12–16</span><span class="meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="off"></i><i class="off"></i><i class="off"></i></span><span class="cnt">2 of 5 <span class="lbl">events</span></span></a></li><li><a href="#week-2" class="cell short"><span class="wk">Week 2</span><span class="rng">Oct 19–23</span><span class="meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="off"></i><i class="off"></i><i class="off"></i></span><span class="cnt">2 of 5 <span class="lbl">events</span></span></a></li><li><a href="#week-3" class="cell short"><span class="wk">Week 3</span><span class="rng">Oct 26–30</span><span class="meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="off"></i><i class="off"></i><i class="off"></i></span><span class="cnt">2 of 5 <span class="lbl">events</span></span></a></li><li><a href="#week-4" class="cell"><span class="wk">Week 4</span><span class="rng">Nov 2–6</span><span class="meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span class="cnt">5 of 5 <span class="lbl">events</span></span></a></li><li><a href="#week-5" class="cell"><span class="wk">Week 5</span><span class="rng">Nov 9–13</span><span class="meter" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span class="cnt">5 of 5 <span class="lbl">events</span></span></a></li></ul>
+    <ul class="strip"><li><a href="#week-1" class="cell"><span class="wk">Week 1</span><span class="rng">Oct <span>12–16</span></span><span class="meter" aria-hidden="true"><i class="s-likely"></i><i class="s-confirmed"></i><i class="s-unverified"></i><i class="s-unverified"></i><i class="s-unverified"></i></span><span class="tks"><span>IRD</span><span>VSTM</span><span>BMN</span><span>VIR</span><span>IVA</span></span></a></li><li><a href="#week-2" class="cell"><span class="wk">Week 2</span><span class="rng">Oct <span>19–23</span></span><span class="meter" aria-hidden="true"><i class="s-confirmed"></i><i class="s-confirmed"></i><i class="s-unverified"></i><i class="s-unverified"></i><i class="s-unverified"></i></span><span class="tks"><span>CATX</span><span>IMTX</span><span>TLSA</span><span>CLYM</span><span>9887</span></span></a></li><li><a href="#week-3" class="cell"><span class="wk">Week 3</span><span class="rng">Oct <span>26–30</span></span><span class="meter" aria-hidden="true"><i class="s-likely"></i><i class="s-unverified"></i><i class="s-unverified"></i><i class="s-confirmed"></i><i class="s-likely"></i></span><span class="tks"><span>INO</span><span>JBLU</span><span>GSIT</span><span>BHC</span><span>TDOC</span></span></a></li><li><a href="#week-4" class="cell"><span class="wk">Week 4</span><span class="rng">Nov <span>2–6</span></span><span class="meter" aria-hidden="true"><i class="s-likely"></i><i class="s-unverified"></i><i class="s-unverified"></i><i class="s-unverified"></i><i class="s-unverified"></i></span><span class="tks"><span>ASPN</span><span>ENVX</span><span>FUFU</span><span>RDW</span><span>BKSY</span></span></a></li><li><a href="#week-5" class="cell"><span class="wk">Week 5</span><span class="rng">Nov <span>9–13</span></span><span class="meter" aria-hidden="true"><i class="s-confirmed"></i><i class="s-likely"></i><i class="s-likely"></i><i class="s-likely"></i><i class="s-unverified"></i></span><span class="tks"><span>ARTV</span><span>TLS</span><span>BTBT</span><span>PLUG</span><span>BBAI</span></span></a></li></ul>
     <div class="legend">
-      <span><span class="tag confirmed">Confirmed</span> date and event locked in (none yet)</span>
+      <span><span class="tag confirmed">Confirmed</span> company has announced the date</span>
       <span><span class="tag likely">Likely</span> date well supported</span>
       <span><span class="tag unverified">Unverified</span> estimate, single source or no set date</span>
+      <span><span class="offs">Off-screen</span> outside the price or market-cap screen</span>
     </div>
   </nav>
 
@@ -184,10 +184,10 @@ footer details ul{margin-top:10px}
   <header class="week-head">
     <h2 id="h-week-1">Week 1</h2>
     <span class="range">Mon Oct 12 – Fri Oct 16, 2026</span>
-    <span class="fill short">2 of 5 filled</span>
+    <span class="fill">1 confirmed · 1 likely · 3 unverified</span>
   </header>
   <div class="picks">
-<article class="pick" id="ird">
+<article class="pick" id="pick-ird">
   <div class="id">
     <div class="tkrow"><span class="tk">IRD</span><span class="tag likely">Likely</span></div>
     <div class="exch">NASDAQ</div>
@@ -196,22 +196,73 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$4.58</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$270M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Opus Genetics makes eye treatments, including an eye drop already sold as RYZUMVI with partner Viatris, and is asking the FDA to approve it for age-related blurry near vision (presbyopia).</p>
+    <p class="what">Opus Genetics makes eye treatments, including an eye drop already sold as RYZUMVI, and is asking the FDA to approve it for age-related blurry near vision (presbyopia).</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>FDA decision on the sNDA for phentolamine 0.75% (RYZUMVI / MR-141) in presbyopia. The goal date is Saturday Oct 17, and the FDA usually acts on the Friday before (Oct 16). Placed in Week 1, not Week 2, because the stock has to be held by the Oct 16 close to capture a Friday decision. If nothing is announced by then, hold it into Mon Oct 19.</dd></div>
+      <div><dt>Catalyst</dt><dd>FDA decision on the phentolamine 0.75% (RYZUMVI) sNDA for presbyopia. The goal date is Sat Oct 17, so under the weekend-FDA rule the decision is expected on Fri Oct 16. Hold into Mon Oct 19 if nothing is announced by the Friday close.</dd></div>
       <div><dt>Date</dt><dd class="when">Sat Oct 17 (PDUFA goal date; FDA action most likely Fri Oct 16)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Approval would extend an already-approved drug into the large presbyopia market, backed by two pivotal Phase 3 trials (VEGA-2 and VEGA-3), with no known deficiencies and no advisory committee. A plausible move is +15% to +60% on approval (about -30% to -50% on a rejection). The stock has already fallen about 20% from its September level, which lowers the sell-the-news risk somewhat.</dd></div>
+      <div><dt>Why it could pop</dt><dd>Approval would extend an already-approved drug into the large presbyopia market, backed by two positive Phase 3 trials (VEGA-2, VEGA-3), with no known deficiencies and no advisory committee. A plausible move is +15% to +60% on approval, against about −30% to −50% on a rejection.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company-confirmed PDUFA goal date (sNDA acceptance press release, Feb 2026), repeated in trade press and October PDUFA calendars. The weekend rule would put it in Week 2. It was moved to Week 1 on purpose because FDA actions on Saturday goal dates usually come on the Friday, and Week 1 has no other dated candidate.</p>
-      <ul class="src"><li><a href="https://www.globenewswire.com/news-release/2026/02/25/3244435/0/en/Opus-Genetics-Announces-FDA-Acceptance-of-Supplemental-New-Drug-Application-for-Phentolamine-Ophthalmic-Solution-0-75-for-the-Treatment-of-Presbyopia.html" target="_blank" rel="noopener noreferrer">globenewswire.com</a></li><li><a href="https://www.biospace.com/press-releases/opus-genetics-announces-fda-acceptance-of-supplemental-new-drug-application-for-phentolamine-ophthalmic-solution-0-75-for-the-treatment-of-presbyopia" target="_blank" rel="noopener noreferrer">biospace.com</a></li><li><a href="https://www.ophthalmologytimes.com/view/snda-for-phentolamine-ophthalmic-solution-0-75-from-opus-genetics-accepted-for-review-by-fda" target="_blank" rel="noopener noreferrer">ophthalmologytimes.com</a></li><li><a href="https://www.endocrinologyadvisor.com/news/october-2026-fda-pdufa-dates/" target="_blank" rel="noopener noreferrer">endocrinologyadvisor.com</a></li><li><a href="https://www.assyro.com/tools/pdufa-calendar/2026/october" target="_blank" rel="noopener noreferrer">assyro.com</a></li></ul>
+      <p>Company-confirmed PDUFA goal date (sNDA acceptance release, Feb 2026), repeated on October PDUFA calendars.</p>
+      <ul class="src"><li><a href="https://www.globenewswire.com/news-release/2026/02/25/3244435/0/en/Opus-Genetics-Announces-FDA-Acceptance-of-Supplemental-New-Drug-Application-for-Phentolamine-Ophthalmic-Solution-0-75-for-the-Treatment-of-Presbyopia.html" target="_blank" rel="noopener noreferrer">globenewswire.com</a></li><li><a href="https://www.biospace.com/press-releases/opus-genetics-announces-fda-acceptance-of-supplemental-new-drug-application-for-phentolamine-ophthalmic-solution-0-75-for-the-treatment-of-presbyopia" target="_blank" rel="noopener noreferrer">biospace.com</a></li><li><a href="https://www.endocrinologyadvisor.com/news/october-2026-fda-pdufa-dates/" target="_blank" rel="noopener noreferrer">endocrinologyadvisor.com</a></li><li><a href="https://www.assyro.com/tools/pdufa-calendar/2026/october" target="_blank" rel="noopener noreferrer">assyro.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="vir">
+<article class="pick" id="pick-vstm">
+  <div class="id">
+    <div class="tkrow"><span class="tk">VSTM</span><span class="tag confirmed">Confirmed</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">Verastem Oncology</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$8.38</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$760M</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Verastem Oncology sells a drug combination for a rare ovarian cancer and is developing VS-7375, a pill that blocks the KRAS G12D cancer mutation in pancreatic, lung and bowel cancers.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>VS-7375 investor event on Wed Oct 14 at 8:00am ET (before the open). An NYU Langone investigator presents the first efficacy data and updated safety data in pancreatic, lung and colorectal cancer.</dd></div>
+      <div><dt>Date</dt><dd class="when">Wed Oct 14</dd></div>
+      <div><dt>Why it could pop</dt><dd>This is the first efficacy readout for an oral KRAS G12D inhibitor across three large tumour types, and competitive response rates in pancreatic or colorectal cancer could re-rate the stock by +20% to +50% on the day. The stock already rose about 9% last week and the market cap is derived rather than quoted, so sell-the-news risk is real; it is roughly a coin flip.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company-confirmed (Sept 8, 2026 Business Wire release and company investor-events page).</p>
+      <ul class="src"><li><a href="https://secure.businesswire.com/news/home/20260908273196/en/Verastem-Oncology-to-Unveil-New-Clinical-Data-Highlighting-the-Best-in-Class-Potential-of-VS-7375-an-Oral-KRAS-G12D-ONOFF-Inhibitor-Across-Pancreatic-Lung-and-Colorectal-Cancers" target="_blank" rel="noopener noreferrer">secure.businesswire.com</a></li><li><a href="https://investor.verastem.com/events" target="_blank" rel="noopener noreferrer">investor.verastem.com</a></li><li><a href="https://www.fool.com/quote/nasdaq/verastem-inc/vstm/" target="_blank" rel="noopener noreferrer">fool.com</a></li><li><a href="https://biotechdistilled.substack.com/p/the-distilled-3-top-plays-for-the-2a0" target="_blank" rel="noopener noreferrer">biotechdistilled.substack.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-bmn">
+  <div class="id">
+    <div class="tkrow"><span class="tk">BMN</span><span class="tag unverified">Unverified</span></div>
+    <div class="exch">ASX</div>
+    <div class="co">Bannerman Energy Ltd</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">A$3.515<small>about US$2.3</small></dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$490M</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Bannerman Energy is developing the Etango uranium mine in Namibia, and its construction financing with partner CNOL closed in September.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>September-quarter 2026 activities report (last year's equivalent came out Thu Oct 16, 2025), which may firm up timing of the Etango final investment decision (FID), guided to Q4 2026. The FID itself is undated and could be announced at any time.</dd></div>
+      <div><dt>Date</dt><dd class="when">Est. Thu Oct 15/16 (pattern from Oct 16, 2025 release; unconfirmed; could slip to Week 2)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Financing and the CNOL partnership closed on Sep 24, so the FID is the next step, and a quarterly report that confirms imminent FID, or the FID itself, could lift the stock +10% to +25%. A plain quarterly update would likely be a non-event, so this is a lower-conviction filler (about US$2.3 per share at 0.65–0.70 USD/AUD; price dated Jul 27).</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Pattern estimate from the prior-year September-quarter release date; FID guided to Q4 2026 with no specific date.</p>
+      <ul class="src"><li><a href="https://www.investsmart.com.au/security/asx/bmn/bannerman-energy-ltd" target="_blank" rel="noopener noreferrer">investsmart.com.au</a></li><li><a href="https://www.investsmart.com.au/security/asx/bmn/bannerman-energy-ltd/announcements" target="_blank" rel="noopener noreferrer">investsmart.com.au</a></li><li><a href="https://capital.com/en-int/news/nbsx-bmn-completion-of-cnol-strategic-financing-transaction" target="_blank" rel="noopener noreferrer">capital.com</a></li><li><a href="https://www.engineeringnews.co.za/article/etango-8-uranium-project-namibia-update-2026-09-18" target="_blank" rel="noopener noreferrer">engineeringnews.co.za</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-vir">
   <div class="id">
     <div class="tkrow"><span class="tk">VIR</span><span class="tag unverified">Unverified</span></div>
     <div class="exch">NASDAQ</div>
@@ -220,169 +271,337 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$8.82</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$1.46B</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Vir Biotechnology develops antibody and RNA medicines, led by a two-drug combination for chronic hepatitis delta, a severe liver infection.</p>
+    <p class="what">Vir Biotechnology develops antibody and RNA medicines, led by a two-drug combination for hepatitis delta, a severe chronic liver infection.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Phase 3 ECLIPSE 1 topline for tobevibart plus elebsiran in hepatitis delta. The company guides only to &#x27;Q4 2026&#x27;, with no week given. This is a FLOATING catalyst used to fill Week 1. It is not dated in this week.</dd></div>
+      <div><dt>Catalyst</dt><dd>Phase 3 ECLIPSE 1 topline for tobevibart plus elebsiran in hepatitis delta. Floating catalyst: the company guides only to Q4 2026, so it is a low-probability fill for this week.</dd></div>
       <div><dt>Date</dt><dd class="when">Q4 2026 (no specific date; low chance it falls Oct 12–16)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Phase 2 SOLSTICE showed 88% undetectable HDV RNA at week 96, so a positive Phase 3 is more likely than not, and a win could add about +40% to +100%. Cash of more than US$1B removes dilution risk, but the readout may well land after the competition ends.</dd></div>
+      <div><dt>Why it could pop</dt><dd>Phase 2 SOLSTICE showed 88% undetectable HDV RNA at week 96, so a positive Phase 3 is more likely than not and could add +40% to +100%. The main risk is timing, because the readout may well land after the competition ends.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company guidance window (Q2 2026 results, Aug 5, 2026). Not week-specific, and there is some slippage risk because an earlier release pointed to Q1 2027.</p>
+      <p>Company guidance window (Q2 2026 results, Aug 5, 2026); not week-specific.</p>
       <ul class="src"><li><a href="https://www.sec.gov/Archives/edgar/data/0001706431/000162828026053351/a20260805-q2ex991earningsr.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://www.businesswire.com/news/home/20251103530329/en/Vir-Biotechnology-Announces-Completion-of-Enrollment-in-ECLIPSE-1-Phase" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://upstox.com/us-stocks/vir-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
     </details>
   </div>
 </article>
-<div class="open-slots">
-  <span class="slots" aria-hidden="true"><i></i><i></i><i></i></span>
-  <p><b>Slots 3–5 open.</b> No verified catalyst found for Oct 12–16 yet.</p>
-</div>
+<article class="pick" id="pick-iva">
+  <div class="id">
+    <div class="tkrow"><span class="tk">IVA</span><span class="tag unverified">Unverified</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
+    <div class="exch">NASDAQ (ADS); ordinary shares on Euronext Paris</div>
+    <div class="co">Inventiva</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$5.67</dd></div>
+      <div><dt>Mkt cap</dt><dd class="unk">Not verified</dd></div>
+    </dl>
+    <p class="offwhy">market cap not verified</p>
+  </div>
+  <div class="body">
+    <p class="what">Inventiva is a French biotech testing lanifibranor, a daily pill for MASH, a fatty-liver disease that scars the liver.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>Phase 3 NATiV3 topline for lanifibranor in MASH (1,009 patients; last patient visit done by Sep 2). Floating catalyst guided only to Q4 2026, moved here from Week 5 because Week 1 had no other candidate.</dd></div>
+      <div><dt>Date</dt><dd class="when">Q4 2026 (no specific date; very low chance it falls Oct 12–16)</dd></div>
+      <div><dt>Why it could pop</dt><dd>The Phase 2b NATIVE trial met its primary and key secondary endpoints, so a Phase 3 win is about a coin flip or better and would likely re-rate the stock +50% to +150%. It is a placeholder: the data could easily come in November or December, and the market cap was not verified.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company guidance window (Sep 2, 2026 release); not week-specific.</p>
+      <ul class="src"><li><a href="https://www.pharmanow.live/latest-news/inventiva-nativ3-phase-3-topline-results-lanifibranor-mash-2026" target="_blank" rel="noopener noreferrer">pharmanow.live</a></li><li><a href="https://site.financialmodelingprep.com/market-news/inventiva-iva-updates-h1-results-nativ3-trial-cash" target="_blank" rel="noopener noreferrer">site.financialmodelingprep.com</a></li><li><a href="https://www.tipranks.com/stocks/iva" target="_blank" rel="noopener noreferrer">tipranks.com</a></li></ul>
+    </details>
+  </div>
+</article>
   </div>
   <div class="week-foot">
-    <p class="alts"><span class="k">Alternates</span> none found</p>
-    <p class="note">Only 2 of 5. No verified candidate has a dated catalyst inside Oct 12–16. IRD is here because its Saturday goal date makes a Friday Oct 16 FDA action likely. VIR is an undated Q4 floater, and its chance of reporting this week is small. Three slots are empty because every other dated candidate belongs to a later week or was rejected. A fresh search for Week 1 events (Oct 12–16 PDUFAs, Phase 2/3 readouts, small-cap earnings) is needed before Monday.</p>
+    <p class="alts"><span class="k">Alternates</span> None found</p>
+    <p class="note"><span class="note-k">Week note</span> Week 1 has only two dated catalysts: IRD (FDA, Saturday goal date so Friday action) and VSTM (Oct 14 data event). BMN is pattern-dated from last year's Oct 16 quarterly release, and VIR and IVA are Q4 floaters used only to reach five. TLSA (Week 2 pick) has an overdue topline that could also land this week. No verified alternate exists.</p>
   </div>
 </section>
 <section class="week" id="week-2" aria-labelledby="h-week-2">
   <header class="week-head">
     <h2 id="h-week-2">Week 2</h2>
     <span class="range">Mon Oct 19 – Fri Oct 23, 2026</span>
-    <span class="fill short">2 of 5 filled</span>
+    <span class="fill">2 confirmed · 3 unverified</span>
   </header>
   <div class="picks">
-<article class="pick" id="clym">
+<article class="pick" id="pick-catx">
   <div class="id">
-    <div class="tkrow"><span class="tk">CLYM</span><span class="tag unverified">Unverified</span></div>
-    <div class="exch">NASDAQ</div>
-    <div class="co">Climb Bio</div>
+    <div class="tkrow"><span class="tk">CATX</span><span class="tag confirmed">Confirmed</span></div>
+    <div class="exch">NYSE American</div>
+    <div class="co">Perspective Therapeutics, Inc.</div>
     <dl class="px">
-      <div><dt>Price</dt><dd class="num">US$14.95</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num">US$858.7M</dd></div>
+      <div><dt>Price</dt><dd class="num">US$3.19</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$364M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Climb Bio is developing antibody drugs for immune-driven kidney diseases, including budoprutug for membranous nephropathy and CLYM116 for IgA nephropathy.</p>
+    <p class="what">Perspective Therapeutics develops radioactive cancer drugs that carry an alpha-emitting isotope (lead-212) to tumours, led by a treatment for neuroendocrine tumours.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>ASN Kidney Week 2026 (Denver, Oct 21–25). CLYM116 posters are dated Oct 22 and 23 (Week 2), and the first preliminary Phase 2 PrisMN data for budoprutug are an oral presentation. One newsletter dates the oral to Saturday Oct 24, which would mean a reaction on Mon Oct 26. Hold through Oct 26 to capture the oral.</dd></div>
-      <div><dt>Date</dt><dd class="when">Thu Oct 22 and Fri Oct 23 (posters); oral possibly Sat Oct 24</dd></div>
-      <div><dt>Why it could pop</dt><dd>Selection for an oral presentation suggests the first-in-patient membranous nephropathy data are presentable, and strong remission or B-cell depletion numbers could re-rate the stock by about +30% to +100%. The risk is that the stock rose from about US$11 to US$15–17 into the event, so a sell-the-news drop is possible.</dd></div>
+      <div><dt>Catalyst</dt><dd>ESMO 2026 Rapid Oral presentation of updated [212Pb]VMT-alpha-NET data (abstract 2396RO), Fri Oct 23, slot 10:25–10:30am EDT, during US trading hours. Regular ESMO abstracts go online Mon Oct 19. Moved here from Week 3 after its slot time was checked.</dd></div>
+      <div><dt>Date</dt><dd class="when">Fri Oct 23 (oral, 10:25am EDT); abstracts Mon Oct 19</dd></div>
+      <div><dt>Why it could pop</dt><dd>An oral slot at a major congress for a lead-212 radioligand, with larger and longer follow-up than the ASCO interim, could confirm response and durability and move the stock +15% to +40%. The data are early-stage and a pre-congress run-up is possible; price (Aug 24) and market cap (reported US$222M–566M) are unconfirmed.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company press release (Oct 2, 2026) confirms the meeting and the oral slot. Poster dates come from the company and BiopharmaWatch summaries. The Oct 24 oral date comes from a single third-party newsletter.</p>
-      <ul class="src"><li><a href="https://finviz.com/news/398320/climb-bio-to-present-new-data-at-american-society-of-nephrology-asn-kidney-week-2026-for-clym116-and-budoprutug" target="_blank" rel="noopener noreferrer">finviz.com</a></li><li><a href="https://www.biopharmawatch.com/news/CLYM/climb-bio-presents-new-data-asn-kidney-week-2026" target="_blank" rel="noopener noreferrer">biopharmawatch.com</a></li><li><a href="https://biotechdistilled.substack.com/p/the-distilled-3-top-plays-for-the-2a0" target="_blank" rel="noopener noreferrer">biotechdistilled.substack.com</a></li><li><a href="https://benzinga.com/quote/clym" target="_blank" rel="noopener noreferrer">benzinga.com</a></li></ul>
+      <p>Company-confirmed (Jul 17, 2026 press release giving session and slot).</p>
+      <ul class="src"><li><a href="https://www.itiger.com/news/2652282802" target="_blank" rel="noopener noreferrer">itiger.com</a></li><li><a href="https://www.chartmill.com/news/external/81870/globenews-2026-7-17-perspective-therapeutics-announces-acceptance-of-vmt-net-data-for-oral-presentation-at-the-esmo-congress-2026" target="_blank" rel="noopener noreferrer">chartmill.com</a></li><li><a href="https://www.barchart.com/story/news/36779491/perspective-therapeutics-announces-acceptance-of-vmt-a-net-data-for-oral-presentation-at-the-esmo-congress-2026" target="_blank" rel="noopener noreferrer">barchart.com</a></li><li><a href="https://marketchameleon.com/Overview/CATX/Summary/" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="tlsa">
+<article class="pick" id="pick-imtx">
+  <div class="id">
+    <div class="tkrow"><span class="tk">IMTX</span><span class="tag confirmed">Confirmed</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">Immatics N.V.</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$9.65</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$1.4B</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Immatics engineers patients' immune T cells to attack cancers that carry the PRAME marker, and also develops antibody-like bispecific drugs against the same target.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>ESMO 2026: full abstracts online Mon Oct 19 (00:05 CEST), then a Proffered Paper oral on IMA203CD8 Phase 1 data (1946O) on Fri Oct 23, 13:30–15:00 CET (07:30–09:00 ET, before the US open). An anzu-cel melanoma poster follows Sat Oct 24.</dd></div>
+      <div><dt>Date</dt><dd class="when">Mon Oct 19 (abstract release) and Fri Oct 23 (oral, 07:30–09:00 ET)</dd></div>
+      <div><dt>Why it could pop</dt><dd>A proffered-paper oral for next-generation CD8-enhanced PRAME TCR-T data gives two tradeable moments (Oct 19 abstract, Oct 23 oral), and strong response and durability numbers could add +15% to +35%. These are Phase 1 data and the abstract reveals much of the content early, so the move may come on Monday and fade into Friday.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company-confirmed (Immatics investor event page and press release).</p>
+      <ul class="src"><li><a href="https://investors.immatics.com/events/event-details/esmo-2026-congress" target="_blank" rel="noopener noreferrer">investors.immatics.com</a></li><li><a href="https://www.biospace.com/press-releases/immatics-announces-upcoming-presentations-across-its-prame-franchise-at-esmo-congress-2026" target="_blank" rel="noopener noreferrer">biospace.com</a></li><li><a href="https://www.stocktitan.net/news/IMTX/immatics-announces-upcoming-presentations-across-its-prame-franchise-4t2shpiqwhba.html" target="_blank" rel="noopener noreferrer">stocktitan.net</a></li><li><a href="https://marketchameleon.com/Overview/IMTX/Summary/" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-tlsa">
   <div class="id">
     <div class="tkrow"><span class="tk">TLSA</span><span class="tag unverified">Unverified</span></div>
     <div class="exch">NASDAQ</div>
     <div class="co">Tiziana Life Sciences</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$1.15</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num">US$145.1M</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$145M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
     <p class="what">Tiziana Life Sciences is testing a nasal-spray antibody called foralumab for progressive multiple sclerosis.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Placebo-controlled Phase 2a topline for intranasal foralumab in non-active secondary progressive MS (48 patients). The company guided to &#x27;late Q3 2026&#x27;, so the data are overdue. A presentation is planned at the joint ACTRIMS-ECTRIMS meeting in Toronto, Oct 21–23.</dd></div>
-      <div><dt>Date</dt><dd class="when">Wed Oct 21 to Fri Oct 23 (conference); topline is overdue and could come any day</dd></div>
-      <div><dt>Why it could pop</dt><dd>Earlier uncontrolled expanded-access data were encouraging (14 patients improved or stable), and a clean placebo-controlled signal in a micro-cap could move the stock +50% to +200%. Odds are low (BiopharmaWatch puts the probability of success at about 20%), and the price sits just above the US$1.00 floor, so check the live quote before buying.</dd></div>
+      <div><dt>Catalyst</dt><dd>Placebo-controlled Phase 2a topline for intranasal foralumab in non-active secondary progressive MS (48 patients), guided to late Q3 2026 and now overdue, with a presentation planned at the ACTRIMS-ECTRIMS joint meeting in Toronto, Oct 21–23. The exact slot is not confirmed.</dd></div>
+      <div><dt>Date</dt><dd class="when">Wed Oct 21 to Fri Oct 23 (conference); topline overdue and could come any day</dd></div>
+      <div><dt>Why it could pop</dt><dd>Earlier expanded-access data were encouraging (14 patients improved or stable), and a clean placebo-controlled signal in a micro-cap could move the stock +50% to +200%. Odds are low (about 20% probability of success per BiopharmaWatch) and the price is just above US$1.00, so check the live quote first.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company guidance (May 21, 2026 release) plus the conference dates from event listings. Tiziana&#x27;s exact slot is not confirmed.</p>
+      <p>Company guidance (May 21, 2026 release) plus conference dates from event listings; slot unconfirmed.</p>
       <ul class="src"><li><a href="https://www.globenewswire.com/de/news-release/2026/05/21/3299520/0/en/Tiziana-Fully-Enrolls-its-Phase-2-Placebo-Controlled-Multiple-Sclerosis-Trial.html" target="_blank" rel="noopener noreferrer">globenewswire.com</a></li><li><a href="https://conferenceinc.net/event/ectrims-2026-toronto/" target="_blank" rel="noopener noreferrer">conferenceinc.net</a></li><li><a href="https://www.biopharmawatch.com/company/TLSA" target="_blank" rel="noopener noreferrer">biopharmawatch.com</a></li><li><a href="https://www.benzinga.com/stock/TLSA" target="_blank" rel="noopener noreferrer">benzinga.com</a></li></ul>
     </details>
   </div>
 </article>
-<div class="open-slots">
-  <span class="slots" aria-hidden="true"><i></i><i></i><i></i></span>
-  <p><b>Slots 3–5 open.</b> No verified catalyst found for Oct 19–23 yet.</p>
-</div>
+<article class="pick" id="pick-clym">
+  <div class="id">
+    <div class="tkrow"><span class="tk">CLYM</span><span class="tag unverified">Unverified</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">Climb Bio</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$14.95</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$859M</dd></div>
+    </dl>
+    <p class="offwhy">price about US$15, above the US$10 preference</p>
+  </div>
+  <div class="body">
+    <p class="what">Climb Bio develops antibody drugs for immune-driven kidney diseases, including budoprutug for membranous nephropathy and CLYM116 for IgA nephropathy.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>ASN Kidney Week 2026 (Denver, Oct 21–25): CLYM116 posters Oct 22 and 23, plus the first Phase 2 PrisMN budoprutug data as an oral, which one newsletter dates to Sat Oct 24 (reaction Mon Oct 26). Hold through Oct 26 to capture the oral.</dd></div>
+      <div><dt>Date</dt><dd class="when">Thu Oct 22 and Fri Oct 23 (posters); oral possibly Sat Oct 24 (Saturday)</dd></div>
+      <div><dt>Why it could pop</dt><dd>An oral slot suggests the first membranous nephropathy patient data are presentable, and strong remission or B-cell depletion numbers could move the stock +30% to +100%. It breaks the price screen (about US$15) and ran up from about US$11 into the event, so sell-the-news risk is real.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company press release (Oct 2, 2026) confirms meeting and oral; poster dates from company/BiopharmaWatch; oral date from one third-party newsletter.</p>
+      <ul class="src"><li><a href="https://finviz.com/news/398320/climb-bio-to-present-new-data-at-american-society-of-nephrology-asn-kidney-week-2026-for-clym116-and-budoprutug" target="_blank" rel="noopener noreferrer">finviz.com</a></li><li><a href="https://www.biopharmawatch.com/news/CLYM/climb-bio-presents-new-data-asn-kidney-week-2026" target="_blank" rel="noopener noreferrer">biopharmawatch.com</a></li><li><a href="https://biotechdistilled.substack.com/p/the-distilled-3-top-plays-for-the-2a0" target="_blank" rel="noopener noreferrer">biotechdistilled.substack.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-9887">
+  <div class="id">
+    <div class="tkrow"><span class="tk">9887</span><span class="tag unverified">Unverified</span></div>
+    <div class="exch">HKEX</div>
+    <div class="co">Leads Biolabs</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">HK$67.15<small>about US$8.6</small></dd></div>
+      <div><dt>Mkt cap</dt><dd class="unk">Not verified<small>stale HK$12.6B, about US$1.6B</small></dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Leads Biolabs is a Hong Kong biotech developing cancer antibodies, led by LBL-024, a two-target (PD-L1/4-1BB) antibody under priority review in China.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>ESMO 2026 (Madrid, Oct 23–27): six studies including two Proffered Paper orals, one of them on LBL-024. Session dates are unconfirmed. This is a straddle filler: buy during Week 2 ahead of the congress; because HKEX closes at 10:00 CEST, data from Fri Oct 23 onward is first priced Mon Oct 26 (Week 3).</dd></div>
+      <div><dt>Date</dt><dd class="when">Within Fri Oct 23 to Tue Oct 27 (slot TBC); HK reaction likely from Mon Oct 26</dd></div>
+      <div><dt>Why it could pop</dt><dd>LBL-024 is the first PD-L1/4-1BB bispecific to reach registration review, and two ESMO orals could add +10% to +30% of visibility-driven upside. The price (about US$8.6) is stale from mid-July, the market cap is unconfirmed (stale HK$12.6B, about US$1.6B), and the stock already jumped about 30% on the ESMO selection in July.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company-confirmed acceptance (HKEX filing Aug 31, 2026); exact session slot unknown.</p>
+      <ul class="src"><li><a href="https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0831/2026083100538.pdf" target="_blank" rel="noopener noreferrer">www1.hkexnews.hk</a></li><li><a href="https://www.biospace.com/press-releases/leads-biolabs-announces-multiple-studies-selected-for-esmo-2026-highlighting-the-growing-global-competitiveness-of-its-core-pipeline" target="_blank" rel="noopener noreferrer">biospace.com</a></li><li><a href="https://www.itiger.com/news/1175511625" target="_blank" rel="noopener noreferrer">itiger.com</a></li></ul>
+    </details>
+  </div>
+</article>
   </div>
   <div class="week-foot">
-    <p class="alts"><span class="k">Alternates</span> none found</p>
-    <p class="note">Only 2 of 5, and both are unverified. CLYM is above the US$10 price preference. TLSA has low odds and sits right at the US$1.00 price and US$100M market-cap floors. Dated Week 2 names that were found (AKBA&#x27;s VOICE late-breaker on Oct 23, PROK&#x27;s ASN oral) were rejected: AKBA trades under US$1, and PROK&#x27;s oral is after the Friday close with weak content. IRD was moved to Week 1, but if the FDA has not acted by Fri Oct 16 its reaction lands here. Three slots are empty. More ASN Kidney Week (Oct 21–25) and ACTRIMS-ECTRIMS (Oct 21–23) presenters, plus Oct 19–23 PDUFAs and earnings, should be searched.</p>
+    <p class="alts"><span class="k">Alternates</span> None found</p>
+    <p class="note"><span class="note-k">Week note</span> Only four Week 2 names exist (CATX, IMTX, TLSA, CLYM), and CLYM breaks the price screen at about US$15. Leads Biolabs (9887.HK) fills the fifth slot as a straddle: it is held during Week 2, but its ESMO orals will most likely be priced in Hong Kong on Mon Oct 26 (Week 3). Deep Yellow (DYL, quarterly report listed Oct 22) was rejected on price at or under US$1.00.</p>
   </div>
 </section>
 <section class="week" id="week-3" aria-labelledby="h-week-3">
   <header class="week-head">
     <h2 id="h-week-3">Week 3</h2>
     <span class="range">Mon Oct 26 – Fri Oct 30, 2026</span>
-    <span class="fill short">2 of 5 filled</span>
+    <span class="fill">1 confirmed · 2 likely · 2 unverified</span>
   </header>
   <div class="picks">
-<article class="pick" id="ino">
+<article class="pick" id="pick-ino">
   <div class="id">
-    <div class="tkrow"><span class="tk">INO</span><span class="tag likely">Likely</span></div>
+    <div class="tkrow"><span class="tk">INO</span><span class="tag likely">Likely</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
     <div class="exch">NASDAQ</div>
     <div class="co">Inovio Pharmaceuticals, Inc.</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$1.17</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$95.5M</dd></div>
     </dl>
+    <p class="offwhy">market cap about US$95M, under the US$100M floor; price about US$1.17</p>
   </div>
   <div class="body">
     <p class="what">Inovio makes DNA-based medicines, and its lead drug INO-3107 treats recurrent respiratory papillomatosis, a rare disease that causes growths in the airway.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>FDA PDUFA goal date for the INO-3107 BLA (accelerated approval). Oct 30 is a Friday. A decision after the close would be traded Mon Nov 2 (Week 4), so hold it over the weekend if no news has come by the close.</dd></div>
+      <div><dt>Catalyst</dt><dd>FDA PDUFA goal date for the INO-3107 BLA (accelerated approval) on Fri Oct 30. A decision after the close would trade Mon Nov 2, so hold over the weekend if no news by the close.</dd></div>
       <div><dt>Date</dt><dd class="when">Fri Oct 30</dd></div>
-      <div><dt>Why it could pop</dt><dd>Approval of the company&#x27;s only near-term asset could move a stock with a 52-week range of US$0.56–2.98 by about +80% to +200%, and one calendar puts approval odds at about 70%. The risks are serious: the FDA has questioned eligibility for accelerated approval, a rejection would likely mean -55% or worse, and the price and market cap sit right at the US$1.00 and US$100M floors. Confirm the price is above US$1 before buying.</dd></div>
+      <div><dt>Why it could pop</dt><dd>Approval of the only near-term asset could move the stock +80% to +200%, and one calendar puts approval odds at about 70%. The FDA has questioned accelerated-approval eligibility, so a rejection could mean −55% or worse; the price and market cap sit right at the US$1.00 and US$100M floors.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company-confirmed (Q1 and Q2 2026 results; unchanged as of the Aug 12 report, with the late-cycle review and inspections complete). Also on October PDUFA calendars.</p>
-      <ul class="src"><li><a href="https://seekingalpha.com/news/4592618-inovio-outlines-cash-runway-into-q1-2027-as-inominus-3107-targets-october-30-2026-pdufa-date" target="_blank" rel="noopener noreferrer">seekingalpha.com</a></li><li><a href="https://www.gurufocus.com/news/9029857/inovio-pharmaceuticals-inc-ino-q2-2026-earnings-call-highlights-ino3107-on-track-for-pdufa-as-cash-runway-extends-into-2027" target="_blank" rel="noopener noreferrer">gurufocus.com</a></li><li><a href="https://www.nasdaq.com/articles/inovio-pharmaceuticals-q2-earnings-call-highlights" target="_blank" rel="noopener noreferrer">nasdaq.com</a></li><li><a href="https://www.endocrinologyadvisor.com/news/october-2026-fda-pdufa-dates/" target="_blank" rel="noopener noreferrer">endocrinologyadvisor.com</a></li><li><a href="https://www.trefis.com/data/companies/ino" target="_blank" rel="noopener noreferrer">trefis.com</a></li></ul>
+      <p>Company-confirmed (Q1 and Q2 2026 results; late-cycle review and inspections complete), also on October PDUFA calendars.</p>
+      <ul class="src"><li><a href="https://seekingalpha.com/news/4592618-inovio-outlines-cash-runway-into-q1-2027-as-inominus-3107-targets-october-30-2026-pdufa-date" target="_blank" rel="noopener noreferrer">seekingalpha.com</a></li><li><a href="https://www.gurufocus.com/news/9029857/inovio-pharmaceuticals-inc-ino-q2-2026-earnings-call-highlights-ino3107-on-track-for-pdufa-as-cash-runway-extends-into-2027" target="_blank" rel="noopener noreferrer">gurufocus.com</a></li><li><a href="https://www.endocrinologyadvisor.com/news/october-2026-fda-pdufa-dates/" target="_blank" rel="noopener noreferrer">endocrinologyadvisor.com</a></li><li><a href="https://www.trefis.com/data/companies/ino" target="_blank" rel="noopener noreferrer">trefis.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="gsit">
+<article class="pick" id="pick-jblu">
+  <div class="id">
+    <div class="tkrow"><span class="tk">JBLU</span><span class="tag unverified">Unverified</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">JetBlue Airways</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$4.77</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$2.13B</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">JetBlue is a US low-cost airline based in New York with hubs at JFK, Boston and Fort Lauderdale.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Tue Oct 27 before the open (aggregators). Not yet company-confirmed; TipRanks and Investing.com show a Nov 3 estimate, which would move it to Week 4. The date notice is expected around Oct 13–14.</dd></div>
+      <div><dt>Date</dt><dd class="when">Tue Oct 27 (before the open; estimated)</dd></div>
+      <div><dt>Why it could pop</dt><dd>July guidance called for Q3 RASM up 12.5%−16.5% year on year, and the stock is down about 26% since its last report, so a solid print could bring a +10% to +20% move. Fuel costs tied to Middle East oil spikes are a real headwind, so the direction is about a coin flip.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Calendar listings (Unusual Whales, Earnings Whispers) plus precedent (Q3 2025 Oct 28; Q2 2026 Jul 28).</p>
+      <ul class="src"><li><a href="https://unusualwhales.com/stock/JBLU/earnings" target="_blank" rel="noopener noreferrer">unusualwhales.com</a></li><li><a href="https://beta.earningswhispers.com/go/w/JBLU" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.tipranks.com/stocks/mx:jblu/earnings" target="_blank" rel="noopener noreferrer">tipranks.com</a></li><li><a href="https://www.valueresearchonline.com/stocks/292243/jetblue-airways-corp-jblu/" target="_blank" rel="noopener noreferrer">valueresearchonline.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-gsit">
   <div class="id">
     <div class="tkrow"><span class="tk">GSIT</span><span class="tag unverified">Unverified</span></div>
     <div class="exch">NASDAQ</div>
     <div class="co">GSI Technology</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$5.83</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num">US$224.1M</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$224M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">GSI Technology designs specialty memory chips (SRAM) and an AI processor called Gemini APU that does computing inside memory, used in edge-AI, defence and aerospace systems.</p>
+    <p class="what">GSI Technology designs specialty memory chips and an AI processor called Gemini APU that computes inside memory, for edge-AI, defence and aerospace systems.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Fiscal Q2 FY2027 earnings (quarter ended Sep 30). Expected Thu Oct 29 after the close, with the reaction on Fri Oct 30.</dd></div>
+      <div><dt>Catalyst</dt><dd>Fiscal Q2 FY2027 earnings (quarter ended Sep 30), expected Thu Oct 29 after the close, reaction Fri Oct 30. Not yet announced; could move to Week 4.</dd></div>
       <div><dt>Date</dt><dd class="when">Thu Oct 29 (after the close; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>The 52-week range of about US$1.62–18.15 shows the stock can move several-fold on AI-chip news, so any APU design win or Smart City deployment update on the call could produce a +20% to +50% move. Guidance is flat (US$5.7–6.5M revenue), so the direction is roughly a coin flip.</dd></div>
+      <div><dt>Why it could pop</dt><dd>The 52-week range of about US$1.62–18.15 shows the stock can move several-fold on AI-chip news, so an APU design win or deployment update could bring +20% to +50%. Revenue guidance is flat (US$5.7–6.5M), so the direction is a coin flip.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Third-party estimate (Earnings Whispers) that matches last year&#x27;s Oct 30, 2025 report and the Jul 30, 2026 FQ1 timing. Not yet announced by the company. Expect a notice in mid-October, and the date could move to Week 4.</p>
-      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/GSIT" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.nextearningsdate.com/gsi-technology.html" target="_blank" rel="noopener noreferrer">nextearningsdate.com</a></li><li><a href="https://ir.gsitechnology.com/news-releases/news-release-details/gsi-technology-announce-fiscal-second-quarter-2026-results/" target="_blank" rel="noopener noreferrer">ir.gsitechnology.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001126741/000117184326005079/exh_991.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li></ul>
+      <p>Third-party estimate (Earnings Whispers) matching last year's Oct 30, 2025 report and Jul 30, 2026 timing.</p>
+      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/GSIT" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.nextearningsdate.com/gsi-technology.html" target="_blank" rel="noopener noreferrer">nextearningsdate.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001126741/000117184326005079/exh_991.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li></ul>
     </details>
   </div>
 </article>
-<div class="open-slots">
-  <span class="slots" aria-hidden="true"><i></i><i></i><i></i></span>
-  <p><b>Slots 3–5 open.</b> No verified catalyst found for Oct 26–30 yet.</p>
-</div>
+<article class="pick" id="pick-bhc">
+  <div class="id">
+    <div class="tkrow"><span class="tk">BHC</span><span class="tag confirmed">Confirmed</span></div>
+    <div class="exch">NYSE (also TSX)</div>
+    <div class="co">Bausch Health Companies</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$6.34</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$2.35B</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Bausch Health is a heavily indebted drug and medical-device company (gut drugs, dermatology, aesthetics) that controls the eye-care company Bausch + Lomb.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>Q3 2026 results after the close on Wed Oct 28, with a 5:00pm ET call; first reaction Thu Oct 29. Bausch + Lomb reports the same day.</dd></div>
+      <div><dt>Date</dt><dd class="when">Wed Oct 28 (after the close)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Because the equity is small relative to the debt, progress on debt reduction or Bausch + Lomb value can move the shares sharply, and the analyst target of about US$7.50 sits above spot. Expect a moderate move of roughly +5% to +15% on a good print; it is a coin flip rather than a high-beta jumper.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company-confirmed (Oct 6, 2026 release).</p>
+      <ul class="src"><li><a href="https://finviz.com/news/399057/bausch-health-to-announce-third-quarter-2026-results-on-october-28-2026" target="_blank" rel="noopener noreferrer">finviz.com</a></li><li><a href="https://www.biopharmawatch.com/news/BHC/bausch-health-third-quarter-2026-results" target="_blank" rel="noopener noreferrer">biopharmawatch.com</a></li><li><a href="https://www.bnnbloomberg.ca/press-releases/2026/10/05/bausch-lomb-will-release-third-quarter-2026-financial-results-on-oct-28/" target="_blank" rel="noopener noreferrer">bnnbloomberg.ca</a></li><li><a href="https://upstox.com/us-stocks/bhc-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-tdoc">
+  <div class="id">
+    <div class="tkrow"><span class="tk">TDOC</span><span class="tag likely">Likely</span></div>
+    <div class="exch">NYSE</div>
+    <div class="co">Teladoc Health</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$5.89</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$1.07B</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">Teladoc Health runs virtual doctor visits, chronic-condition programmes and the BetterHelp online-therapy service.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Oct 28–29 after the close (Benzinga Oct 28, Earnings Whispers Oct 29); any of Oct 27–29 after the close gives a Week 3 reaction. Company notice expected around Oct 14–15.</dd></div>
+      <div><dt>Date</dt><dd class="when">Wed Oct 28 (after the close; estimated, Oct 29 also possible)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Guidance has already been reset low after a roughly 29% post-Q2 drop, so a less-bad print could trigger a +10% to +20% relief rally in a stock with a history of double-digit earnings moves. The setup is weak (FY revenue guide cut, Hold consensus), so the chance of a positive move is below even.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Calendar listings plus precedent (Q3 2025 Oct 29; Q2 2026 Jul 29).</p>
+      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/TDOC" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.benzinga.com/stock/TDOC" target="_blank" rel="noopener noreferrer">benzinga.com</a></li><li><a href="https://www.marketbeat.com/instant-alerts/teladoc-health-inc-nysetdoc-given-average-rating-of-hold-by-analysts-2026-07-31/" target="_blank" rel="noopener noreferrer">marketbeat.com</a></li></ul>
+    </details>
+  </div>
+</article>
   </div>
   <div class="week-foot">
-    <p class="alts"><span class="k">Alternates</span> none found</p>
-    <p class="note">Only 2 of 5. INO has a confirmed date but fails at the margins on price and market cap. GSIT&#x27;s date is an estimate. CLYM&#x27;s Saturday Oct 24 oral also reacts on Mon Oct 26, so keep holding CLYM from Week 2 into this week. AGIO&#x27;s Sunday Nov 1 goal date could produce an FDA action on Fri Oct 30. PHAR (FDA already approved in September), MSGR (spin-off at a high share price) and PROK (weak pooled Phase 2 data) were rejected. Three slots are empty, so search for Oct 26–30 PDUFAs, readouts and small-cap earnings.</p>
+    <p class="alts"><span class="k">Alternates</span> <b>AGIO</b> Agios Pharmaceuticals, US$33.74, Sun Nov 1 (action likely Fri Oct 30). Swap in for TDOC for a higher-probability event, or if JBLU or GSIT slips to Week 4.</p>
+    <p class="note"><span class="note-k">Week note</span> Week 3 is full. INO is just under the ~US$100M market-cap floor (about US$95M) and at the US$1.00 price floor, so it is flagged off-screen but kept for its company-confirmed PDUFA. JBLU, GSIT and TDOC dates are estimates; if JBLU moves to Nov 3 or GSIT to Week 4, swap in AGIO.</p>
   </div>
 </section>
 <section class="week" id="week-4" aria-labelledby="h-week-4">
   <header class="week-head">
     <h2 id="h-week-4">Week 4</h2>
     <span class="range">Mon Nov 2 – Fri Nov 6, 2026</span>
-    <span class="fill">5 of 5 filled</span>
+    <span class="fill">1 likely · 4 unverified</span>
   </header>
   <div class="picks">
-<article class="pick" id="aspn">
+<article class="pick" id="pick-aspn">
   <div class="id">
     <div class="tkrow"><span class="tk">ASPN</span><span class="tag likely">Likely</span></div>
     <div class="exch">NYSE</div>
@@ -391,46 +610,23 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$4.85</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$424M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Aspen Aerogels makes ultra-light aerogel insulation, including thermal barriers that stop fires spreading inside electric-vehicle battery packs.</p>
+    <p class="what">Aspen Aerogels makes ultra-light aerogel insulation, including barriers that stop fires spreading inside electric-vehicle battery packs.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Thu Nov 5 (the call may be on Nov 6).</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Thu Nov 5 (call possibly Nov 6). Not yet announced.</dd></div>
       <div><dt>Date</dt><dd class="when">Thu Nov 5 (estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>The stock jumped about 55% on its Q2 print and has averaged about a 26% one-day move after earnings, and Q3 guidance calls for positive adjusted EBITDA (US$7–15M). A beat could plausibly bring a +20% to +50% move, though a miss could fall as hard.</dd></div>
+      <div><dt>Why it could pop</dt><dd>The stock jumped about 55% on its Q2 print, averages about a 26% one-day earnings move, and guides Q3 to positive adjusted EBITDA (US$7–15M). A beat could bring +20% to +50%, though a miss could fall as hard.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company pattern (Q3 2025 call Thu Nov 6, 2025; Q2 2026 Thu Aug 6, 2026) plus Earnings Whispers, GuruFocus and AJ Bell. Not yet announced by the company. TipRanks&#x27; Oct 22 looks like an error.</p>
-      <ul class="src"><li><a href="https://www.ajbell.co.uk/market-research/sub/NYSE:ASPN/company-info" target="_blank" rel="noopener noreferrer">ajbell.co.uk</a></li><li><a href="https://beta.earningswhispers.com/go/w/ASPN" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.barchart.com/story/news/35493329/aspen-aerogels-inc-schedules-third-quarter-2025-earnings-release-and-conference-call" target="_blank" rel="noopener noreferrer">barchart.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001145986/000117184326005289/exh_991.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://www.marketbeat.com/instant-alerts/aspen-aerogels-nyseaspn-releases-earnings-results-2026-08-06/" target="_blank" rel="noopener noreferrer">marketbeat.com</a></li></ul>
+      <p>Company pattern (Q3 2025 Thu Nov 6, 2025; Q2 2026 Thu Aug 6, 2026) plus Earnings Whispers, GuruFocus and AJ Bell.</p>
+      <ul class="src"><li><a href="https://www.ajbell.co.uk/market-research/sub/NYSE:ASPN/company-info" target="_blank" rel="noopener noreferrer">ajbell.co.uk</a></li><li><a href="https://beta.earningswhispers.com/go/w/ASPN" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001145986/000117184326005289/exh_991.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://www.marketbeat.com/instant-alerts/aspen-aerogels-nyseaspn-releases-earnings-results-2026-08-06/" target="_blank" rel="noopener noreferrer">marketbeat.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="agio">
-  <div class="id">
-    <div class="tkrow"><span class="tk">AGIO</span><span class="tag likely">Likely</span></div>
-    <div class="exch">NASDAQ</div>
-    <div class="co">Agios Pharmaceuticals</div>
-    <dl class="px">
-      <div><dt>Price</dt><dd class="num">US$33.74</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num">US$1.98B</dd></div>
-    </dl>
-  </div>
-  <div class="body">
-    <p class="what">Agios sells mitapivat, a pill for rare inherited blood disorders, and is asking the FDA to approve it for sickle cell disease.</p>
-    <dl class="facts">
-      <div><dt>Catalyst</dt><dd>FDA goal date for the mitapivat sNDA in sickle cell disease (priority review). The goal date is Sunday Nov 1, so the FDA may act on Fri Oct 30 (Week 3). Buy by the Oct 30 close.</dd></div>
-      <div><dt>Date</dt><dd class="when">Sun Nov 1 (FDA action possibly Fri Oct 30)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Sickle cell disease is a much larger market than mitapivat&#x27;s current indications, so approval could add +5% to +20%. This is a poor fit on price (about 3x the US$10 preference) and has limited upside. It is included only because Week 4 is short of options.</dd></div>
-    </dl>
-    <details class="more">
-      <summary>Date basis and sources</summary>
-      <p>Company-confirmed (Jul 7, 2026 priority-review release and Q2 results).</p>
-      <ul class="src"><li><a href="https://www.chartmill.com/news/external/68011/globenews-2026-7-7-us-fda-grants-priority-review-to-agios-snda-for-mitapivat-in-sickle-cell-disease" target="_blank" rel="noopener noreferrer">chartmill.com</a></li><li><a href="https://www.barchart.com/story/news/36862600/agios-reports-second-quarter-2026-financial-results-and-provides-business-update" target="_blank" rel="noopener noreferrer">barchart.com</a></li><li><a href="https://www.marketbeat.com/instant-alerts/agios-pharmaceuticals-q2-earnings-call-highlights-2026-07-30/" target="_blank" rel="noopener noreferrer">marketbeat.com</a></li><li><a href="https://www.assyro.com/tools/pdufa-calendar/2026/november" target="_blank" rel="noopener noreferrer">assyro.com</a></li></ul>
-    </details>
-  </div>
-</article>
-<article class="pick" id="envx">
+<article class="pick" id="pick-envx">
   <div class="id">
     <div class="tkrow"><span class="tk">ENVX</span><span class="tag unverified">Unverified</span></div>
     <div class="exch">NASDAQ</div>
@@ -439,83 +635,136 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$4.71</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$824M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
     <p class="what">Enovix makes high-energy lithium-ion batteries with silicon anodes, aimed first at smartphones and other small devices.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Wed Nov 4 after the close (reaction Nov 5). Nov 11 is also possible, which would move it to Week 5.</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Wed Nov 4 after the close (reaction Nov 5). Earnings Whispers shows Nov 11, which would move it to Week 5.</dd></div>
       <div><dt>Date</dt><dd class="when">Wed Nov 4 (after the close; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>The stock fell about 43% after Q2 on weak guidance, so revenue at or above the US$9–10M guide, or progress on smartphone customers, could set off a relief rally of +20% to +40%. This is a contrarian, coin-flip setup.</dd></div>
+      <div><dt>Why it could pop</dt><dd>The stock fell about 43% after Q2 on weak guidance, so revenue at or above the US$9–10M guide or smartphone-customer progress could spark a +20% to +40% relief rally. It is a contrarian, coin-flip setup.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Third-party projections (Unusual Whales, NextEarningsDate) plus last year&#x27;s timing (Nov 5, 2025). Not announced. Earnings Whispers shows Nov 11.</p>
-      <ul class="src"><li><a href="https://unusualwhales.com/stock/ENVX/earnings" target="_blank" rel="noopener noreferrer">unusualwhales.com</a></li><li><a href="https://nextearningsdate.com/enovix.html" target="_blank" rel="noopener noreferrer">nextearningsdate.com</a></li><li><a href="https://ir.enovix.com/news-releases/news-release-details/enovix-release-third-quarter-2025-financial-results-november-5" target="_blank" rel="noopener noreferrer">ir.enovix.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001828318/000182831826000055/envx8k-q22026x8122026ex991.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://upstox.com/us-stocks/envx-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
+      <p>Third-party projections (Unusual Whales, NextEarningsDate) plus last year's Nov 5, 2025 timing.</p>
+      <ul class="src"><li><a href="https://unusualwhales.com/stock/ENVX/earnings" target="_blank" rel="noopener noreferrer">unusualwhales.com</a></li><li><a href="https://nextearningsdate.com/enovix.html" target="_blank" rel="noopener noreferrer">nextearningsdate.com</a></li><li><a href="https://ir.enovix.com/news-releases/news-release-details/enovix-release-third-quarter-2025-financial-results-november-5" target="_blank" rel="noopener noreferrer">ir.enovix.com</a></li><li><a href="https://upstox.com/us-stocks/envx-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="rdw">
+<article class="pick" id="pick-fufu">
   <div class="id">
-    <div class="tkrow"><span class="tk">RDW</span><span class="tag unverified">Unverified</span></div>
+    <div class="tkrow"><span class="tk">FUFU</span><span class="tag unverified">Unverified</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">BitFuFu Inc.</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$1.23</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$210M</dd></div>
+    </dl>
+    
+  </div>
+  <div class="body">
+    <p class="what">BitFuFu is a Singapore-based bitcoin miner that rents mining power to retail customers and also mines bitcoin itself.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>October 2026 bitcoin production and operating update, expected Nov 3–5 (last year's October update came Nov 5, 2025; the August 2026 update came Sep 3).</dd></div>
+      <div><dt>Date</dt><dd class="when">Est. Tue Nov 3 to Thu Nov 5 (monthly pattern; unconfirmed)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Output rebounded from 112 to 174 BTC in August with better fleet efficiency, so another production jump with a firm bitcoin price could lift this micro-priced miner +10% to +25%. Monthly updates rarely move stocks much and the price is only about 23% above the US$1.00 floor, so this is a low-conviction filler.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Pattern estimate from prior monthly releases.</p>
+      <ul class="src"><li><a href="https://finviz.com/news/388560/bitfufu-announces-august-2026-bitcoin-production-and-operational-updates" target="_blank" rel="noopener noreferrer">finviz.com</a></li><li><a href="https://markets.financialcontent.com/concordmonitor/article/gnwcq-2025-11-5-bitfufu-announces-october-2025-bitcoin-production-and-operational-updates" target="_blank" rel="noopener noreferrer">markets.financialcontent.com</a></li><li><a href="https://robinhood.com/us/en/stocks/fufu/" target="_blank" rel="noopener noreferrer">robinhood.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-rdw">
+  <div class="id">
+    <div class="tkrow"><span class="tk">RDW</span><span class="tag unverified">Unverified</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
     <div class="exch">NYSE</div>
     <div class="co">Redwire Corporation</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$11.62</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$2.9B</dd></div>
     </dl>
+    <p class="offwhy">price about US$11.6, above US$10; cap near the US$3B ceiling</p>
   </div>
   <div class="body">
-    <p class="what">Redwire builds parts for spacecraft, such as solar arrays and structures, and supplies in-space manufacturing and defence space systems.</p>
+    <p class="what">Redwire builds spacecraft parts such as solar arrays and structures, and supplies in-space manufacturing and defence space systems.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Wed Nov 4 after the close (reaction Thu Nov 5).</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Wed Nov 4 after the close (reaction Thu Nov 5). Company notice expected around Oct 28–30.</dd></div>
       <div><dt>Date</dt><dd class="when">Wed Nov 4 (after the close; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Q2 revenue rose 90% year on year, backlog reached a record US$542M, and 2026 guidance is US$450–500M. A beat-and-raise on a high-beta space name could move it +15% to +30%. It sits slightly above the US$10 price preference and near the US$3B size ceiling.</dd></div>
+      <div><dt>Why it could pop</dt><dd>Q2 revenue rose 90% year on year to a record US$542M backlog, with 2026 guidance of US$450–500M, so a beat-and-raise on a high-beta space name could bring +15% to +30%. It sits above the US$10 price preference and near the US$3B ceiling.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company pattern (Q3 2025 reported Wed Nov 5, 2025; Q2 2026 Wed Aug 5, 2026). Not announced, and a company notice is expected around Oct 28–30. Earnings Whispers&#x27; Nov 9 is an algorithmic estimate.</p>
-      <ul class="src"><li><a href="https://www.businesswire.com/news/home/20251030851781/en/Redwire-Corporation-to-Report-Third-Quarter-2025-Results-on-November-5-2025" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://www.earningswhispers.com/article/RDW/2607300026" target="_blank" rel="noopener noreferrer">earningswhispers.com</a></li><li><a href="https://beta.earningswhispers.com/go/w/RDW" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://upstox.com/us-stocks/rdw-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
+      <p>Company pattern (Q3 2025 Wed Nov 5, 2025; Q2 2026 Wed Aug 5, 2026); Earnings Whispers' Nov 9 is an algorithmic estimate.</p>
+      <ul class="src"><li><a href="https://www.businesswire.com/news/home/20251030851781/en/Redwire-Corporation-to-Report-Third-Quarter-2025-Results-on-November-5-2025" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://beta.earningswhispers.com/go/w/RDW" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://upstox.com/us-stocks/rdw-share-price/" target="_blank" rel="noopener noreferrer">upstox.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="bksy">
+<article class="pick" id="pick-bksy">
   <div class="id">
-    <div class="tkrow"><span class="tk">BKSY</span><span class="tag unverified">Unverified</span></div>
+    <div class="tkrow"><span class="tk">BKSY</span><span class="tag unverified">Unverified</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
     <div class="exch">NYSE</div>
     <div class="co">BlackSky Technology Inc.</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$26.73</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$1.18B</dd></div>
     </dl>
+    <p class="offwhy">price about US$27, well above US$10</p>
   </div>
   <div class="body">
     <p class="what">BlackSky runs a fleet of small Earth-imaging satellites and sells frequent satellite pictures and AI analysis to defence and intelligence customers.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Thu Nov 5 at 8:30am ET.</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, estimated Thu Nov 5 at 8:30am ET. Notice expected mid-October; could slip to Nov 12.</dd></div>
       <div><dt>Date</dt><dd class="when">Thu Nov 5 (estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Defence-space demand and guidance of up to US$145M revenue for 2026 support a beat-and-raise case, and a move of +15% to +30% is plausible. It is a poor fit on price (well above US$10) and is included only to fill the week.</dd></div>
+      <div><dt>Why it could pop</dt><dd>Defence-space demand and 2026 revenue guidance of up to US$145M support a beat-and-raise case, with a plausible +15% to +30% move. It is a poor fit on price (well above US$10) and is kept only because Week 4 has no better-fitting verified name.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company pattern (Q3 2025 Thu Nov 6, 2025; Q1 2026 Thu May 7; Q2 2026 Thu Aug 6). Not announced, and a notice is expected around mid-October. It could slip to Nov 12.</p>
-      <ul class="src"><li><a href="https://www.businesswire.com/news/home/20251015975273/en/BlackSky-to-Host-Third-Quarter-2025-Results-Conference-Call/" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://www.barchart.com/story/news/3313561/blacksky-to-host-second-quarter-2026-results-conference-call" target="_blank" rel="noopener noreferrer">barchart.com</a></li><li><a href="https://www.businesswire.com/news/home/20260416139498/en/BlackSky-to-Host-First-Quarter-2026-Results-Conference-Call" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://marketchameleon.com/Overview/BKSY" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li></ul>
+      <p>Company pattern (Q3 2025 Thu Nov 6, 2025; Q1 2026 Thu May 7; Q2 2026 Thu Aug 6).</p>
+      <ul class="src"><li><a href="https://www.businesswire.com/news/home/20251015975273/en/BlackSky-to-Host-Third-Quarter-2025-Results-Conference-Call/" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://www.barchart.com/story/news/3313561/blacksky-to-host-second-quarter-2026-results-conference-call" target="_blank" rel="noopener noreferrer">barchart.com</a></li><li><a href="https://marketchameleon.com/Overview/BKSY" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li></ul>
     </details>
   </div>
 </article>
   </div>
   <div class="week-foot">
-    <p class="alts"><span class="k">Alternates</span> none found</p>
-    <p class="note">Five picks, but only ASPN fits every criterion well. AGIO and BKSY are well above the US$10 price preference. RDW sits just above US$10 and near the US$3B ceiling. ENVX, RDW and BKSY earnings dates are pattern estimates that need confirming when the companies announce them (expected mid- to late October). AGIO&#x27;s FDA action may come on Fri Oct 30, so buy it before the Week 3 close.</p>
+    <p class="alts"><span class="k">Alternates</span> <b>BLDP</b> Ballard Power Systems, US$2.19, Est. Thu Nov 5 to Fri Nov 13 (unconfirmed). Fits the screens; use it for BKSY or RDW if Ballard announces Nov 5–6.</p>
+    <p class="note"><span class="note-k">Week note</span> Week 4 has exactly five candidates and all dates are estimates (ASPN is the strongest). RDW (about US$11.6, near the US$3B cap) and BKSY (about US$27) break the screens, and FUFU is a weak monthly-update filler near the US$1 floor. AGIO moved to Week 3 under the weekend-FDA rule. Watch for BLDP, BBAI or ENVX date notices that could add better-fitting names.</p>
   </div>
 </section>
 <section class="week" id="week-5" aria-labelledby="h-week-5">
   <header class="week-head">
     <h2 id="h-week-5">Week 5</h2>
     <span class="range">Mon Nov 9 – Fri Nov 13, 2026</span>
-    <span class="fill">5 of 5 filled</span>
+    <span class="fill">1 confirmed · 3 likely · 1 unverified</span>
   </header>
   <div class="picks">
-<article class="pick" id="tls">
+<article class="pick" id="pick-artv">
+  <div class="id">
+    <div class="tkrow"><span class="tk">ARTV</span><span class="tag confirmed">Confirmed</span><span class="offs" title="Outside the price or market-cap screen">Off-screen</span></div>
+    <div class="exch">NASDAQ</div>
+    <div class="co">Artiva Biotherapeutics, Inc.</div>
+    <dl class="px">
+      <div><dt>Price</dt><dd class="num">US$10.76</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$523M</dd></div>
+    </dl>
+    <p class="offwhy">price about US$10.8, just above US$10</p>
+  </div>
+  <div class="body">
+    <p class="what">Artiva develops off-the-shelf donor immune cells (natural killer cells) given with rituximab to reset the immune system in hard-to-treat rheumatoid arthritis and other autoimmune diseases.</p>
+    <dl class="facts">
+      <div><dt>Catalyst</dt><dd>ACR Convergence 2026 oral presentation of AlloNK data in refractory rheumatoid arthritis (abstract 1899), Mon Nov 9, 3:00–4:30pm EST, with a company webcast at 8:15am EST the same day. Data may be public by the Nov 9 open, so hold from the Nov 6 close.</dd></div>
+      <div><dt>Date</dt><dd class="when">Mon Nov 9</dd></div>
+      <div><dt>Why it could pop</dt><dd>Earlier data showed 71% ACR50 at six months in refractory RA and the company has FDA alignment on a single ~150-patient Phase 3, so updated data on 20+ patients in an oral slot could add +15% to +35%. The stock is up about 290% in 12 months and slightly above US$10, so sell-the-news risk is real.</dd></div>
+    </dl>
+    <details class="more">
+      <summary>Date basis and sources</summary>
+      <p>Company-confirmed (Oct 2, 2026 press release).</p>
+      <ul class="src"><li><a href="https://finviz.com/news/398299/artiva-biotherapeutics-announces-multiple-allonk-data-presentations-at-the-american-college-of-rheumatology-acr-convergence-2026" target="_blank" rel="noopener noreferrer">finviz.com</a></li><li><a href="https://www.biopharminternational.com/view/artiva-to-present-allonk-data-showing-car-t-like-b-cell-depletion-in-rheumatologic-diseases-at-acr-2026" target="_blank" rel="noopener noreferrer">biopharminternational.com</a></li><li><a href="https://www.taiwannews.com.tw/news/6451125" target="_blank" rel="noopener noreferrer">taiwannews.com.tw</a></li><li><a href="https://pitchbook.com/profiles/company/434391-31" target="_blank" rel="noopener noreferrer">pitchbook.com</a></li></ul>
+    </details>
+  </div>
+</article>
+<article class="pick" id="pick-tls">
   <div class="id">
     <div class="tkrow"><span class="tk">TLS</span><span class="tag likely">Likely</span></div>
     <div class="exch">NASDAQ</div>
@@ -524,22 +773,23 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$4.50</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$304M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
     <p class="what">Telos sells cybersecurity, identity and secure-network services to the US government, including TSA PreCheck enrolment and Xacta compliance software.</p>
     <dl class="facts">
       <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Mon Nov 9 before the open.</dd></div>
       <div><dt>Date</dt><dd class="when">Mon Nov 9 (before the open; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Q2 actually beat consensus (revenue US$47.7M, up 33%, and profit guidance was raised), and Q3 guidance of US$49.2–50.6M implies further growth from a sub-US$5 share price against a 52-week high of US$8.36. Another beat could plausibly give +10% to +25%. The only documented earnings reaction was small (-2.5%).</dd></div>
+      <div><dt>Why it could pop</dt><dd>Q2 beat consensus (revenue up 33%, profit guide raised) and Q3 guidance of US$49.2–50.6M implies further growth from a sub-US$5 price versus a 52-week high of US$8.36. Another beat could plausibly give +10% to +25%.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Strong company cadence: second-Monday reports on Nov 10, 2025, May 11, 2026 and Aug 10, 2026, plus Earnings Whispers. Not yet announced.</p>
-      <ul class="src"><li><a href="https://www.sec.gov/Archives/edgar/data/0000320121/000032012126000034/tls-20260810.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://beta.earningswhispers.com/go/w/TLS" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://earningswhispers.com/epsdetails/TLS/202606" target="_blank" rel="noopener noreferrer">earningswhispers.com</a></li><li><a href="https://equibles.com/stocks/tls/summary" target="_blank" rel="noopener noreferrer">equibles.com</a></li></ul>
+      <p>Strong company cadence (second-Monday reports Nov 10, 2025, May 11, 2026, Aug 10, 2026) plus Earnings Whispers.</p>
+      <ul class="src"><li><a href="https://www.sec.gov/Archives/edgar/data/0000320121/000032012126000034/tls-20260810.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://beta.earningswhispers.com/go/w/TLS" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://equibles.com/stocks/tls/summary" target="_blank" rel="noopener noreferrer">equibles.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="btbt">
+<article class="pick" id="pick-btbt">
   <div class="id">
     <div class="tkrow"><span class="tk">BTBT</span><span class="tag likely">Likely</span></div>
     <div class="exch">NASDAQ</div>
@@ -548,114 +798,93 @@ footer details ul{margin-top:10px}
       <div><dt>Price</dt><dd class="num">US$1.72</dd></div>
       <div><dt>Mkt cap</dt><dd class="num">US$620M</dd></div>
     </dl>
+    
   </div>
   <div class="body">
     <p class="what">Bit Digital holds a large treasury of Ethereum, earns staking income on it, and owns a stake in AI cloud-computing company WhiteFiber.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Thu Nov 12 before the open (some calendars show Fri Nov 13 with a 9am call).</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Thu Nov 12 before the open (some calendars show Fri Nov 13).</dd></div>
       <div><dt>Date</dt><dd class="when">Thu Nov 12 (before the open; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>The stock trades below its own stated net asset value, and as a high-beta Ethereum proxy it could rise +20% to +40% if crypto rallies into the print. It sits close to the US$1.00 floor and depends mostly on ETH prices, so the direction is about a coin flip.</dd></div>
+      <div><dt>Why it could pop</dt><dd>The stock trades below its own stated net asset value, and as a high-beta Ethereum proxy it could rise +20% to +40% if crypto rallies into the print. It depends mostly on ETH prices and sits close to the US$1.00 floor.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Third-party calendars (Earnings Whispers Nov 12; GuruFocus, AJ Bell and Digrin Nov 13), all inside Week 5. Fits the Q2 timing (Thu Aug 13). Not yet announced.</p>
-      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/BTBT" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.gurufocus.com/stock/BTBT/summary" target="_blank" rel="noopener noreferrer">gurufocus.com</a></li><li><a href="https://www.ajbell.co.uk/market-research/sub/NASDAQ:BTBT/company-info" target="_blank" rel="noopener noreferrer">ajbell.co.uk</a></li><li><a href="https://marketchameleon.com/Overview/BTBT/Summary/" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li><li><a href="https://bit-digital.com/press-releases/bit-digital-inc-announces-second-quarter-2026-financial-results/" target="_blank" rel="noopener noreferrer">bit-digital.com</a></li></ul>
+      <p>Third-party calendars (Earnings Whispers Nov 12; GuruFocus, AJ Bell, Digrin Nov 13), consistent with Q2 timing.</p>
+      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/BTBT" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://www.gurufocus.com/stock/BTBT/summary" target="_blank" rel="noopener noreferrer">gurufocus.com</a></li><li><a href="https://marketchameleon.com/Overview/BTBT/Summary/" target="_blank" rel="noopener noreferrer">marketchameleon.com</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="onds">
+<article class="pick" id="pick-plug">
   <div class="id">
-    <div class="tkrow"><span class="tk">ONDS</span><span class="tag likely">Likely</span></div>
+    <div class="tkrow"><span class="tk">PLUG</span><span class="tag likely">Likely</span></div>
     <div class="exch">NASDAQ</div>
-    <div class="co">Ondas Holdings</div>
+    <div class="co">Plug Power</div>
     <dl class="px">
-      <div><dt>Price</dt><dd class="num">US$8.37</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num">US$4.77B</dd></div>
+      <div><dt>Price</dt><dd class="num">US$2.19</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$2.9B</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Ondas makes autonomous drones, counter-drone systems and industrial wireless networks for defence, public-safety and infrastructure customers.</p>
+    <p class="what">Plug Power sells hydrogen fuel cells for warehouse vehicles and electrolyzers that make green hydrogen, and builds hydrogen supply infrastructure.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Thu Nov 12 before the open (AJ Bell lists Nov 13).</dd></div>
-      <div><dt>Date</dt><dd class="when">Thu Nov 12 (before the open; estimated)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Q3 revenue is guided to US$140–155M with a raised full-year target of US$525–550M, and the stock is down about 24% since the last report, so a beat-and-raise could bring a +15% to +30% rebound. It FAILS the size screen (about US$4.8B against the US$3B ceiling) and is included only to fill the week.</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Nov 9–10 after the close (Trading Economics Nov 10). Plug reported at its 10-Q deadline for Q3 2025 (Nov 10) and Q2 2026 (Aug 10).</dd></div>
+      <div><dt>Date</dt><dd class="when">Tue Nov 10 (after the close; estimated, Nov 9 possible)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Q2 revenue beat by 5.6% with a raised 2026 growth outlook, and this heavily shorted, retail-driven stock can gap +15% to +30% on guidance or margin news. It has fallen after several recent prints and has a dilution history, and the cap sits at the US$3B ceiling.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company cadence (Q3 2025 Thu Nov 13, 2025 at 8:30am; Q2 2026 Thu Aug 13, 2026 at 8:30am) plus Unusual Whales. Not yet announced.</p>
-      <ul class="src"><li><a href="https://ir.ondas.com/press-releases/detail/319/ondas-to-report-second-quarter-2026-financial-results-on" target="_blank" rel="noopener noreferrer">ir.ondas.com</a></li><li><a href="https://ir.ondas.com/press-releases/detail/252/ondas-holdings-to-report-third-quarter-2025-financial" target="_blank" rel="noopener noreferrer">ir.ondas.com</a></li><li><a href="https://unusualwhales.com/stock/ONDS/earnings" target="_blank" rel="noopener noreferrer">unusualwhales.com</a></li><li><a href="https://equibles.com/stocks/ONDS" target="_blank" rel="noopener noreferrer">equibles.com</a></li></ul>
+      <p>Calendar listing plus filing-deadline pattern.</p>
+      <ul class="src"><li><a href="https://tradingeconomics.com/plug:us" target="_blank" rel="noopener noreferrer">tradingeconomics.com</a></li><li><a href="https://www.webull.com.au/news-detail/15390964580164608" target="_blank" rel="noopener noreferrer">webull.com.au</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001093691/000110465926093339/tm2622713d1_ex99-1.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li></ul>
     </details>
   </div>
 </article>
-<article class="pick" id="spce">
+<article class="pick" id="pick-bbai">
   <div class="id">
-    <div class="tkrow"><span class="tk">SPCE</span><span class="tag unverified">Unverified</span></div>
+    <div class="tkrow"><span class="tk">BBAI</span><span class="tag unverified">Unverified</span></div>
     <div class="exch">NYSE</div>
-    <div class="co">Virgin Galactic Holdings, Inc.</div>
+    <div class="co">BigBear.ai Holdings</div>
     <dl class="px">
       <div><dt>Price</dt><dd class="num">US$2.58</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num unk">Unknown</dd></div>
+      <div><dt>Mkt cap</dt><dd class="num">US$1.24B</dd></div>
     </dl>
+    
   </div>
   <div class="body">
-    <p class="what">Virgin Galactic is building reusable Delta-class spaceplanes to fly paying passengers on short trips to space.</p>
+    <p class="what">BigBear.ai sells AI decision-support software and analytics mainly to US defence, intelligence and homeland-security customers.</p>
     <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Q3 2026 earnings and business update, likely Wed Nov 11 or Thu Nov 12 after the close. It may include news on the start of Delta-class flight testing, which was guided for around October.</dd></div>
-      <div><dt>Date</dt><dd class="when">Thu Nov 12 (after the close; estimated, with Nov 11 also possible)</dd></div>
-      <div><dt>Why it could pop</dt><dd>Confirmation that Delta flight testing has started, plus the strong ticket demand flagged on the Q2 call, could set off a squeeze of +20% to +50% in this heavily retail-traded stock. The setup is weak because first commercial service was delayed to Feb 2027. The price (from May) and the market cap are unverified, so check both against the floors.</dd></div>
+      <div><dt>Catalyst</dt><dd>Q3 2026 earnings, expected Mon Nov 9 after the close (reaction Nov 10). Not announced; the 10-Q deadline is Nov 9, and an earlier Nov 5–6 release (Week 4) is a real risk. Date notice expected around Oct 16–20.</dd></div>
+      <div><dt>Date</dt><dd class="when">Mon Nov 9 (after the close; estimated)</dd></div>
+      <div><dt>Why it could pop</dt><dd>Q2 brought a revenue beat, 13% growth, about 20 new contract wins and affirmed guidance, and the stock sits near its 52-week low, so a repeat beat or guide-up could drive a +15% to +35% relief rally. Momentum is negative and consensus is Hold.</dd></div>
     </dl>
     <details class="more">
       <summary>Date basis and sources</summary>
-      <p>Company pattern (Q3 2025 Thu Nov 13 after the close; Q2 2026 Wed Aug 12 after the close). Not announced, and the company usually pre-announces about 3 weeks ahead. A Fri Nov 13 after-close report would fall outside the window.</p>
-      <ul class="src"><li><a href="https://investors.virgingalactic.com/news/news-details/2025/Virgin-Galactic-Announces-Date-of-Third-Quarter-2025-Financial-Results-and-Conference-Call/default.aspx" target="_blank" rel="noopener noreferrer">investors.virgingalactic.com</a></li><li><a href="https://www.nasdaq.com/articles/spce-q2-earnings-call-flags-delay-strong-ticket-demand" target="_blank" rel="noopener noreferrer">nasdaq.com</a></li><li><a href="https://www.businesswire.com/news/home/20260217976662/en" target="_blank" rel="noopener noreferrer">businesswire.com</a></li><li><a href="https://finance.yahoo.com/quote/spce" target="_blank" rel="noopener noreferrer">finance.yahoo.com</a></li></ul>
-    </details>
-  </div>
-</article>
-<article class="pick" id="iva">
-  <div class="id">
-    <div class="tkrow"><span class="tk">IVA</span><span class="tag unverified">Unverified</span></div>
-    <div class="exch">NASDAQ (ADS); ordinary shares on Euronext Paris</div>
-    <div class="co">Inventiva</div>
-    <dl class="px">
-      <div><dt>Price</dt><dd class="num">US$5.67</dd></div>
-      <div><dt>Mkt cap</dt><dd class="num unk">Unknown</dd></div>
-    </dl>
-  </div>
-  <div class="body">
-    <p class="what">Inventiva is a French biotech testing lanifibranor, a daily pill for MASH, a fatty-liver disease that scars the liver.</p>
-    <dl class="facts">
-      <div><dt>Catalyst</dt><dd>Phase 3 NATiV3 topline for lanifibranor in MASH (1,009 patients). The last patient visit was completed by Sep 2. The company guides only to &#x27;Q4 2026&#x27;. This is a FLOATING catalyst, and Week 5 is the most plausible competition week but still a low-probability one.</dd></div>
-      <div><dt>Date</dt><dd class="when">Q4 2026 (no specific date; roughly a 15–25% chance it lands by Nov 13)</dd></div>
-      <div><dt>Why it could pop</dt><dd>The Phase 2b NATIVE trial met its primary and key secondary endpoints, so a Phase 3 win is roughly a coin flip or better, and it would likely re-rate the stock by +50% to +150%. The risk is mainly timing: the data could easily arrive in December.</dd></div>
-    </dl>
-    <details class="more">
-      <summary>Date basis and sources</summary>
-      <p>Company guidance window (Sep 2, 2026 release). Not week-specific.</p>
-      <ul class="src"><li><a href="https://www.pharmanow.live/latest-news/inventiva-nativ3-phase-3-topline-results-lanifibranor-mash-2026" target="_blank" rel="noopener noreferrer">pharmanow.live</a></li><li><a href="https://site.financialmodelingprep.com/market-news/inventiva-iva-updates-h1-results-nativ3-trial-cash" target="_blank" rel="noopener noreferrer">site.financialmodelingprep.com</a></li><li><a href="https://sofinnovapartners.com/news/inventivas-lanifibranor-meets-primary-key-secondary-endpoints-phase-twob" target="_blank" rel="noopener noreferrer">sofinnovapartners.com</a></li><li><a href="https://www.tipranks.com/stocks/iva" target="_blank" rel="noopener noreferrer">tipranks.com</a></li></ul>
+      <p>Third-party estimates (Earnings Whispers, Unusual Whales) plus the Nov 9 filing deadline and last year's Nov 10 report.</p>
+      <ul class="src"><li><a href="https://beta.earningswhispers.com/go/w/BBAI" target="_blank" rel="noopener noreferrer">beta.earningswhispers.com</a></li><li><a href="https://unusualwhales.com/stock/BBAI/earnings" target="_blank" rel="noopener noreferrer">unusualwhales.com</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/0001836981/000183698126000062/bbai-20260730.htm" target="_blank" rel="noopener noreferrer">sec.gov</a></li><li><a href="https://www.businesswire.com/news/home/20251016550795/en/BigBear.ai-to-Report-Third-Quarter-2025-Results-on-November-10-2025" target="_blank" rel="noopener noreferrer">businesswire.com</a></li></ul>
     </details>
   </div>
 </article>
   </div>
   <div class="week-foot">
-    <p class="alts"><span class="k">Alternates</span> none found</p>
-    <p class="note">Five picks, but quality is mixed. ONDS fails the US$3B size ceiling. SPCE&#x27;s price is stale and its market cap is unknown. IVA has an undated Q4 catalyst. Every earnings date is a pattern estimate, and a report after the close on Fri Nov 13 would fall outside the window. Confirm the dates when the companies announce them. BTAI&#x27;s Nov 14 PDUFA was rejected (stock about US$0.07, going-concern warning, goal date outside the window).</p>
+    <p class="alts"><span class="k">Alternates</span> <b>SPCE</b> Virgin Galactic Holdings, US$2.58, Wed Nov 11 or Thu Nov 12 (after the close; estimated). Price from May, cap unverified. <span class="sep">/</span> <b>ONDS</b> Ondas Holdings, US$8.37, Thu Nov 12 (before the open; estimated). Cap about US$4.8B, above the US$3B ceiling.</p>
+    <p class="note"><span class="note-k">Week note</span> Week 5 has more candidates than slots. ARTV is the only company-confirmed date and sits slightly above US$10, so it is flagged off-screen. TLS, BTBT and PLUG dates are strong patterns; BBAI could move to Week 4. IVA was moved to Week 1, ONDS was dropped for its size, and SPCE and BLDP are reserves.</p>
   </div>
 </section>
   </main>
 
   <footer>
     <ul class="musts">
-      <li><span class="k">Prices</span><span>Prices and market caps come from the latest search snippets (gathered roughly Oct 9&ndash;11, 2026; some quotes inside them date back to August, and SPCE&rsquo;s is from May). Re-check every one on the Terminal before trading.</span></li>
-      <li><span class="k">Index membership</span><span>Confirm each ticker is a WLS member with <code>WLS Index MEMB</code> before buying. Trade the listing that is in the index.</span></li>
-      <li><span class="k">Weekends</span><span>An event that falls on a Saturday or Sunday is listed in the following trading week. IRD is the one deliberate exception (see its row).</span></li>
+      <li><span class="k">Prices</span><span>Prices and market caps come from search snippets dated roughly Oct 1&ndash;11, 2026. A few quotes inside them are older (BMN Jul 27, CATX Aug 24, 9887 mid-July). Re-check every one on the terminal on the day you trade.</span></li>
+      <li><span class="k">Index membership</span><span>Confirm every ticker is a WLS index member with <code>WLS Index MEMB</code> before buying. Trade the listing that is in the index.</span></li>
+      <li><span class="k">Weekends</span><span>Weekend events are listed in the following trading week. FDA goal dates are the exception. A Saturday or Sunday goal date is listed in the week of the preceding Friday, because the FDA usually acts then (IRD in Week 1, AGIO in Week 3).</span></li>
     </ul>
     <div>
       <h3>Notes</h3>
-      <ul class="plain"><li>The plan is 5 different stocks each week, 25 distinct tickers in total, with no ticker repeated across weeks. This selection returns only 16 distinct tickers, because only 16 candidates survived verification. Filling the other 9 slots would have meant using rejected names or inventing tickers, so neither was done. Weeks 1, 2 and 3 each have 3 empty slots, and another search round focused on Oct 12–30 catalysts is needed before Monday.</li><li>IRD was placed in Week 1, not Week 2 as the weekend rule would place it. Its PDUFA goal date is Saturday Oct 17, and FDA actions on weekend goal dates usually come on the Friday. Buy by the Fri Oct 16 close and hold into Mon Oct 19 if no decision has come out. The same logic applies to AGIO in Week 4 (Sunday Nov 1 goal date): buy it by the Fri Oct 30 close.</li><li>Some events straddle the week boundaries. CLYM&#x27;s oral may be on Sat Oct 24 (reaction Mon Oct 26), so hold it from Week 2 into Week 3. INO&#x27;s Fri Oct 30 PDUFA may come after the close (reaction Nov 2). ENVX could report on Nov 11 instead of Nov 4. With a 20% maximum per position, five holdings at 20% each fill the whole portfolio, so overlapping holds need planning.</li><li>Every price is stale (August to early October snapshots) and must be re-checked on Oct 12 before trading. These picks sit near the US$1.00 price floor and/or the ~US$100M market-cap floor: INO (about US$1.17, about US$95–133M), TLSA (about US$1.15, about US$145M) and BTBT (about US$1.72). Drop any of them that is under US$1.00 on the day.</li><li>Almost every earnings date in Weeks 3–5 (GSIT, ASPN, ENVX, RDW, BKSY, TLS, BTBT, ONDS, SPCE) is a pattern estimate, not a company announcement. Those companies usually announce their dates between mid- and late October. Re-check each one and move picks between weeks if a date shifts.</li><li>VIR and IVA have only &#x27;Q4 2026&#x27; guidance, with no week given. They are placeholders with a low chance of reporting inside their assigned week.</li><li>Several picks miss the price or size screens and are included only because their weeks were short of options: AGIO (about US$34), BKSY (about US$27), CLYM (about US$15), RDW (about US$11.6) and ONDS (market cap about US$4.8B, above the US$3B ceiling). Swap any of them for a better-fitting name if one turns up.</li></ul>
+      <ul class="plain"><li>There are 25 distinct tickers, five per week, with no ticker repeated across weeks. Of 29 usable names, AGIO, ONDS, BLDP and SPCE were left as alternates, and DYL was rejected.</li><li>Weekend-FDA rule applied: IRD (Sat Oct 17 goal date) is in Week 1 because the FDA is expected to act Fri Oct 16. AGIO (Sun Nov 1) moved to Week 3, since action is expected Fri Oct 30, and is an alternate there. INO's Fri Oct 30 PDUFA may come after the close, which means a Mon Nov 2 reaction; hold over the weekend.</li><li>CATX was moved from Week 3 to Week 2 because its ESMO Rapid Oral is Fri Oct 23 at 10:25am EDT. IMTX also presents Fri Oct 23 (07:30 ET), and ESMO abstracts for both go online Mon Oct 19.</li><li>Straddles need overlap planning, because five 20% positions fill the portfolio. Leads Biolabs (9887.HK) is a Week 2 pick whose ESMO reaction will likely come Mon Oct 26. CLYM's oral may be Sat Oct 24, with a reaction Mon Oct 26. Artiva's (ARTV) Nov 9 data may be public before the open, so buy by the Fri Nov 6 close.</li><li>Weakest slots: Week 1 depends on two floaters (VIR, IVA) and a pattern-dated quarterly report (BMN). Week 4 has only estimated earnings dates plus two off-screen names (RDW, BKSY). A targeted search for Oct 12–16 and Nov 2–6 catalysts would improve these weeks most.</li><li>Off-screen picks: INO (cap about US$95M, price about US$1.17), CLYM (about US$15), RDW (about US$11.6), BKSY (about US$27), ARTV (about US$10.8) and IVA (market cap unverified). Near-floor prices to re-check on the day: INO, TLSA (about US$1.15), FUFU (about US$1.23) and BTBT (about US$1.72). Drop any that trade under US$1.00.</li><li>Almost every earnings date in Weeks 3–5 (JBLU, GSIT, TDOC, ASPN, ENVX, RDW, BKSY, TLS, BTBT, PLUG, BBAI) is a pattern or aggregator estimate. Watch for company date notices between Oct 13 and Oct 30 and move names between weeks if needed (JBLU could go to Nov 3; BBAI and ENVX could move by a week). The only company-confirmed earnings date is BHC (Oct 28 after the close).</li><li>All prices are stale snapshots from July to early October (foreign prices: BMN A$3.515, about US$2.3; 9887 HK$67.15, about US$8.6), and must be re-checked on Mon Oct 12 before trading. WLS index membership of foreign issuers (IMTX, IVA, 9887, BMN) could not be verified from search snippets.</li><li>Sell-the-news risk is elevated for VSTM (up about 9% into Oct 14), IMTX (abstract on Oct 19 before the Oct 23 oral), ARTV (up about 290% in 12 months) and 9887 (up about 30% on its ESMO selection).</li></ul>
     </div>
     <details>
-      <summary>Rejected names (8)</summary>
-      <ul class="plain"><li>AKBA (Akebia): VOICE late-breaker at ASN on Oct 23 (Week 2) is dated, but the price is about US$0.94, below the US$1.00 floor, and the data were already disclosed (trial stopped early at interim). Reconsider only if a live quote is comfortably above US$1.</li><li>PROK (ProKidney): ASN oral on Oct 23 is at 5:40pm MDT, after the US close, so it is a Week 3 reaction. The content is a pooled Phase 2 analysis with no pivotal data (PROACT 1 topline is Q2 2027). Price is about US$1.4–1.8, near the floor.</li><li>PHAR (Pharming): the catalyst has already happened. FDA approved pediatric Joenja on Sep 11, 2026. The next PDUFA is Jan 30, 2027.</li><li>BTAI (BioXcel): PDUFA is Sat Nov 14, so it falls after the window. Price is about US$0.07, market cap about US$3M, there is a going-concern warning, and approval odds are about 10%.</li><li>XTND (Xtend AI Robotics): no dated order or award. Gauntlet II results are already public (3rd in one category). It is a falling de-SPAC.</li><li>MSGR (MSG Rangers spin-off, Oct 26): the date is real, but the share price will be high (hundreds of US dollars), the market cap is probably above US$3B, and spin-offs usually see forced selling.</li><li>LUNR (Intuitive Machines): price about US$19–23 and market cap about US$3.1–4.4B, both outside the screens. Earnings date conflicts between Nov 4 and Nov 12.</li><li>DRO (DroneShield, ASX): no September-quarter report is due, because DroneShield was exempted from quarterly Appendix 4C reporting from May 18, 2026, so there is no dated catalyst. Market cap is about A$2.1B.</li></ul>
+      <summary>Rejected and parked names (5)</summary>
+      <ul class="plain"><li>DYL (Deep Yellow, ASX): rejected after checking. Its September-quarter report is listed for Oct 22 (Week 2, not Week 3), and the price of about A$1.45 (about US$0.93–1.01) is at or under the US$1.00 floor.</li><li>AKBA, PROK, PHAR, BTAI, XTND, MSGR, LUNR, DRO: rejected in the first screening round and not reconsidered.</li><li>ONDS: dropped from the picks (market cap about US$4.8B, above the US$3B ceiling) and kept as a Week 5 alternate only.</li><li>AGIO: moved from Week 4 to Week 3 under the weekend-FDA rule (Sunday Nov 1 goal date) and kept as an alternate because the price is about US$34.</li><li>BLDP and SPCE: not picked because their dates are unconfirmed and the weeks had better-dated names; kept as alternates.</li></ul>
     </details>
   </footer>
 </div>
